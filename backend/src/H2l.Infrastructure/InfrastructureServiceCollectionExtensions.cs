@@ -72,8 +72,7 @@ public static class InfrastructureServiceCollectionExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddScoped<DefaultTenantContext>();
-        services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<DefaultTenantContext>());
+        services.AddScoped<ITenantContext, DefaultTenantContext>();
 
         services.AddDbContext<H2lDbContext>((sp, options) =>
         {

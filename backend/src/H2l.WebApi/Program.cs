@@ -5,6 +5,7 @@ using H2l.Infrastructure.Persistence;
 using H2l.WebApi.Configuration;
 using H2l.WebApi.Hubs;
 using H2l.WebApi.Middleware;
+using JasperFx.CodeGeneration.Model;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -31,6 +32,7 @@ public class Program
 
         builder.Host.UseWolverine(options =>
         {
+            options.ServiceLocationPolicy = ServiceLocationPolicy.AllowedButWarn;
             options.Discovery.IncludeAssembly(typeof(ApplicationServiceCollectionExtensions).Assembly);
             options.UseFluentValidation();
         });

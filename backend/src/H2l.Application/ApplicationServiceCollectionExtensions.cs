@@ -17,7 +17,7 @@ public static class ApplicationServiceCollectionExtensions
         typeAdapterConfig.Scan(assembly);
 
         services.AddSingleton(typeAdapterConfig);
-        services.AddScoped<IMapper, ServiceMapper>();
+        services.AddSingleton<IMapper>(new Mapper(typeAdapterConfig));
 
         return services;
     }
