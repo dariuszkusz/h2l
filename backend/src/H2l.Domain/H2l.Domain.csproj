@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>H2l.Domain</RootNamespace>
+    <AssemblyName>H2l.Domain</AssemblyName>
+  </PropertyGroup>
+</Project>
