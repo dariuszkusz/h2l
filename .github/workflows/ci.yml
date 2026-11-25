@@ -82,14 +82,20 @@ jobs:
         working-directory: frontend
         run: npm test
 
-      - name: Run Cypress tests
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: frontend
-          install: false
-          start: npm run start
-          wait-on: "http://localhost:4200"
-          wait-on-timeout: 120
+      - name: Run Cypress E2E tests
+        working-directory: frontend
+        run: |
+          npx ng serve --host localhost --port 4200 &
+          SERVER_PID=$!
+          trap "kill $SERVER_PID 2>/dev/null || true" EXIT
+          for i in $(seq 1 60); do
+            if curl -sSf http://localhost:4200 >/dev/null 2>&1; then
+              break
+            fi
+            sleep 2
+          done
+          curl -sSf http://localhost:4200 >/dev/null
+          xvfb-run --auto-servernum npm run cy:run
 
   openapi-check:
     name: OpenAPI Contract Sync Check
