@@ -1,3 +1,12 @@
+import type { Result } from 'axe-core';
+
+function logAxeViolations(violations: Result[]): void {
+  violations.forEach((violation) => {
+    const targets = violation.nodes.map((node) => node.target.join(', ')).join(' | ');
+    cy.log(`AXE [${violation.impact}] ${violation.id}: ${violation.help} -> ${targets}`);
+  });
+}
+
 describe('h2l First-Run i18n, Runtime Switching, Theme Modes & WCAG 2.1 AA', () => {
   beforeEach(() => {
     cy.clearLocalStorage();
@@ -7,7 +16,7 @@ describe('h2l First-Run i18n, Runtime Switching, Theme Modes & WCAG 2.1 AA', () 
   it('displays first-run language picker, previews de/pl, persists choice, and passes axe', () => {
     cy.get('[data-testid="first-run-language-dialog"]').should('be.visible');
     cy.injectAxe();
-    cy.checkA11y();
+    cy.checkA11y(undefined, undefined, logAxeViolations);
 
     cy.get('[data-testid="first-run-lang-de"]').click();
     cy.get('[data-testid="first-run-language-dialog"]').should('contain.text', 'Wähle deine Sprache');
@@ -60,19 +69,19 @@ describe('h2l First-Run i18n, Runtime Switching, Theme Modes & WCAG 2.1 AA', () 
 
     cy.get('[data-testid="theme-mode-light"]').click();
     cy.get('html').should('have.attr', 'data-theme', 'light');
-    cy.checkA11y();
+    cy.checkA11y(undefined, undefined, logAxeViolations);
 
     cy.get('[data-testid="theme-mode-dark"]').click();
     cy.get('[data-testid="palette-ocean"]').click();
     cy.get('html').should('have.attr', 'data-theme', 'dark');
     cy.get('html').should('have.attr', 'data-palette', 'ocean');
     cy.get('html').should('have.class', 'dark');
-    cy.checkA11y();
+    cy.checkA11y(undefined, undefined, logAxeViolations);
 
     cy.get('[data-testid="theme-mode-high-contrast"]').click();
     cy.get('[data-testid="palette-forest"]').click();
     cy.get('html').should('have.attr', 'data-theme', 'high-contrast');
     cy.get('html').should('have.attr', 'data-palette', 'forest');
-    cy.checkA11y();
+    cy.checkA11y(undefined, undefined, logAxeViolations);
   });
 });

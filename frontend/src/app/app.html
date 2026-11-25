@@ -21,17 +21,19 @@
         <nav [attr.aria-label]="'app.nav.label' | translate" class="flex items-center gap-2">
           <a
             routerLink="/tasks"
-            routerLinkActive="bg-[var(--h2l-primary)] text-[var(--h2l-primary-fg)]"
+            routerLinkActive="h2l-nav-link-active"
+            ariaCurrentWhenActive="page"
             data-testid="nav-tasks"
-            class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-[var(--h2l-fg)] hover:bg-[var(--h2l-surface-elevated)]"
+            class="h2l-nav-link inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors"
           >
             {{ 'app.nav.tasks' | translate }}
           </a>
           <a
             routerLink="/settings"
-            routerLinkActive="bg-[var(--h2l-primary)] text-[var(--h2l-primary-fg)]"
+            routerLinkActive="h2l-nav-link-active"
+            ariaCurrentWhenActive="page"
             data-testid="nav-settings"
-            class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-[var(--h2l-fg)] hover:bg-[var(--h2l-surface-elevated)]"
+            class="h2l-nav-link inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors"
           >
             {{ 'app.nav.settings' | translate }}
           </a>

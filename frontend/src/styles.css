@@ -145,3 +145,22 @@
 .h2l-skip-link:focus {
   left: 0.5rem;
 }
+
+/* Deterministic nav link states (avoids Tailwind arbitrary color utility cascade conflicts) */
+.h2l-nav-link {
+  color: var(--h2l-fg);
+}
+
+.h2l-nav-link:hover {
+  background-color: var(--h2l-surface-elevated);
+}
+
+.h2l-nav-link-active {
+  background-color: var(--h2l-primary);
+  color: var(--h2l-primary-fg);
+}
+
+.h2l-nav-link-active:hover {
+  background-color: var(--h2l-primary-hover);
+  color: var(--h2l-primary-fg);
+}
