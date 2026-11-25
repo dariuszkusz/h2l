@@ -1,3 +1,4 @@
+using H2l.Infrastructure.Persistence;
 using H2l.WebApi;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -39,6 +40,11 @@ public sealed class PostgreSqlContainerFixture : IAsyncLifetime
                     });
                 });
             });
+
+        // Force host startup and explicitly ensure migrations + seed are applied
+        // before any test class in the collection executes.
+        using var warmupClient = Factory.CreateClient();
+        await Factory.Services.ApplyDatabaseMigrationsAndSeedAsync();
     }
 
     public async Task DisposeAsync()
