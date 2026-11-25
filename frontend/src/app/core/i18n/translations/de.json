@@ -1,0 +1,75 @@
+{
+  "app": {
+    "title": "h2l",
+    "subtitle": "Human-in-the-Loop Workflow-Portal",
+    "skipToContent": "Direkt zum Hauptinhalt springen",
+    "nav": {
+      "label": "Hauptnavigation",
+      "tasks": "Aufgaben",
+      "settings": "Einstellungen"
+    },
+    "footer": {
+      "version": "Stage 0 PWA-Basis"
+    }
+  },
+  "onboarding": {
+    "languageDialog": {
+      "title": "Wähle deine Sprache",
+      "description": "Wähle die Sprache, die du in h2l verwenden möchtest. Du kannst sie jederzeit in den Einstellungen ändern — deine Wahl bleibt unabhängig von anderen Nutzern.",
+      "confirm": "Weiter",
+      "ariaLabel": "Sprachauswahl beim ersten Start"
+    }
+  },
+  "languages": {
+    "en": "English",
+    "de": "Deutsch",
+    "pl": "Polski"
+  },
+  "tasks": {
+    "heading": "Deine Workflow-Aufgaben",
+    "description": "Fülle menschliche Schritte deiner verbundenen Workflow-Engines aus — online oder offline.",
+    "emptyTitle": "Noch keine offenen Aufgaben",
+    "emptyDescription": "Sobald ein Camunda- oder n8n-Workflow dir ein Formular zuweist, erscheint es hier.",
+    "openSettingsCta": "Einstellungen öffnen"
+  },
+  "settings": {
+    "heading": "Einstellungen",
+    "description": "Passe deine Sprache, deinen Anzeigemodus und deine Farbpalette an. Änderungen wirken sofort ohne Neuladen.",
+    "language": {
+      "title": "Sprache",
+      "description": "Unabhängig für deine aktuelle Sitzung und dein Nutzerprofil.",
+      "label": "Oberflächensprache"
+    },
+    "theme": {
+      "title": "Anzeigemodus",
+      "description": "Wähle zwischen Hell, Dunkel oder Hohem Kontrast für optimale Lesbarkeit.",
+      "light": "Hell",
+      "dark": "Dunkel",
+      "highContrast": "Hoher Kontrast",
+      "groupLabel": "Auswahl des Anzeigemodus"
+    },
+    "palette": {
+      "title": "Farbpalette",
+      "description": "Vordefinierte WCAG-2.1-AA-Farbpaletten, geprüft in allen Anzeigemodi.",
+      "slate": "Schiefer Minimal",
+      "ocean": "Ozeanblau",
+      "forest": "Waldgrün",
+      "groupLabel": "Auswahl der Farbpalette"
+    },
+    "session": {
+      "title": "Aktives Nutzerprofil",
+      "description": "Wechsle das Sitzungsprofil, um unabhängige Spracheinstellungen pro Nutzer zu prüfen.",
+      "label": "Profilbereich",
+      "defaultUser": "Standardsitzung",
+      "adminUser": "Admin-Profil",
+      "endUser": "Formularnutzer-Profil"
+    }
+  },
+  "connectivity": {
+    "online": "Online",
+    "offline": "Offline — Entwürfe lokal gespeichert",
+    "syncing": "Entwürfe werden synchronisiert...",
+    "queued": "Ausstehende Entwürfe: {{count}}",
+    "statusLabel": "Verbindungsstatus"
+  }
+}

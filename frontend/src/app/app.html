@@ -1,0 +1,67 @@
+<a href="#main-content" class="h2l-skip-link">
+  {{ 'app.skipToContent' | translate }}
+</a>
+
+<div class="flex min-h-screen flex-col bg-[var(--h2l-bg)] text-[var(--h2l-fg)]">
+  <header class="border-b border-[var(--h2l-border-subtle)] bg-[var(--h2l-surface)]">
+    <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <div class="flex items-center gap-3">
+        <a
+          routerLink="/tasks"
+          class="inline-flex min-h-11 items-center gap-2 text-lg font-bold tracking-tight text-[var(--h2l-fg)]"
+        >
+          <span>{{ 'app.title' | translate }}</span>
+        </a>
+        <span class="hidden text-xs text-[var(--h2l-fg-muted)] sm:inline">
+          {{ 'app.subtitle' | translate }}
+        </span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <nav [attr.aria-label]="'app.nav.label' | translate" class="flex items-center gap-2">
+          <a
+            routerLink="/tasks"
+            routerLinkActive="bg-[var(--h2l-primary)] text-[var(--h2l-primary-fg)]"
+            data-testid="nav-tasks"
+            class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-[var(--h2l-fg)] hover:bg-[var(--h2l-surface-elevated)]"
+          >
+            {{ 'app.nav.tasks' | translate }}
+          </a>
+          <a
+            routerLink="/settings"
+            routerLinkActive="bg-[var(--h2l-primary)] text-[var(--h2l-primary-fg)]"
+            data-testid="nav-settings"
+            class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-[var(--h2l-fg)] hover:bg-[var(--h2l-surface-elevated)]"
+          >
+            {{ 'app.nav.settings' | translate }}
+          </a>
+        </nav>
+
+        <app-connectivity-banner
+          [isOnline]="isOnline()"
+          [pendingDraftsCount]="pendingDraftsCount()"
+          [syncStatus]="syncStatus()"
+        />
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+    <router-outlet />
+  </main>
+
+  <footer class="border-t border-[var(--h2l-border-subtle)] bg-[var(--h2l-surface)]">
+    <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 text-xs text-[var(--h2l-fg-muted)] sm:px-6">
+      <span>{{ 'app.title' | translate }}</span>
+      <span>{{ 'app.footer.version' | translate }}</span>
+    </div>
+  </footer>
+</div>
+
+@if (isFirstRunLanguageRequired()) {
+  <app-first-run-language-dialog
+    [selectedLanguage]="previewLanguage()"
+    (languagePreviewed)="onFirstRunPreview($event)"
+    (languageConfirmed)="onFirstRunConfirm($event)"
+  />
+}

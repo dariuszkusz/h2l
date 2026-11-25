@@ -1,0 +1,75 @@
+{
+  "app": {
+    "title": "h2l",
+    "subtitle": "Human-in-the-Loop Workflow Portal",
+    "skipToContent": "Skip to main content",
+    "nav": {
+      "label": "Main navigation",
+      "tasks": "Tasks",
+      "settings": "Settings"
+    },
+    "footer": {
+      "version": "Stage 0 PWA Foundation"
+    }
+  },
+  "onboarding": {
+    "languageDialog": {
+      "title": "Choose your language",
+      "description": "Select the language you want to use in h2l. You can change it anytime in Settings — your choice stays independent from other users.",
+      "confirm": "Continue",
+      "ariaLabel": "First-run language selection"
+    }
+  },
+  "languages": {
+    "en": "English",
+    "de": "Deutsch",
+    "pl": "Polski"
+  },
+  "tasks": {
+    "heading": "Your workflow tasks",
+    "description": "Complete human steps from your connected workflow engines, online or offline.",
+    "emptyTitle": "No pending tasks yet",
+    "emptyDescription": "When a Camunda or n8n workflow assigns a form to you, it will appear here.",
+    "openSettingsCta": "Open preferences"
+  },
+  "settings": {
+    "heading": "Preferences",
+    "description": "Personalize your language, display mode, and color palette. Changes apply immediately without reloading.",
+    "language": {
+      "title": "Language",
+      "description": "Independent for your current session and user profile.",
+      "label": "Interface language"
+    },
+    "theme": {
+      "title": "Display mode",
+      "description": "Choose Light, Dark, or High Contrast mode for optimal readability.",
+      "light": "Light",
+      "dark": "Dark",
+      "highContrast": "High Contrast",
+      "groupLabel": "Display mode selection"
+    },
+    "palette": {
+      "title": "Color palette",
+      "description": "Predefined WCAG 2.1 AA color palettes verified across all display modes.",
+      "slate": "Slate Minimal",
+      "ocean": "Ocean Blue",
+      "forest": "Forest Green",
+      "groupLabel": "Color palette selection"
+    },
+    "session": {
+      "title": "Active user profile",
+      "description": "Switch session profile to verify independent per-user language preferences.",
+      "label": "Profile scope",
+      "defaultUser": "Default session",
+      "adminUser": "Admin profile",
+      "endUser": "Form user profile"
+    }
+  },
+  "connectivity": {
+    "online": "Online",
+    "offline": "Offline — drafts saved locally",
+    "syncing": "Syncing drafts...",
+    "queued": "Pending drafts: {{count}}",
+    "statusLabel": "Connection status"
+  }
+}

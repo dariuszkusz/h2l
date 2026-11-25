@@ -1,0 +1,75 @@
+{
+  "app": {
+    "title": "h2l",
+    "subtitle": "Portal procesów Human-in-the-Loop",
+    "skipToContent": "Przejdź do głównej treści",
+    "nav": {
+      "label": "Nawigacja główna",
+      "tasks": "Zadania",
+      "settings": "Ustawienia"
+    },
+    "footer": {
+      "version": "Fundament PWA — Etap 0"
+    }
+  },
+  "onboarding": {
+    "languageDialog": {
+      "title": "Wybierz swój język",
+      "description": "Wybierz język, w którym chcesz korzystać z h2l. Możesz go zmienić w dowolnym momencie w Ustawieniach — Twój wybór jest niezależny od innych użytkowników.",
+      "confirm": "Kontynuuj",
+      "ariaLabel": "Wybór języka przy pierwszym uruchomieniu"
+    }
+  },
+  "languages": {
+    "en": "English",
+    "de": "Deutsch",
+    "pl": "Polski"
+  },
+  "tasks": {
+    "heading": "Twoje zadania workflow",
+    "description": "Wypełniaj kroki ludzkie z podłączonych silników workflow — online lub offline.",
+    "emptyTitle": "Nie masz jeszcze oczekujących zadań",
+    "emptyDescription": "Gdy proces Camunda lub n8n przypisze Ci formularz, pojawi się on tutaj.",
+    "openSettingsCta": "Otwórz ustawienia"
+  },
+  "settings": {
+    "heading": "Ustawienia",
+    "description": "Dopasuj swój język, tryb wyświetlania oraz paletę kolorów. Zmiany działają natychmiast bez przeładowania strony.",
+    "language": {
+      "title": "Język",
+      "description": "Niezależny dla Twojej bieżącej sesji i profilu użytkownika.",
+      "label": "Język interfejsu"
+    },
+    "theme": {
+      "title": "Tryb wyświetlania",
+      "description": "Wybierz tryb jasny, ciemny lub wysoki kontrast dla najlepszej czytelności.",
+      "light": "Jasny",
+      "dark": "Ciemny",
+      "highContrast": "Wysoki kontrast",
+      "groupLabel": "Wybór trybu wyświetlania"
+    },
+    "palette": {
+      "title": "Paleta kolorów",
+      "description": "Predefiniowane palety kolorów WCAG 2.1 AA zweryfikowane we wszystkich trybach wyświetlania.",
+      "slate": "Minimalistyczny grafit",
+      "ocean": "Oceaniczny błękit",
+      "forest": "Leśna zieleń",
+      "groupLabel": "Wybór palety kolorów"
+    },
+    "session": {
+      "title": "Aktywny profil użytkownika",
+      "description": "Przełącz profil sesji, aby sprawdzić niezależność preferencji języka dla różnych użytkowników.",
+      "label": "Zakres profilu",
+      "defaultUser": "Domyślna sesja",
+      "adminUser": "Profil administratora",
+      "endUser": "Profil użytkownika formularzy"
+    }
+  },
+  "connectivity": {
+    "online": "Online",
+    "offline": "Offline — wersje robocze zapisywane lokalnie",
+    "syncing": "Synchronizowanie wersji roboczych...",
+    "queued": "Oczekujące wersje robocze: {{count}}",
+    "statusLabel": "Status połączenia"
+  }
+}
