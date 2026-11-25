@@ -1,0 +1,27 @@
+# Local development infrastructure for h2l.
+# Provides PostgreSQL 17 only — h2l does NOT bundle n8n or Camunda containers.
+# Start with: docker compose -f docker-compose.dev.yml up -d
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: h2l-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-h2l}
+      POSTGRES_USER: ${POSTGRES_USER:-h2l}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-h2l_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - h2l_postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-h2l} -d $${POSTGRES_DB:-h2l}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  h2l_postgres_dev_data:
+    name: h2l_postgres_dev_data

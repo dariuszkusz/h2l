@@ -1,0 +1,29 @@
+# Private documentation & agent instructions (never push to public h2l repo)
+docs/
+.agents/
+AGENTS.md
+spike/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Node / Angular / Cypress
+node_modules/
+dist/
+.angular/
+cypress/videos/
+cypress/screenshots/
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
