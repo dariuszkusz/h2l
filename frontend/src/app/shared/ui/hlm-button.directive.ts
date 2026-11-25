@@ -16,7 +16,7 @@ export class HlmButtonDirective {
 
   protected readonly computedClass = computed(() => {
     const base =
-      'inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 min-h-11 min-w-11 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none whitespace-normal text-center';
+      'inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 min-h-11 min-w-11 text-sm font-medium cursor-pointer disabled:opacity-50 disabled:pointer-events-none whitespace-normal text-center';
 
     const variantStyles: Record<HlmButtonVariant, string> = {
       primary:

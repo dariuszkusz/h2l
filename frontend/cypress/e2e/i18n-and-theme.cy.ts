@@ -1,10 +1,15 @@
 import type { Result } from 'axe-core';
 
 function logAxeViolations(violations: Result[]): void {
-  violations.forEach((violation) => {
-    const targets = violation.nodes.map((node) => node.target.join(', ')).join(' | ');
-    cy.log(`AXE [${violation.impact}] ${violation.id}: ${violation.help} -> ${targets}`);
-  });
+  const details = violations
+    .map((violation) => {
+      const targets = violation.nodes
+        .map((node) => `${node.target.join(', ')} (${node.failureSummary ?? ''})`)
+        .join(' | ');
+      return `[${violation.impact}] ${violation.id}: ${violation.help} -> ${targets}`;
+    })
+    .join('\n');
+  throw new Error(`Accessibility violations detected:\n${details}`);
 }
 
 describe('h2l First-Run i18n, Runtime Switching, Theme Modes & WCAG 2.1 AA', () => {
