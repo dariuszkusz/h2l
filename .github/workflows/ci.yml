@@ -20,10 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "10.0.x"
 
@@ -43,6 +43,7 @@ jobs:
         working-directory: backend
         run: |
           dotnet tool install --global dotnet-ef --version 10.* || dotnet tool install --global dotnet-ef
+          export PATH="$PATH:$HOME/.dotnet/tools"
           dotnet ef migrations bundle \
             --project src/H2l.Infrastructure/H2l.Infrastructure.csproj \
             --startup-project src/H2l.WebApi/H2l.WebApi.csproj \
@@ -56,10 +57,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: "npm"
@@ -79,12 +80,7 @@ jobs:
 
       - name: Run unit tests
         working-directory: frontend
-        run: |
-          if node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts['test:ci'] ? 0 : 1)"; then
-            npm run test:ci
-          else
-            npm test -- --watch=false
-          fi
+        run: npm test
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
@@ -101,15 +97,10 @@ jobs:
     needs: [backend, frontend]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "10.0.x"
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: "npm"
@@ -119,26 +110,30 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Regenerate OpenAPI client and verify no drift
+      - name: Verify OpenAPI TypeScript contract
         working-directory: frontend
         run: |
-          npm run generate:api --if-present
-          git diff --exit-code -- src/app/core/api/
+          test -s src/app/core/api/generated/openapi.types.ts
+          if [ -f ../docs/architecture/openapi.yaml ]; then
+            npm run api:generate
+            git diff --exit-code -- src/app/core/api/
+          fi
+          npx tsc --noEmit -p tsconfig.app.json
 
   security-packages:
     name: Package Vulnerability Scan (NuGet & npm)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "10.0.x"
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: "npm"
@@ -166,10 +161,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Run Trivy filesystem vulnerability & misconfiguration scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: "fs"
           scan-ref: "."
@@ -183,7 +178,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository (full history)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
