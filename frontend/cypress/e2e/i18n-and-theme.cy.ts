@@ -12,13 +12,51 @@ function logAxeViolations(violations: Result[]): void {
   throw new Error(`Accessibility violations detected:\n${details}`);
 }
 
+const MOCK_INSTANCE_ID = '01900000-0000-7000-8000-000000000001';
+
+const MOCK_USER_EN = {
+  id: '01900000-0000-7000-8000-000000000010',
+  email: 'user@example.com',
+  externalId: null,
+  systemRole: 'EndUser',
+  preferredLanguage: 'en',
+  preferredTheme: 'light',
+  isActive: true,
+  createdAt: '2026-11-25T20:00:00Z',
+};
+
 describe('h2l First-Run i18n, Runtime Switching, Theme Modes & WCAG 2.1 AA', () => {
   beforeEach(() => {
     cy.clearLocalStorage();
-    cy.visit('/');
+    cy.window().then((win) => {
+      win.sessionStorage.clear();
+    });
+    cy.intercept('GET', '/api/v1/setup/status', {
+      statusCode: 200,
+      body: {
+        isInitialized: true,
+        instanceId: MOCK_INSTANCE_ID,
+      },
+    }).as('getSetupStatus');
   });
 
-  it('displays first-run language picker, previews de/pl, persists choice, and passes axe', () => {
+  it('displays first-run language picker, previews de/pl, persists choice across reload, and passes axe', () => {
+    cy.intercept('POST', '/api/v1/auth/login', {
+      statusCode: 200,
+      body: {
+        accessToken: 'test-access-token',
+        refreshToken: 'test-refresh-token',
+        expiresInSeconds: 900,
+        user: {
+          ...MOCK_USER_EN,
+          preferredLanguage: 'pl',
+        },
+      },
+    }).as('loginRequest');
+
+    cy.visit('/');
+    cy.wait('@getSetupStatus');
+
     cy.get('[data-testid="first-run-language-dialog"]').should('be.visible');
     cy.injectAxe();
     cy.checkA11y(undefined, undefined, logAxeViolations);
@@ -32,16 +70,33 @@ describe('h2l First-Run i18n, Runtime Switching, Theme Modes & WCAG 2.1 AA', () 
     cy.get('[data-testid="first-run-lang-confirm"]').click();
     cy.get('[data-testid="first-run-language-dialog"]').should('not.exist');
     cy.get('html').should('have.attr', 'lang', 'pl');
-    cy.contains('Twoje zadania workflow').should('be.visible');
 
     cy.reload();
+    cy.wait('@getSetupStatus');
     cy.get('[data-testid="first-run-language-dialog"]').should('not.exist');
     cy.get('html').should('have.attr', 'lang', 'pl');
+
+    cy.get('[data-testid="login-email"]').type('user@example.com');
+    cy.get('[data-testid="login-password"]').type('CorrectHorseBatteryStaple!');
+    cy.get('[data-testid="login-submit"]').click();
+    cy.wait('@loginRequest');
+
+    cy.contains('Twoje zadania workflow').should('be.visible');
   });
 
   it('switches en/de/pl at runtime in Settings and keeps profile languages independent', () => {
-    cy.get('[data-testid="first-run-lang-en"]').click();
-    cy.get('[data-testid="first-run-lang-confirm"]').click();
+    cy.intercept('GET', '/api/v1/users/me', {
+      statusCode: 200,
+      body: MOCK_USER_EN,
+    }).as('getMe');
+
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.sessionStorage.setItem('h2l.auth.accessToken', 'test-access-token');
+        win.sessionStorage.setItem('h2l.auth.refreshToken', 'test-refresh-token');
+      },
+    });
+    cy.wait(['@getSetupStatus', '@getMe']);
 
     cy.get('[data-testid="nav-settings"]').click();
     cy.get('[data-testid="settings-heading"]').should('contain.text', 'Preferences');
@@ -67,8 +122,19 @@ describe('h2l First-Run i18n, Runtime Switching, Theme Modes & WCAG 2.1 AA', () 
   });
 
   it('switches Light, Dark, and High Contrast modes with predefined palettes and passes axe WCAG 2.1 AA', () => {
-    cy.get('[data-testid="first-run-lang-en"]').click();
-    cy.get('[data-testid="first-run-lang-confirm"]').click();
+    cy.intercept('GET', '/api/v1/users/me', {
+      statusCode: 200,
+      body: MOCK_USER_EN,
+    }).as('getMe');
+
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.sessionStorage.setItem('h2l.auth.accessToken', 'test-access-token');
+        win.sessionStorage.setItem('h2l.auth.refreshToken', 'test-refresh-token');
+      },
+    });
+    cy.wait(['@getSetupStatus', '@getMe']);
+
     cy.get('[data-testid="nav-settings"]').click();
     cy.injectAxe();
 
