@@ -71,7 +71,14 @@
       "UNAUTHORIZED": "Zaloguj się, aby uzyskać dostęp do tego zasobu.",
       "LICENSE_INVALID": "Klucz licencyjny jest nieprawidłowy lub uszkodzony.",
       "LICENSE_EXPIRED": "Twoja licencja wygasła. Odnów licencję w Ustawieniach, aby tworzyć nowe procesy.",
-      "INSTANCE_MISMATCH": "Ten klucz licencyjny jest przypisany do innego identyfikatora instancji."
+      "INSTANCE_MISMATCH": "Ten klucz licencyjny jest przypisany do innego identyfikatora instancji.",
+      "TASK_ALREADY_CLAIMED": "Ten formularz został już podjęty przez inną osobę.",
+      "TASK_NOT_CLAIMED_BY_USER": "Możesz zwolnić tylko zadanie, które zostało podjęte przez Ciebie.",
+      "TASK_NOT_CLAIMABLE": "Tego zadania nie można podjąć w obecnym stanie.",
+      "TASK_ALREADY_COMPLETED": "To zadanie zostało już ukończone.",
+      "FORM_SCHEMA_INVALID": "Schemat formularza zawiera błędy walidacji.",
+      "ATTACHMENT_TOO_LARGE": "Przesłany plik przekracza maksymalny dozwolony rozmiar.",
+      "ATTACHMENT_TYPE_NOT_ALLOWED": "Ten typ pliku nie jest dozwolony w tym polu."
     }
   },
   "onboarding": {
@@ -159,9 +166,47 @@
   "tasks": {
     "heading": "Twoje zadania workflow",
     "description": "Wypełniaj kroki ludzkie z podłączonych silników workflow — online lub offline.",
+    "loading": "Ładowanie zadań...",
     "emptyTitle": "Nie masz jeszcze oczekujących zadań",
     "emptyDescription": "Gdy proces Camunda lub n8n przypisze Ci formularz, pojawi się on tutaj.",
-    "openSettingsCta": "Otwórz ustawienia"
+    "openSettingsCta": "Otwórz ustawienia",
+    "scopeLabel": "Filtr kolejki zadań",
+    "queuedOfflineBadge": "Oczekuje offline",
+    "scopes": {
+      "all": "Wszystkie zadania",
+      "assigned": "Przypisane do mnie",
+      "group_queue": "Kolejka grupowa"
+    },
+    "status": {
+      "Pending": "Oczekujące",
+      "InProgress": "W trakcie",
+      "NeedsAssignment": "Wymaga przypisania",
+      "Completed": "Ukończone",
+      "Cancelled": "Anulowane",
+      "Expired": "Wygasłe"
+    },
+    "actions": {
+      "claim": "Podejmij",
+      "unclaim": "Zwolnij",
+      "open": "Otwórz formularz"
+    },
+    "feedback": {
+      "claimed": "Zadanie podjęte. Możesz teraz wypełnić i wysłać formularz.",
+      "unclaimed": "Zadanie wróciło do kolejki grupowej, a lokalna wersja robocza została usunięta.",
+      "submitted": "Formularz wysłany pomyślnie, a lokalna wersja robocza została usunięta.",
+      "queuedOffline": "Jesteś offline. Zgłoszenie zapisano lokalnie i dodano do kolejki synchronizacji.",
+      "syncedOffline": "Oczekujące zgłoszenie offline zostało pomyślnie zsynchronizowane."
+    },
+    "detail": {
+      "backToTasks": "Wróć do zadań",
+      "heading": "Formularz zadania",
+      "loading": "Ładowanie formularza zadania...",
+      "offlineTitle": "Tryb offline",
+      "offlineDraftMessage": "Zmiany zapisują się lokalnie w IndexedDB do momentu odzyskania połączenia.",
+      "queuedMessage": "To zgłoszenie oczekuje w trybie offline i zostanie wysłane automatycznie po powrocie sieci.",
+      "claimRequiredTitle": "Wymagane podjęcie zadania",
+      "claimRequiredMessage": "Najpierw podejmij to zadanie grupowe, aby móc wypełnić i wysłać formularz."
+    }
   },
   "settings": {
     "heading": "Ustawienia",
@@ -299,7 +344,8 @@
       "selectProcessTitle": "Wybierz proces",
       "selectProcessDescription": "Wybierz proces workflow, aby wyświetlić lub utworzyć jego formularze.",
       "emptyTitle": "Brak formularzy",
-      "emptyDescription": "Dodaj krok z wersją roboczą formularza do tego procesu workflow."
+      "emptyDescription": "Dodaj krok z wersją roboczą formularza do tego procesu workflow.",
+      "openBuilderButton": "Otwórz kreator formularza"
     },
     "acl": {
       "title": "Kontrola dostępu (ACL) — {{name}}",
@@ -355,6 +401,152 @@
       "activeConnectors": "Aktywne konektory",
       "adminUsers": "Administratorzy",
       "endUsers": "Użytkownicy końcowi"
+    }
+  },
+  "formRenderer": {
+    "submit": "Wyślij formularz",
+    "submitting": "Wysyłanie...",
+    "previousStep": "Wstecz",
+    "nextStep": "Dalej",
+    "wizardStepsLabel": "Kroki formularza",
+    "stepAnnounce": "Krok {{current}} z {{total}}: {{title}}",
+    "selectPlaceholder": "Wybierz opcję...",
+    "sensitiveBadge": "Dane wrażliwe (RODO)",
+    "readOnlyBadge": "Tylko do odczytu",
+    "addRow": "Dodaj wiersz",
+    "removeRow": "Usuń",
+    "errors": {
+      "min": "Wpisz wartość co najmniej {{min}}.",
+      "max": "Wpisz wartość maksymalnie {{max}}.",
+      "pattern": "Wartość nie pasuje do wymaganego formatu.",
+      "compareField": "Wartość nie spełnia reguły porównania pól.",
+      "expression": "Wartość nie spełnia reguły walidacji.",
+      "invalidFileType": "Ten typ pliku nie jest dozwolony.",
+      "fileTooLarge": "Plik przekracza maksymalny rozmiar {{maxMb}} MB.",
+      "fixStepErrors": "Popraw błędy walidacji w tym kroku przed przejściem dalej.",
+      "fixFormErrors": "Popraw wyróżnione błędy walidacji przed wysłaniem."
+    }
+  },
+  "formBuilder": {
+    "backToProjects": "Wróć do projektów",
+    "formNameLabel": "Nazwa formularza",
+    "loading": "Ładowanie kreatora formularza...",
+    "saveDraft": "Zapisz szkic",
+    "saving": "Zapisywanie...",
+    "publishVersion": "Opublikuj wersję",
+    "publishing": "Publikowanie...",
+    "validationIssuesTitle": "Błąd schematu formularza",
+    "addStep": "Dodaj krok",
+    "status": {
+      "Draft": "Szkic",
+      "Published": "Opublikowany",
+      "Archived": "Zarchiwizowany"
+    },
+    "layout": {
+      "single": "Jedna strona",
+      "wizard": "Kroki (Wizard)"
+    },
+    "tabs": {
+      "label": "Tryb kreatora formularza",
+      "design": "Projektowanie",
+      "preview": "Podgląd na żywo",
+      "versions": "Wersje"
+    },
+    "palette": {
+      "title": "Kontrolki",
+      "categories": {
+        "data": "Pola danych",
+        "choice": "Wybór",
+        "layout": "Układ",
+        "advanced": "Zaawansowane"
+      }
+    },
+    "controls": {
+      "text": "Pole tekstowe",
+      "textarea": "Dłuższy tekst",
+      "number": "Liczba",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "url": "URL",
+      "date": "Data",
+      "time": "Godzina",
+      "datetime": "Data i godzina",
+      "select": "Lista wyboru",
+      "radio": "Wybór jednokrotny",
+      "checkbox": "Pole wyboru",
+      "checkbox_group": "Wybór wielokrotny",
+      "toggle": "Przełącznik",
+      "file": "Załącznik",
+      "repeater": "Lista powtarzalna",
+      "section": "Sekcja",
+      "grid": "Siatka kolumn",
+      "heading": "Nagłówek",
+      "text_block": "Blok informacyjny",
+      "divider": "Separator"
+    },
+    "canvas": {
+      "title": "Obszar formularza",
+      "emptyTitle": "Brak pól",
+      "emptyDescription": "Dodaj kontrolki z palety po lewej stronie myszą lub klawiaturą.",
+      "moveUp": "Przesuń {{label}} w górę",
+      "moveDown": "Przesuń {{label}} w dół",
+      "delete": "Usuń {{label}}"
+    },
+    "inspector": {
+      "title": "Inspektor pola",
+      "emptyTitle": "Wybierz pole",
+      "emptyDescription": "Kliknij dowolne pole w formularzu, aby ustawić właściwości, tłumaczenia i reguły.",
+      "variableKeyLabel": "Klucz zmiennej workflow",
+      "variableKeyRequired": "Klucz zmiennej jest wymagany.",
+      "variableKeyInvalid": "Użyj liter, cyfr i podkreśleń zaczynając od litery.",
+      "variableKeyDuplicate": "Klucz zmiennej musi być unikalny w całym formularzu.",
+      "preFilled": "Wstępnie wypełniane z workflow",
+      "readOnly": "Tylko do odczytu",
+      "isSensitive": "Dane wrażliwe (RODO AES-GCM i Claim-Check)",
+      "translationsTitle": "Tłumaczenia",
+      "labelField": "Etykieta",
+      "descriptionField": "Podpowiedź / opis",
+      "placeholderField": "Placeholder",
+      "optionsTitle": "Opcje",
+      "addOption": "Dodaj opcję",
+      "optionValue": "Wartość opcji",
+      "optionLabel": "Etykieta opcji",
+      "validatorsTitle": "Walidatory",
+      "rulesTitle": "Reguły warunkowe i AST",
+      "expressionLabel": "Wyrażenie walidacji AST",
+      "expressionErrorPlaceholder": "Przetłumaczony komunikat błędu"
+    },
+    "validators": {
+      "required": "Wymagane",
+      "min": "Wartość minimalna",
+      "max": "Wartość maksymalna",
+      "minLength": "Minimalna długość",
+      "maxLength": "Maksymalna długość",
+      "email": "Format e-mail",
+      "regex": "Wyrażenie regularne",
+      "compareField": "Porównanie z polem",
+      "expression": "Własne wyrażenie AST"
+    },
+    "preview": {
+      "desktop": "Desktop",
+      "mobile": "Mobile",
+      "backToDraft": "Wróć do podglądu szkicu"
+    },
+    "versions": {
+      "title": "Opublikowane niemutowalne wersje",
+      "emptyTitle": "Brak opublikowanych wersji",
+      "emptyDescription": "Zapisz szkic i opublikuj, aby utworzyć niemutowalną wersję v1.",
+      "previewButton": "Podgląd"
+    },
+    "feedback": {
+      "draftSaved": "Szkic został zapisany.",
+      "published": "Opublikowano nową niemutowalną wersję formularza."
+    },
+    "a11y": {
+      "fieldAdded": "Dodano pole {{label}} do formularza.",
+      "fieldMoved": "Przesunięto pole {{label}} na pozycję {{position}}.",
+      "fieldRemoved": "Usunięto pole {{label}} z formularza.",
+      "stepAdded": "Dodano krok {{index}}."
     }
   }
 }

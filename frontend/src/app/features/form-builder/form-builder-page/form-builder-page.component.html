@@ -1,0 +1,744 @@
+<section class="space-y-6" data-testid="form-builder-page">
+  <div class="sr-only" aria-live="polite" aria-atomic="true" data-testid="builder-live-region">
+    {{ liveAnnouncement() }}
+  </div>
+
+  <header class="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--h2l-border-subtle)] pb-4">
+    <div class="space-y-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <a routerLink="/admin/projects" hlmBtn variant="ghost" data-testid="builder-back-link">
+          {{ 'formBuilder.backToProjects' | translate }}
+        </a>
+        @if (formDefinition(); as def) {
+          <span hlmBadge [variant]="def.status === 'Published' ? 'success' : 'neutral'" data-testid="builder-status-badge">
+            {{ 'formBuilder.status.' + def.status | translate }}
+          </span>
+          @if (def.latestVersionNumber !== null) {
+            <span hlmBadge variant="info" data-testid="builder-version-badge">
+              v{{ def.latestVersionNumber }}
+            </span>
+          }
+        }
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <label hlmLabel for="builder-form-name" class="sr-only">
+          {{ 'formBuilder.formNameLabel' | translate }}
+        </label>
+        <input
+          id="builder-form-name"
+          type="text"
+          hlmInput
+          class="max-w-md text-lg font-semibold"
+          data-testid="builder-form-name-input"
+          [value]="draftName()"
+          (input)="onDraftNameInput($event)"
+        />
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        hlmBtn
+        variant="outline"
+        data-testid="builder-save-draft-btn"
+        [disabled]="saving() || loading() || schemaIssues().length > 0"
+        (click)="onSaveDraft()"
+      >
+        {{ saving() ? ('formBuilder.saving' | translate) : ('formBuilder.saveDraft' | translate) }}
+      </button>
+      <button
+        type="button"
+        hlmBtn
+        variant="primary"
+        data-testid="builder-publish-btn"
+        [disabled]="publishing() || loading() || schemaIssues().length > 0"
+        (click)="onPublish()"
+      >
+        {{ publishing() ? ('formBuilder.publishing' | translate) : ('formBuilder.publishVersion' | translate) }}
+      </button>
+    </div>
+  </header>
+
+  @if (error(); as apiError) {
+    <div class="space-y-2">
+      <app-ui-state-banner
+        kind="error"
+        testId="builder-error-banner"
+        [title]="'errors.title' | translate"
+        [message]="apiError.messageKey | translate: apiError.messageParams"
+        [detail]="apiError.detail"
+        [fieldErrors]="apiError.fieldErrors"
+      />
+      @if (apiError.status === 402) {
+        <div>
+          <a routerLink="/settings" hlmBtn variant="outline" data-testid="builder-upgrade-link">
+            {{ 'licensing.upgradeCta' | translate }}
+          </a>
+        </div>
+      }
+    </div>
+  }
+
+  @if (successKey(); as key) {
+    <app-ui-state-banner
+      kind="success"
+      testId="builder-success-banner"
+      [title]="'common.successTitle' | translate"
+      [message]="key | translate"
+    />
+  }
+
+  @if (schemaIssues().length > 0) {
+    <app-ui-state-banner
+      kind="error"
+      testId="builder-schema-issues"
+      [title]="'formBuilder.validationIssuesTitle' | translate"
+      [message]="schemaIssues()[0].message"
+    />
+  }
+
+  @if (loading()) {
+    <app-ui-state-banner
+      kind="loading"
+      testId="builder-loading"
+      [message]="'formBuilder.loading' | translate"
+    />
+  } @else if (draftSchema(); as schema) {
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div role="tablist" [attr.aria-label]="'formBuilder.tabs.label' | translate" class="flex flex-wrap gap-2">
+        <button
+          type="button"
+          role="tab"
+          hlmBtn
+          [variant]="activeTab() === 'design' ? 'primary' : 'outline'"
+          [attr.aria-selected]="activeTab() === 'design'"
+          data-testid="builder-tab-design"
+          (click)="setActiveTab('design')"
+        >
+          {{ 'formBuilder.tabs.design' | translate }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          hlmBtn
+          [variant]="activeTab() === 'preview' ? 'primary' : 'outline'"
+          [attr.aria-selected]="activeTab() === 'preview'"
+          data-testid="builder-tab-preview"
+          (click)="setActiveTab('preview')"
+        >
+          {{ 'formBuilder.tabs.preview' | translate }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          hlmBtn
+          [variant]="activeTab() === 'versions' ? 'primary' : 'outline'"
+          [attr.aria-selected]="activeTab() === 'versions'"
+          data-testid="builder-tab-versions"
+          (click)="setActiveTab('versions')"
+        >
+          {{ 'formBuilder.tabs.versions' | translate }} ({{ versions().length }})
+        </button>
+      </div>
+
+      @if (activeTab() === 'design') {
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            hlmBtn
+            [variant]="schema.layoutMode === 'single' ? 'primary' : 'outline'"
+            data-testid="builder-layout-single"
+            (click)="onLayoutModeChange('single')"
+          >
+            {{ 'formBuilder.layout.single' | translate }}
+          </button>
+          <button
+            type="button"
+            hlmBtn
+            [variant]="schema.layoutMode === 'wizard' ? 'primary' : 'outline'"
+            data-testid="builder-layout-wizard"
+            (click)="onLayoutModeChange('wizard')"
+          >
+            {{ 'formBuilder.layout.wizard' | translate }}
+          </button>
+          <button
+            type="button"
+            hlmBtn
+            variant="outline"
+            data-testid="builder-add-step-btn"
+            (click)="onAddStep()"
+          >
+            {{ 'formBuilder.addStep' | translate }}
+          </button>
+        </div>
+      }
+    </div>
+
+    @if (activeTab() === 'design') {
+      <div class="grid gap-6 lg:grid-cols-12">
+        <!-- Left: Control Palette -->
+        <aside hlmCard class="space-y-4 lg:col-span-3" [attr.aria-label]="'formBuilder.palette.title' | translate">
+          <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+            {{ 'formBuilder.palette.title' | translate }}
+          </h2>
+          @for (category of categories; track category) {
+            <div class="space-y-2">
+              <h3 class="text-xs font-semibold uppercase tracking-wide text-[var(--h2l-fg-muted)]">
+                {{ 'formBuilder.palette.categories.' + category | translate }}
+              </h3>
+              <div class="grid grid-cols-1 gap-1.5">
+                @for (control of controlsForCategory(category); track control.type) {
+                  <button
+                    type="button"
+                    hlmBtn
+                    variant="outline"
+                    class="w-full justify-start text-left text-xs"
+                    [attr.data-testid]="'palette-add-' + control.type"
+                    (click)="onAddControl(control.type)"
+                  >
+                    + {{ control.labelKey | translate }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </aside>
+
+        <!-- Center: Canvas with CDK Drag & Drop + Keyboard Reorder -->
+        <div hlmCard class="space-y-4 lg:col-span-5" data-testid="builder-canvas">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+              {{ 'formBuilder.canvas.title' | translate }}
+            </h2>
+            @if (schema.steps.length > 1) {
+              <div class="flex flex-wrap gap-1.5">
+                @for (step of schema.steps; track step.id; let sIdx = $index) {
+                  <button
+                    type="button"
+                    hlmBtn
+                    [variant]="sIdx === selectedStepIndex() ? 'primary' : 'outline'"
+                    [attr.data-testid]="'builder-step-btn-' + sIdx"
+                    (click)="onSelectStep(sIdx)"
+                  >
+                    {{ sIdx + 1 }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          @if (activeStep(); as step) {
+            @if (step.components.length === 0) {
+              <app-ui-state-banner
+                kind="empty"
+                testId="builder-canvas-empty"
+                [title]="'formBuilder.canvas.emptyTitle' | translate"
+                [message]="'formBuilder.canvas.emptyDescription' | translate"
+              />
+            } @else {
+              <div
+                cdkDropList
+                [cdkDropListData]="step.components"
+                (cdkDropListDropped)="onDropComponent($event)"
+                class="space-y-2"
+                data-testid="builder-canvas-list"
+              >
+                @for (comp of step.components; track comp.id; let idx = $index) {
+                  <div
+                    cdkDrag
+                    class="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 transition-colors"
+                    [class.border-[var(--h2l-primary)]]="selectedComponentId() === comp.id"
+                    [class.border-[var(--h2l-border)]]="selectedComponentId() !== comp.id"
+                    [attr.data-testid]="'canvas-item-' + idx"
+                  >
+                    <button
+                      type="button"
+                      hlmBtn
+                      variant="ghost"
+                      class="flex-1 justify-start text-left"
+                      [attr.aria-pressed]="selectedComponentId() === comp.id"
+                      [attr.data-testid]="'canvas-select-' + idx"
+                      (click)="onSelectComponent(comp.id)"
+                    >
+                      <span class="flex flex-col items-start">
+                        <span class="font-medium text-[var(--h2l-fg)]">{{ componentLabel(comp) }}</span>
+                        <span class="text-xs text-[var(--h2l-fg-muted)]">
+                          {{ comp.type }}
+                          @if (comp.variableKey) {
+                            · {{ comp.variableKey }}
+                          }
+                        </span>
+                      </span>
+                    </button>
+
+                    <div class="flex flex-wrap items-center gap-1">
+                      @if (comp.isSensitive) {
+                        <span hlmBadge variant="warning" [attr.data-testid]="'canvas-sensitive-' + idx">
+                          {{ 'formRenderer.sensitiveBadge' | translate }}
+                        </span>
+                      }
+                      <button
+                        type="button"
+                        hlmBtn
+                        variant="outline"
+                        [disabled]="idx === 0"
+                        [attr.aria-label]="'formBuilder.canvas.moveUp' | translate: { label: componentLabel(comp) }"
+                        [attr.data-testid]="'canvas-move-up-' + idx"
+                        (click)="onMoveComponent(idx, -1)"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        hlmBtn
+                        variant="outline"
+                        [disabled]="idx === step.components.length - 1"
+                        [attr.aria-label]="'formBuilder.canvas.moveDown' | translate: { label: componentLabel(comp) }"
+                        [attr.data-testid]="'canvas-move-down-' + idx"
+                        (click)="onMoveComponent(idx, 1)"
+                      >
+                        ↓
+                      </button>
+                      <button
+                        type="button"
+                        hlmBtn
+                        variant="outline"
+                        [attr.aria-label]="'formBuilder.canvas.delete' | translate: { label: componentLabel(comp) }"
+                        [attr.data-testid]="'canvas-delete-' + idx"
+                        (click)="onRemoveComponent(comp.id)"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          }
+        </div>
+
+        <!-- Right: Field Inspector -->
+        <aside hlmCard class="space-y-4 lg:col-span-4" data-testid="builder-inspector">
+          <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+            {{ 'formBuilder.inspector.title' | translate }}
+          </h2>
+
+          @if (selectedComponent(); as comp) {
+            <div class="space-y-4">
+              @if (componentCollectsData(comp)) {
+                <div class="space-y-1">
+                  <label hlmLabel for="inspector-variable-key">
+                    {{ 'formBuilder.inspector.variableKeyLabel' | translate }}
+                  </label>
+                  <input
+                    id="inspector-variable-key"
+                    type="text"
+                    hlmInput
+                    data-testid="inspector-variable-key"
+                    [value]="comp.variableKey ?? ''"
+                    [hasError]="selectedVariableKeyError() !== null"
+                    [attr.aria-invalid]="selectedVariableKeyError() !== null"
+                    (input)="onInspectorVariableKeyChange($event)"
+                  />
+                  @if (selectedVariableKeyError(); as vkErr) {
+                    <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert" data-testid="inspector-variable-key-error">
+                      {{ vkErr | translate }}
+                    </p>
+                  }
+                </div>
+
+                <div class="space-y-2 rounded-lg border border-[var(--h2l-border-subtle)] p-3">
+                  <label class="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      data-testid="inspector-prefilled"
+                      [checked]="!!comp.preFilled"
+                      (change)="onInspectorBooleanToggle('preFilled', $event)"
+                    />
+                    <span>{{ 'formBuilder.inspector.preFilled' | translate }}</span>
+                  </label>
+                  <label class="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      data-testid="inspector-readonly"
+                      [checked]="!!comp.readOnly"
+                      (change)="onInspectorBooleanToggle('readOnly', $event)"
+                    />
+                    <span>{{ 'formBuilder.inspector.readOnly' | translate }}</span>
+                  </label>
+                  <label class="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      data-testid="inspector-sensitive"
+                      [checked]="!!comp.isSensitive"
+                      (change)="onInspectorBooleanToggle('isSensitive', $event)"
+                    />
+                    <span>{{ 'formBuilder.inspector.isSensitive' | translate }}</span>
+                  </label>
+                </div>
+              }
+
+              <!-- Localized EN / DE / PL labels -->
+              <div class="space-y-3 rounded-lg border border-[var(--h2l-border-subtle)] p-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <span class="text-xs font-semibold uppercase text-[var(--h2l-fg-muted)]">
+                    {{ 'formBuilder.inspector.translationsTitle' | translate }}
+                  </span>
+                  <div class="flex gap-1">
+                    @for (lang of languages; track lang) {
+                      <button
+                        type="button"
+                        hlmBtn
+                        [variant]="inspectorLanguage() === lang ? 'primary' : 'outline'"
+                        [attr.data-testid]="'inspector-lang-' + lang"
+                        (click)="inspectorLanguage.set(lang)"
+                      >
+                        {{ lang.toUpperCase() }}
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <div class="space-y-1">
+                  <label hlmLabel for="inspector-label-input">
+                    {{ 'formBuilder.inspector.labelField' | translate }} ({{ inspectorLanguage().toUpperCase() }})
+                  </label>
+                  <input
+                    id="inspector-label-input"
+                    type="text"
+                    hlmInput
+                    data-testid="inspector-label-input"
+                    [value]="comp.label?.[inspectorLanguage()] ?? ''"
+                    (input)="onInspectorLocalizedChange('label', inspectorLanguage(), $event)"
+                  />
+                </div>
+
+                <div class="space-y-1">
+                  <label hlmLabel for="inspector-desc-input">
+                    {{ 'formBuilder.inspector.descriptionField' | translate }} ({{ inspectorLanguage().toUpperCase() }})
+                  </label>
+                  <input
+                    id="inspector-desc-input"
+                    type="text"
+                    hlmInput
+                    data-testid="inspector-desc-input"
+                    [value]="comp.description?.[inspectorLanguage()] ?? ''"
+                    (input)="onInspectorLocalizedChange('description', inspectorLanguage(), $event)"
+                  />
+                </div>
+
+                <div class="space-y-1">
+                  <label hlmLabel for="inspector-placeholder-input">
+                    {{ 'formBuilder.inspector.placeholderField' | translate }} ({{ inspectorLanguage().toUpperCase() }})
+                  </label>
+                  <input
+                    id="inspector-placeholder-input"
+                    type="text"
+                    hlmInput
+                    data-testid="inspector-placeholder-input"
+                    [value]="comp.placeholder?.[inspectorLanguage()] ?? ''"
+                    (input)="onInspectorLocalizedChange('placeholder', inspectorLanguage(), $event)"
+                  />
+                </div>
+              </div>
+
+              <!-- Options Editor -->
+              @if (componentSupportsOptions(comp)) {
+                <div class="space-y-2 rounded-lg border border-[var(--h2l-border-subtle)] p-3">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-xs font-semibold uppercase text-[var(--h2l-fg-muted)]">
+                      {{ 'formBuilder.inspector.optionsTitle' | translate }}
+                    </span>
+                    <button type="button" hlmBtn variant="outline" (click)="onAddOption()">
+                      + {{ 'formBuilder.inspector.addOption' | translate }}
+                    </button>
+                  </div>
+                  @for (opt of comp.options ?? []; track $index; let optIdx = $index) {
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="text"
+                        hlmInput
+                        class="w-1/3"
+                        [value]="opt.value"
+                        [attr.aria-label]="'formBuilder.inspector.optionValue' | translate"
+                        (input)="onUpdateOption(optIdx, 'value', $event)"
+                      />
+                      <input
+                        type="text"
+                        hlmInput
+                        class="flex-1"
+                        [value]="opt.label[inspectorLanguage()] ?? ''"
+                        [attr.aria-label]="'formBuilder.inspector.optionLabel' | translate"
+                        (input)="onUpdateOption(optIdx, 'label', $event)"
+                      />
+                      <button type="button" hlmBtn variant="outline" (click)="onRemoveOption(optIdx)">
+                        ✕
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Clickable Validators & Safe AST Rules -->
+              @if (componentCollectsData(comp)) {
+                <div class="space-y-2 rounded-lg border border-[var(--h2l-border-subtle)] p-3">
+                  <span class="text-xs font-semibold uppercase text-[var(--h2l-fg-muted)]">
+                    {{ 'formBuilder.inspector.validatorsTitle' | translate }}
+                  </span>
+                  @for (vType of clickableValidatorTypes; track vType) {
+                    <div class="space-y-1">
+                      <label class="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          [attr.data-testid]="'validator-toggle-' + vType"
+                          [checked]="hasValidator(vType)"
+                          (change)="onToggleClickableValidator(vType, $event)"
+                        />
+                        <span>{{ 'formBuilder.validators.' + vType | translate }}</span>
+                      </label>
+                      @if (hasValidator(vType) && (vType === 'min' || vType === 'max' || vType === 'minLength' || vType === 'maxLength')) {
+                        <input
+                          type="number"
+                          hlmInput
+                          [value]="getValidator(vType)?.value ?? ''"
+                          (input)="onUpdateValidatorField(vType, 'value', $event)"
+                        />
+                      }
+                      @if (hasValidator(vType) && vType === 'regex') {
+                        <input
+                          type="text"
+                          hlmInput
+                          placeholder="^[A-Z0-9]+$"
+                          [value]="getValidator(vType)?.pattern ?? ''"
+                          (input)="onUpdateValidatorField('regex', 'pattern', $event)"
+                        />
+                      }
+                      @if (hasValidator(vType) && vType === 'compareField') {
+                        <div class="flex gap-2">
+                          <select
+                            hlmInput
+                            [value]="getValidator(vType)?.operator ?? 'gte'"
+                            (change)="onUpdateValidatorField('compareField', 'operator', $event)"
+                          >
+                            <option value="eq">==</option>
+                            <option value="neq">!=</option>
+                            <option value="gt">&gt;</option>
+                            <option value="gte">&gt;=</option>
+                            <option value="lt">&lt;</option>
+                            <option value="lte">&lt;=</option>
+                          </select>
+                          <input
+                            type="text"
+                            hlmInput
+                            placeholder="targetVariableKey"
+                            [value]="getValidator(vType)?.targetField ?? ''"
+                            (input)="onUpdateValidatorField('compareField', 'targetField', $event)"
+                          />
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <div class="space-y-3 rounded-lg border border-[var(--h2l-border-subtle)] p-3">
+                  <span class="text-xs font-semibold uppercase text-[var(--h2l-fg-muted)]">
+                    {{ 'formBuilder.inspector.rulesTitle' | translate }}
+                  </span>
+
+                  <div class="space-y-1">
+                    <label hlmLabel for="rule-visible-if">visibleIf</label>
+                    <input
+                      id="rule-visible-if"
+                      type="text"
+                      hlmInput
+                      data-testid="inspector-rule-visibleIf"
+                      placeholder="estimatedCost > 1000"
+                      [value]="comp.rules?.visibleIf ?? ''"
+                      [hasError]="selectedExpressionErrors().visibleIf !== null"
+                      (input)="onInspectorRuleChange('visibleIf', $event)"
+                    />
+                    @if (selectedExpressionErrors().visibleIf; as err) {
+                      <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert">{{ err }}</p>
+                    }
+                  </div>
+
+                  <div class="space-y-1">
+                    <label hlmLabel for="rule-required-if">requiredIf</label>
+                    <input
+                      id="rule-required-if"
+                      type="text"
+                      hlmInput
+                      data-testid="inspector-rule-requiredIf"
+                      [value]="comp.rules?.requiredIf ?? ''"
+                      [hasError]="selectedExpressionErrors().requiredIf !== null"
+                      (input)="onInspectorRuleChange('requiredIf', $event)"
+                    />
+                    @if (selectedExpressionErrors().requiredIf; as err) {
+                      <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert">{{ err }}</p>
+                    }
+                  </div>
+
+                  <div class="space-y-1">
+                    <label hlmLabel for="rule-readonly-if">readOnlyIf</label>
+                    <input
+                      id="rule-readonly-if"
+                      type="text"
+                      hlmInput
+                      data-testid="inspector-rule-readOnlyIf"
+                      [value]="comp.rules?.readOnlyIf ?? ''"
+                      [hasError]="selectedExpressionErrors().readOnlyIf !== null"
+                      (input)="onInspectorRuleChange('readOnlyIf', $event)"
+                    />
+                    @if (selectedExpressionErrors().readOnlyIf; as err) {
+                      <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert">{{ err }}</p>
+                    }
+                  </div>
+
+                  <div class="space-y-1">
+                    <label hlmLabel for="rule-expression">
+                      {{ 'formBuilder.inspector.expressionLabel' | translate }}
+                    </label>
+                    <input
+                      id="rule-expression"
+                      type="text"
+                      hlmInput
+                      data-testid="inspector-rule-expression"
+                      [value]="getValidator('expression')?.expression ?? ''"
+                      [hasError]="selectedExpressionErrors().expression !== null"
+                      (input)="onUpdateValidatorField('expression', 'expression', $event)"
+                    />
+                    @if (selectedExpressionErrors().expression; as err) {
+                      <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert">{{ err }}</p>
+                    }
+                    @if (hasValidator('expression')) {
+                      <input
+                        type="text"
+                        hlmInput
+                        class="mt-1"
+                        [placeholder]="'formBuilder.inspector.expressionErrorPlaceholder' | translate"
+                        [value]="getValidator('expression')?.message?.[inspectorLanguage()] ?? ''"
+                        (input)="onUpdateExpressionErrorMessage(inspectorLanguage(), $event)"
+                      />
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <app-ui-state-banner
+              kind="empty"
+              testId="builder-inspector-empty"
+              [title]="'formBuilder.inspector.emptyTitle' | translate"
+              [message]="'formBuilder.inspector.emptyDescription' | translate"
+            />
+          }
+        </aside>
+      </div>
+    } @else if (activeTab() === 'preview') {
+      <div hlmCard class="space-y-4" data-testid="builder-preview-panel">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--h2l-border-subtle)] pb-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              hlmBtn
+              [variant]="previewViewport() === 'desktop' ? 'primary' : 'outline'"
+              data-testid="preview-viewport-desktop"
+              (click)="previewViewport.set('desktop')"
+            >
+              {{ 'formBuilder.preview.desktop' | translate }}
+            </button>
+            <button
+              type="button"
+              hlmBtn
+              [variant]="previewViewport() === 'mobile' ? 'primary' : 'outline'"
+              data-testid="preview-viewport-mobile"
+              (click)="previewViewport.set('mobile')"
+            >
+              {{ 'formBuilder.preview.mobile' | translate }}
+            </button>
+            @if (previewedVersionSchema()) {
+              <button type="button" hlmBtn variant="ghost" (click)="onClearVersionPreview()">
+                {{ 'formBuilder.preview.backToDraft' | translate }}
+              </button>
+            }
+          </div>
+
+          <div class="flex flex-wrap items-center gap-1.5">
+            @for (lang of languages; track lang) {
+              <button
+                type="button"
+                hlmBtn
+                [variant]="previewLanguage() === lang ? 'primary' : 'outline'"
+                [attr.data-testid]="'preview-lang-' + lang"
+                (click)="previewLanguage.set(lang)"
+              >
+                {{ lang.toUpperCase() }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div
+          class="mx-auto transition-all"
+          [class.max-w-sm]="previewViewport() === 'mobile'"
+          [class.border]="previewViewport() === 'mobile'"
+          [class.rounded-2xl]="previewViewport() === 'mobile'"
+          [class.p-4]="previewViewport() === 'mobile'"
+          [class.border-[var(--h2l-border)]]="previewViewport() === 'mobile'"
+          [attr.data-viewport]="previewViewport()"
+          data-testid="builder-preview-frame"
+        >
+          <app-form-renderer
+            [schema]="previewedVersionSchema() ?? schema"
+            [language]="previewLanguage()"
+          />
+        </div>
+      </div>
+    } @else {
+      <div hlmCard class="space-y-4" data-testid="builder-versions-panel">
+        <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+          {{ 'formBuilder.versions.title' | translate }}
+        </h2>
+
+        @if (loadingVersions()) {
+          <app-ui-state-banner
+            kind="loading"
+            testId="builder-versions-loading"
+            [message]="'common.loading' | translate"
+          />
+        } @else if (versions().length === 0) {
+          <app-ui-state-banner
+            kind="empty"
+            testId="builder-versions-empty"
+            [title]="'formBuilder.versions.emptyTitle' | translate"
+            [message]="'formBuilder.versions.emptyDescription' | translate"
+          />
+        } @else {
+          <ul class="divide-y divide-[var(--h2l-border-subtle)]" data-testid="builder-versions-list">
+            @for (ver of versions(); track ver.id) {
+              <li class="flex flex-wrap items-center justify-between gap-3 py-3">
+                <div class="space-y-0.5">
+                  <div class="flex items-center gap-2">
+                    <span hlmBadge variant="info">v{{ ver.versionNumber }}</span>
+                    <span class="text-sm text-[var(--h2l-fg)]">{{ ver.publishedAt }}</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  hlmBtn
+                  variant="outline"
+                  [attr.data-testid]="'preview-version-' + ver.versionNumber"
+                  (click)="onPreviewVersion(ver.schema)"
+                >
+                  {{ 'formBuilder.versions.previewButton' | translate }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+  }
+</section>

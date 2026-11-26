@@ -1,0 +1,521 @@
+<form [formGroup]="formGroup()" (ngSubmit)="onSubmit()" novalidate class="space-y-6" data-testid="form-renderer">
+  <div class="sr-only" aria-live="polite" aria-atomic="true" data-testid="form-renderer-live-region">
+    {{ announcement() }}
+  </div>
+
+  @if (isWizard() && steps().length > 1) {
+    <nav [attr.aria-label]="'formRenderer.wizardStepsLabel' | translate" class="flex flex-wrap gap-2" data-testid="wizard-steps-nav">
+      @for (step of steps(); track step.id; let idx = $index) {
+        <span
+          hlmBadge
+          [variant]="idx === currentStepIndex() ? 'info' : 'neutral'"
+          [attr.aria-current]="idx === currentStepIndex() ? 'step' : null"
+        >
+          {{ idx + 1 }}. {{ localized(step.title) }}
+        </span>
+      }
+    </nav>
+  }
+
+  @if (isWizard()) {
+    @if (activeStep(); as step) {
+      <section class="space-y-4" [attr.data-testid]="'wizard-step-' + step.id">
+        <header class="space-y-1">
+          <h2 class="text-lg font-semibold text-[var(--h2l-fg)]">{{ localized(step.title) }}</h2>
+          @if (localized(step.description)) {
+            <p class="text-sm text-[var(--h2l-fg-muted)]">{{ localized(step.description) }}</p>
+          }
+        </header>
+
+        <div class="space-y-4">
+          @for (comp of step.components; track comp.id) {
+            @if (isVisible(comp)) {
+              <ng-container
+                [ngTemplateOutlet]="renderComponentTpl"
+                [ngTemplateOutletContext]="{ $implicit: comp }"
+              />
+            }
+          }
+        </div>
+      </section>
+    }
+  } @else {
+    @for (step of steps(); track step.id) {
+      <section class="space-y-4" [attr.data-testid]="'form-step-' + step.id">
+        @if (steps().length > 1 && localized(step.title)) {
+          <h2 class="text-lg font-semibold text-[var(--h2l-fg)]">{{ localized(step.title) }}</h2>
+        }
+        <div class="space-y-4">
+          @for (comp of step.components; track comp.id) {
+            @if (isVisible(comp)) {
+              <ng-container
+                [ngTemplateOutlet]="renderComponentTpl"
+                [ngTemplateOutletContext]="{ $implicit: comp }"
+              />
+            }
+          }
+        </div>
+      </section>
+    }
+  }
+
+  @if (!readOnlyMode()) {
+    <div class="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--h2l-border-subtle)] pt-4">
+      @if (isWizard() && !isFirstStep()) {
+        <button
+          type="button"
+          hlmBtn
+          variant="outline"
+          data-testid="wizard-prev-btn"
+          (click)="onPreviousStep()"
+        >
+          {{ 'formRenderer.previousStep' | translate }}
+        </button>
+      } @else {
+        <span></span>
+      }
+
+      @if (isWizard() && !isLastStep()) {
+        <button
+          type="button"
+          hlmBtn
+          variant="primary"
+          data-testid="wizard-next-btn"
+          (click)="onNextStep()"
+        >
+          {{ 'formRenderer.nextStep' | translate }}
+        </button>
+      } @else {
+        <button
+          type="submit"
+          hlmBtn
+          variant="primary"
+          data-testid="form-renderer-submit-btn"
+          [disabled]="submitting()"
+        >
+          {{ submitting() ? ('formRenderer.submitting' | translate) : (submitLabelKey() | translate) }}
+        </button>
+      }
+    </div>
+  }
+</form>
+
+<ng-template #renderComponentTpl let-comp>
+  @switch ($any(comp.type)) {
+    @case ('heading') {
+      <h3 class="pt-2 text-base font-semibold text-[var(--h2l-fg)]" [attr.data-testid]="'field-' + comp.id">
+        {{ localized(comp.label) }}
+      </h3>
+    }
+
+    @case ('text_block') {
+      <div class="rounded-lg border border-[var(--h2l-border-subtle)] bg-[var(--h2l-surface)] p-3 text-sm text-[var(--h2l-fg)]" [attr.data-testid]="'field-' + comp.id">
+        @if (localized(comp.label)) {
+          <p class="font-medium">{{ localized(comp.label) }}</p>
+        }
+        @if (localized(comp.description)) {
+          <p class="text-[var(--h2l-fg-muted)]">{{ localized(comp.description) }}</p>
+        }
+      </div>
+    }
+
+    @case ('divider') {
+      <hr class="border-[var(--h2l-border-subtle)]" [attr.data-testid]="'field-' + comp.id" />
+    }
+
+    @case ('section') {
+      <fieldset hlmCard class="space-y-4" [attr.data-testid]="'field-' + comp.id">
+        <legend class="px-1 text-base font-semibold text-[var(--h2l-fg)]">
+          {{ localized(comp.label) }}
+        </legend>
+        @for (child of comp.components ?? []; track child.id) {
+          @if (isVisible(child)) {
+            <ng-container
+              [ngTemplateOutlet]="renderComponentTpl"
+              [ngTemplateOutletContext]="{ $implicit: child }"
+            />
+          }
+        }
+      </fieldset>
+    }
+
+    @case ('grid') {
+      <div [class]="gridColumnsClass(comp)" [attr.data-testid]="'field-' + comp.id">
+        @for (child of comp.components ?? []; track child.id) {
+          @if (isVisible(child)) {
+            <ng-container
+              [ngTemplateOutlet]="renderComponentTpl"
+              [ngTemplateOutletContext]="{ $implicit: child }"
+            />
+          }
+        }
+      </div>
+    }
+
+    @case ('repeater') {
+      <fieldset hlmCard class="space-y-3" [attr.data-testid]="'field-' + (comp.variableKey ?? comp.id)">
+        <legend class="px-1 text-sm font-semibold text-[var(--h2l-fg)]">
+          {{ localized(comp.label) }}
+          @if (isRequired(comp)) {
+            <span aria-hidden="true" class="text-[var(--h2l-danger-fg)]">*</span>
+          }
+        </legend>
+
+        @for (row of getRepeaterRows(comp); track $index; let rowIdx = $index) {
+          <div class="flex flex-wrap items-end gap-3 rounded-lg border border-[var(--h2l-border-subtle)] p-3">
+            @for (child of comp.components ?? []; track child.id) {
+              <div class="min-w-40 flex-1 space-y-1">
+                <label hlmLabel [for]="fieldId(comp) + '-' + rowIdx + '-' + child.id">
+                  {{ localized(child.label) }}
+                </label>
+                <input
+                  [id]="fieldId(comp) + '-' + rowIdx + '-' + child.id"
+                  type="text"
+                  hlmInput
+                  [readonly]="isReadOnly(comp)"
+                  [value]="child.variableKey ? (row[child.variableKey] ?? '') : ''"
+                  (input)="onRepeaterCellInput(comp, rowIdx, child.variableKey, $event)"
+                />
+              </div>
+            }
+            @if (!isReadOnly(comp)) {
+              <button
+                type="button"
+                hlmBtn
+                variant="outline"
+                (click)="onRemoveRepeaterRow(comp, rowIdx)"
+              >
+                {{ 'formRenderer.removeRow' | translate }}
+              </button>
+            }
+          </div>
+        }
+
+        @if (!isReadOnly(comp)) {
+          <button
+            type="button"
+            hlmBtn
+            variant="outline"
+            [attr.data-testid]="'repeater-add-' + (comp.variableKey ?? comp.id)"
+            (click)="onAddRepeaterRow(comp)"
+          >
+            {{ 'formRenderer.addRow' | translate }}
+          </button>
+        }
+
+        @if (getFieldError(comp); as err) {
+          <p [id]="errorId(comp)" class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+            {{ err }}
+          </p>
+        }
+      </fieldset>
+    }
+
+    @case ('textarea') {
+      <div class="space-y-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <label hlmLabel [for]="fieldId(comp)">
+            {{ localized(comp.label) }}
+            @if (isRequired(comp)) {
+              <span aria-hidden="true" class="text-[var(--h2l-danger-fg)]">*</span>
+            }
+          </label>
+          @if (comp.isSensitive) {
+            <span hlmBadge variant="warning">{{ 'formRenderer.sensitiveBadge' | translate }}</span>
+          }
+        </div>
+        <textarea
+          [id]="fieldId(comp)"
+          hlmInput
+          rows="4"
+          [formControlName]="comp.variableKey ?? ''"
+          [placeholder]="localized(comp.placeholder)"
+          [readonly]="isReadOnly(comp)"
+          [attr.aria-required]="isRequired(comp)"
+          [attr.aria-invalid]="getFieldError(comp) !== null"
+          [attr.aria-describedby]="describedBy(comp)"
+          [hasError]="getFieldError(comp) !== null"
+          [attr.data-testid]="'field-' + (comp.variableKey ?? comp.id)"
+        ></textarea>
+        @if (localized(comp.description)) {
+          <p [id]="hintId(comp)" class="text-xs text-[var(--h2l-fg-muted)]">
+            {{ localized(comp.description) }}
+          </p>
+        }
+        @if (getFieldError(comp); as err) {
+          <p [id]="errorId(comp)" class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+            {{ err }}
+          </p>
+        }
+      </div>
+    }
+
+    @case ('select') {
+      <div class="space-y-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <label hlmLabel [for]="fieldId(comp)">
+            {{ localized(comp.label) }}
+            @if (isRequired(comp)) {
+              <span aria-hidden="true" class="text-[var(--h2l-danger-fg)]">*</span>
+            }
+          </label>
+          @if (comp.isSensitive) {
+            <span hlmBadge variant="warning">{{ 'formRenderer.sensitiveBadge' | translate }}</span>
+          }
+        </div>
+        <select
+          [id]="fieldId(comp)"
+          hlmInput
+          [formControlName]="comp.variableKey ?? ''"
+          [attr.disabled]="isReadOnly(comp) ? true : null"
+          [attr.aria-required]="isRequired(comp)"
+          [attr.aria-invalid]="getFieldError(comp) !== null"
+          [attr.aria-describedby]="describedBy(comp)"
+          [hasError]="getFieldError(comp) !== null"
+          [attr.data-testid]="'field-' + (comp.variableKey ?? comp.id)"
+        >
+          <option value="">{{ 'formRenderer.selectPlaceholder' | translate }}</option>
+          @for (opt of comp.options ?? []; track opt.value) {
+            <option [value]="opt.value">{{ localized(opt.label) }}</option>
+          }
+        </select>
+        @if (localized(comp.description)) {
+          <p [id]="hintId(comp)" class="text-xs text-[var(--h2l-fg-muted)]">
+            {{ localized(comp.description) }}
+          </p>
+        }
+        @if (getFieldError(comp); as err) {
+          <p [id]="errorId(comp)" class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+            {{ err }}
+          </p>
+        }
+      </div>
+    }
+
+    @case ('radio') {
+      <fieldset class="space-y-2" [attr.aria-describedby]="describedBy(comp)" [attr.data-testid]="'field-' + (comp.variableKey ?? comp.id)">
+        <legend class="text-sm font-medium text-[var(--h2l-fg)]">
+          {{ localized(comp.label) }}
+          @if (isRequired(comp)) {
+            <span aria-hidden="true" class="text-[var(--h2l-danger-fg)]">*</span>
+          }
+        </legend>
+        <div class="space-y-2">
+          @for (opt of comp.options ?? []; track opt.value) {
+            <label class="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-[var(--h2l-border-subtle)] px-3 py-2 text-sm text-[var(--h2l-fg)]">
+              <input
+                type="radio"
+                [name]="comp.variableKey ?? comp.id"
+                [value]="opt.value"
+                [formControlName]="comp.variableKey ?? ''"
+                [attr.disabled]="isReadOnly(comp) ? true : null"
+                class="h-4 w-4"
+              />
+              <span>{{ localized(opt.label) }}</span>
+            </label>
+          }
+        </div>
+        @if (localized(comp.description)) {
+          <p [id]="hintId(comp)" class="text-xs text-[var(--h2l-fg-muted)]">
+            {{ localized(comp.description) }}
+          </p>
+        }
+        @if (getFieldError(comp); as err) {
+          <p [id]="errorId(comp)" class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+            {{ err }}
+          </p>
+        }
+      </fieldset>
+    }
+
+    @case ('checkbox_group') {
+      <fieldset class="space-y-2" [attr.aria-describedby]="describedBy(comp)" [attr.data-testid]="'field-' + (comp.variableKey ?? comp.id)">
+        <legend class="text-sm font-medium text-[var(--h2l-fg)]">
+          {{ localized(comp.label) }}
+          @if (isRequired(comp)) {
+            <span aria-hidden="true" class="text-[var(--h2l-danger-fg)]">*</span>
+          }
+        </legend>
+        <div class="space-y-2">
+          @for (opt of comp.options ?? []; track opt.value) {
+            <label class="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-[var(--h2l-border-subtle)] px-3 py-2 text-sm text-[var(--h2l-fg)]">
+              <input
+                type="checkbox"
+                [checked]="isCheckboxGroupChecked(comp.variableKey, opt.value)"
+                [disabled]="isReadOnly(comp)"
+                (change)="onCheckboxGroupToggle(comp, opt.value, $event)"
+                class="h-4 w-4"
+              />
+              <span>{{ localized(opt.label) }}</span>
+            </label>
+          }
+        </div>
+        @if (getFieldError(comp); as err) {
+          <p [id]="errorId(comp)" class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+            {{ err }}
+          </p>
+        }
+      </fieldset>
+    }
+
+    @case ('checkbox') {
+      <div class="space-y-1">
+        <label class="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-[var(--h2l-fg)]" [for]="fieldId(comp)">
+          <input
+            [id]="fieldId(comp)"
+            type="checkbox"
+            [formControlName]="comp.variableKey ?? ''"
+            [attr.disabled]="isReadOnly(comp) ? true : null"
+            [attr.aria-invalid]="getFieldError(comp) !== null"
+            [attr.aria-describedby]="describedBy(comp)"
+            [attr.data-testid]="'field-' + (comp.variableKey ?? comp.id)"
+            class="h-4 w-4"
+          />
+          <span>
+            {{ localized(comp.label) }}
+            @if (isRequired(comp)) {
+              <span aria-hidden="true" class="text-[var(--h2l-danger-fg)]">*</span>
+            }
+          </span>
+        </label>
+        @if (getFieldError(comp); as err) {
+          <p [id]="errorId(comp)" class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+            {{ err }}
+          </p>
+        }
+      </div>
+    }
+
+    @case ('toggle') {
+      <div class="space-y-1">
+        <div class="flex min-h-11 items-center justify-between gap-4 rounded-lg border border-[var(--h2l-border-subtle)] px-3 py-2">
+          <label hlmLabel [for]="fieldId(comp)" class="mb-0">
+            {{ localized(comp.label) }}
+            @if (isRequired(comp)) {
+              <span aria-hidden="true" class="text-[var(--h2l-danger-fg)]">*</span>
+            }
+          </label>
+          <button
+            [id]="fieldId(comp)"
+            type="button"
+            role="switch"
+            [attr.aria-checked]="!!formGroup().get(comp.variableKey ?? '')?.value"
+            [disabled]="isReadOnly(comp)"
+            [attr.data-testid]="'field-' + (comp.variableKey ?? comp.id)"
+            (click)="onToggleChange(comp)"
+            class="inline-flex min-h-11 min-w-14 items-center rounded-full border border-[var(--h2l-border)] px-1 transition-colors"
+            [class.bg-[var(--h2l-primary)]]="!!formGroup().get(comp.variableKey ?? '')?.value"
+            [class.bg-[var(--h2l-surface-elevated)]]="!formGroup().get(comp.variableKey ?? '')?.value"
+          >
+            <span
+              class="block h-5 w-5 rounded-full bg-[var(--h2l-bg)] transition-transform"
+              [class.translate-x-6]="!!formGroup().get(comp.variableKey ?? '')?.value"
+            ></span>
+          </button>
+        </div>
+        @if (getFieldError(comp); as err) {
+          <p [id]="errorId(comp)" class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+            {{ err }}
+          </p>
+        }
+      </div>
+    }
+
+    @case ('file') {
+      <div class="space-y-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <label hlmLabel [for]="fieldId(comp)">
+            {{ localized(comp.label) }}
+            @if (isRequired(comp)) {
+              <span aria-hidden="true" class="text-[var(--h2l-danger-fg)]">*</span>
+            }
+          </label>
+          @if (comp.isSensitive) {
+            <span hlmBadge variant="warning">{{ 'formRenderer.sensitiveBadge' | translate }}</span>
+          }
+        </div>
+        <input
+          [id]="fieldId(comp)"
+          type="file"
+          hlmInput
+          [disabled]="isReadOnly(comp)"
+          [attr.accept]="(comp.fileConfig?.allowedMimeTypes ?? []).join(',')"
+          [attr.aria-invalid]="getFieldError(comp) !== null"
+          [attr.aria-describedby]="describedBy(comp)"
+          [attr.data-testid]="'field-' + (comp.variableKey ?? comp.id)"
+          (change)="onFileInputChange(comp, $event)"
+        />
+        @if (attachmentsForField(comp.variableKey).length > 0) {
+          <ul class="space-y-1 text-xs text-[var(--h2l-fg-muted)]">
+            @for (att of attachmentsForField(comp.variableKey); track att.id) {
+              <li>{{ att.originalFileName }} ({{ att.sizeBytes }} B)</li>
+            }
+          </ul>
+        }
+        @if (getFieldError(comp); as err) {
+          <p [id]="errorId(comp)" class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+            {{ err }}
+          </p>
+        }
+      </div>
+    }
+
+    @default {
+      <div class="space-y-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <label hlmLabel [for]="fieldId(comp)">
+            {{ localized(comp.label) }}
+            @if (isRequired(comp)) {
+              <span aria-hidden="true" class="text-[var(--h2l-danger-fg)]">*</span>
+            }
+          </label>
+          @if (comp.isSensitive) {
+            <span hlmBadge variant="warning">{{ 'formRenderer.sensitiveBadge' | translate }}</span>
+          }
+          @if (comp.preFilled && isReadOnly(comp)) {
+            <span hlmBadge variant="neutral">{{ 'formRenderer.readOnlyBadge' | translate }}</span>
+          }
+        </div>
+        <input
+          [id]="fieldId(comp)"
+          [type]="
+            comp.type === 'number'
+              ? 'number'
+              : comp.type === 'email'
+                ? 'email'
+                : comp.type === 'phone'
+                  ? 'tel'
+                  : comp.type === 'url'
+                    ? 'url'
+                    : comp.type === 'date'
+                      ? 'date'
+                      : comp.type === 'time'
+                        ? 'time'
+                        : comp.type === 'datetime'
+                          ? 'datetime-local'
+                          : 'text'
+          "
+          hlmInput
+          [formControlName]="comp.variableKey ?? ''"
+          [placeholder]="localized(comp.placeholder)"
+          [readonly]="isReadOnly(comp)"
+          [attr.aria-required]="isRequired(comp)"
+          [attr.aria-invalid]="getFieldError(comp) !== null"
+          [attr.aria-describedby]="describedBy(comp)"
+          [hasError]="getFieldError(comp) !== null"
+          [attr.data-testid]="'field-' + (comp.variableKey ?? comp.id)"
+        />
+        @if (localized(comp.description)) {
+          <p [id]="hintId(comp)" class="text-xs text-[var(--h2l-fg-muted)]">
+            {{ localized(comp.description) }}
+          </p>
+        }
+        @if (getFieldError(comp); as err) {
+          <p [id]="errorId(comp)" class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+            {{ err }}
+          </p>
+        }
+      </div>
+    }
+  }
+</ng-template>

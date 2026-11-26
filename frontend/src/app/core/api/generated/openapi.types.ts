@@ -299,6 +299,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/forms/{formId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get form definition details including current draft schema and latest published version number */
+        get: operations["getFormDefinition"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/forms/{formId}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update form definition name and draft JSON schema (validates variableKey and AST expressions) */
+        put: operations["updateFormDraft"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/forms/{formId}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List immutable published versions of a form definition */
+        get: operations["listFormVersions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/forms/{formId}/publish": {
         parameters: {
             query?: never;
@@ -309,27 +360,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Publish current draft as a new immutable FormVersion (v1, v2, ...) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    formId: components["parameters"]["FormId"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description New immutable FormVersion published */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                402: components["responses"]["ProblemDetailsResponse"];
-            };
-        };
+        post: operations["publishFormVersion"];
         delete?: never;
         options?: never;
         head?: never;
@@ -436,26 +467,7 @@ export interface paths {
             cookie?: never;
         };
         /** List tasks assigned to current user or available in their allowed groups */
-        get: {
-            parameters: {
-                query?: {
-                    status?: "Pending" | "InProgress" | "NeedsAssignment" | "Completed" | "Cancelled" | "Expired";
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Paginated task list */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["listTasks"];
         put?: never;
         post?: never;
         delete?: never;
@@ -472,27 +484,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get task details with immutable FormVersion schema and pre-filled data */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    taskId: components["parameters"]["TaskId"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Task details */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                403: components["responses"]["ProblemDetailsResponse"];
-            };
-        };
+        get: operations["getTaskDetail"];
         put?: never;
         post?: never;
         delete?: never;
@@ -511,27 +503,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Claim a group task for the current user */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    taskId: components["parameters"]["TaskId"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Task claimed */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                409: components["responses"]["ProblemDetailsResponse"];
-            };
-        };
+        post: operations["claimTask"];
         delete?: never;
         options?: never;
         head?: never;
@@ -548,26 +520,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Release a previously claimed group task back to the group queue */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    taskId: components["parameters"]["TaskId"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Task released back to queue */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        post: operations["unclaimTask"];
         delete?: never;
         options?: never;
         head?: never;
@@ -584,34 +537,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Submit completed form (supports PWA offline sync with Idempotency-Key) */
-        post: {
-            parameters: {
-                query?: never;
-                header: {
-                    "Idempotency-Key": string;
-                };
-                path: {
-                    taskId: components["parameters"]["TaskId"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SubmitTaskRequest"];
-                };
-            };
-            responses: {
-                /** @description Submission stored atomically with Outbox message */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                400: components["responses"]["ProblemDetailsResponse"];
-                409: components["responses"]["ProblemDetailsResponse"];
-            };
-        };
+        post: operations["submitTask"];
         delete?: never;
         options?: never;
         head?: never;
@@ -628,26 +554,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Upload encrypted (AES-GCM) file attachment for a task form field */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    taskId: components["parameters"]["TaskId"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Attachment uploaded and encrypted */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        post: operations["uploadTaskAttachment"];
         delete?: never;
         options?: never;
         head?: never;
@@ -788,27 +695,7 @@ export interface paths {
             cookie?: never;
         };
         /** Claim-Check endpoint to retrieve decrypted isSensitive fields (logs access in audit.audit_logs) */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    submissionId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Decrypted sensitive key-value payload */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                403: components["responses"]["ProblemDetailsResponse"];
-            };
-        };
+        get: operations["getSubmissionSensitiveData"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1193,6 +1080,195 @@ export interface components {
         };
         ActivateLicenseRequest: {
             licenseKey: string;
+        };
+        /** @enum {string} */
+        HumanTaskStatus: "Pending" | "InProgress" | "NeedsAssignment" | "Completed" | "Cancelled" | "Expired";
+        /** @enum {string} */
+        TaskListScope: "all" | "assigned" | "group_queue";
+        /** @enum {string} */
+        SensitiveDataMode: "ClaimCheck" | "PassThrough";
+        LocalizedText: {
+            en?: string;
+            de?: string;
+            pl?: string;
+        };
+        /** @enum {string} */
+        FormLayoutMode: "single" | "wizard";
+        /** @enum {string} */
+        FormComponentType: "text" | "textarea" | "number" | "date" | "time" | "datetime" | "email" | "phone" | "url" | "select" | "radio" | "checkbox" | "toggle" | "file" | "section" | "grid" | "repeater" | "heading" | "divider";
+        /** @enum {string} */
+        FormValidatorType: "required" | "min" | "max" | "minLength" | "maxLength" | "email" | "regex" | "compareField" | "expression";
+        FormFieldValidator: {
+            type: components["schemas"]["FormValidatorType"];
+            value?: number | string | boolean;
+            pattern?: string;
+            targetField?: string;
+            /** @enum {string} */
+            operator?: "eq" | "neq" | "gt" | "gte" | "lt" | "lte";
+            expression?: string;
+            message?: components["schemas"]["LocalizedText"];
+        };
+        FormFieldRules: {
+            visibleIf?: string;
+            requiredIf?: string;
+            readOnlyIf?: string;
+        };
+        FormFieldOption: {
+            value: string;
+            label: components["schemas"]["LocalizedText"];
+        };
+        FormFileConfig: {
+            allowedMimeTypes?: string[];
+            maxSizeBytes?: number;
+            multiple?: boolean;
+        };
+        FormComponent: {
+            id: string;
+            type: components["schemas"]["FormComponentType"];
+            variableKey?: string;
+            label?: components["schemas"]["LocalizedText"];
+            description?: components["schemas"]["LocalizedText"];
+            placeholder?: components["schemas"]["LocalizedText"];
+            defaultValue?: unknown;
+            preFilled?: boolean;
+            readOnly?: boolean;
+            isSensitive?: boolean;
+            columns?: number;
+            options?: components["schemas"]["FormFieldOption"][];
+            rules?: components["schemas"]["FormFieldRules"];
+            validators?: components["schemas"]["FormFieldValidator"][];
+            fileConfig?: components["schemas"]["FormFileConfig"];
+            components?: components["schemas"]["FormComponent"][];
+        };
+        FormStep: {
+            id: string;
+            title: components["schemas"]["LocalizedText"];
+            description?: components["schemas"]["LocalizedText"];
+            components: components["schemas"]["FormComponent"][];
+        };
+        FormSchema: {
+            /** @enum {string} */
+            schemaVersion: "1.0";
+            defaultLanguage: components["schemas"]["SupportedLanguage"];
+            layoutMode: components["schemas"]["FormLayoutMode"];
+            steps: components["schemas"]["FormStep"][];
+        };
+        FormDefinitionDetailResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            workflowProcessId: string;
+            name: string;
+            stepKey: string;
+            status: components["schemas"]["FormDefinitionStatus"];
+            draftSchema: components["schemas"]["FormSchema"] | null;
+            latestVersionNumber: number | null;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        UpdateFormDraftRequest: {
+            name?: string;
+            draftSchema: components["schemas"]["FormSchema"];
+        };
+        FormVersionSummaryResponse: {
+            /** Format: uuid */
+            id: string;
+            versionNumber: number;
+            /** Format: date-time */
+            publishedAt: string;
+            /** Format: uuid */
+            publishedByUserId: string;
+            schema: components["schemas"]["FormSchema"];
+        };
+        FormVersionResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            formDefinitionId: string;
+            versionNumber: number;
+            /** Format: date-time */
+            publishedAt: string;
+            /** Format: uuid */
+            publishedByUserId: string;
+            schema: components["schemas"]["FormSchema"];
+        };
+        TaskSummaryResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            formDefinitionId: string;
+            formVersionNumber: number;
+            formName: string;
+            processName: string;
+            projectName: string;
+            status: components["schemas"]["HumanTaskStatus"];
+            /** Format: uuid */
+            assignedUserId: string | null;
+            /** Format: uuid */
+            claimedByUserId: string | null;
+            canClaim: boolean;
+            canUnclaim: boolean;
+            /** Format: date-time */
+            expiresAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        TaskListResponse: {
+            items: components["schemas"]["TaskSummaryResponse"][];
+            page: number;
+            pageSize: number;
+            totalCount: number;
+            totalPages: number;
+        };
+        TaskDetailResponse: {
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["HumanTaskStatus"];
+            /** Format: uuid */
+            formVersionId: string;
+            formVersionNumber: number;
+            schema: components["schemas"]["FormSchema"];
+            prefilledData: {
+                [key: string]: unknown;
+            };
+            /** Format: uuid */
+            assignedUserId: string | null;
+            /** Format: uuid */
+            claimedByUserId: string | null;
+            canClaim: boolean;
+            canUnclaim: boolean;
+            sensitiveDataMode: components["schemas"]["SensitiveDataMode"];
+            /** Format: date-time */
+            expiresAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            completedAt: string | null;
+        };
+        SubmitTaskResponse: {
+            /** Format: uuid */
+            taskId: string;
+            /** Format: uuid */
+            submissionId: string;
+            status: components["schemas"]["HumanTaskStatus"];
+            /** Format: date-time */
+            submittedAt: string;
+        };
+        AttachmentUploadResponse: {
+            /** Format: uuid */
+            id: string;
+            fieldVariableKey: string;
+            originalFileName: string;
+            contentType: string;
+            /** Format: int64 */
+            sizeBytes: number;
+        };
+        SensitiveDataResponse: {
+            /** Format: uuid */
+            submissionId: string;
+            values: {
+                [key: string]: unknown;
+            };
         };
     };
     responses: {
@@ -1795,6 +1871,115 @@ export interface operations {
             409: components["responses"]["ProblemDetailsResponse"];
         };
     };
+    getFormDefinition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                formId: components["parameters"]["FormId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Form definition details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormDefinitionDetailResponse"];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    updateFormDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                formId: components["parameters"]["FormId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFormDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Form draft updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormDefinitionDetailResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    listFormVersions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                formId: components["parameters"]["FormId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published form versions */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormVersionSummaryResponse"][];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    publishFormVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                formId: components["parameters"]["FormId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description New immutable FormVersion published */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormVersionResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            402: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
     getFormAccessRules: {
         parameters: {
             query?: never;
@@ -1843,6 +2028,204 @@ export interface operations {
                 content?: never;
             };
             400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    listTasks: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["HumanTaskStatus"];
+                scope?: components["schemas"]["TaskListScope"];
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated task list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskListResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    getTaskDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                taskId: components["parameters"]["TaskId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Task details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskDetailResponse"];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    claimTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                taskId: components["parameters"]["TaskId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Task claimed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskDetailResponse"];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    unclaimTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                taskId: components["parameters"]["TaskId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Task released back to queue */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskDetailResponse"];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    submitTask: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                taskId: components["parameters"]["TaskId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitTaskRequest"];
+            };
+        };
+        responses: {
+            /** @description Submission stored atomically with Outbox message */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubmitTaskResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    uploadTaskAttachment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                taskId: components["parameters"]["TaskId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                    fieldVariableKey: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Attachment uploaded and encrypted */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttachmentUploadResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+            413: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    getSubmissionSensitiveData: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                submissionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Decrypted sensitive key-value payload */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SensitiveDataResponse"];
+                };
+            };
             401: components["responses"]["ProblemDetailsResponse"];
             403: components["responses"]["ProblemDetailsResponse"];
             404: components["responses"]["ProblemDetailsResponse"];

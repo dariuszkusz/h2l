@@ -254,16 +254,26 @@
               {{ 'adminProjects.acl.description' | translate }}
             </p>
           </div>
-          <button
-            type="button"
-            hlmBtn
-            variant="primary"
-            data-testid="save-acl-btn"
-            [disabled]="saving()"
-            (click)="onSaveAclRules()"
-          >
-            {{ 'adminProjects.acl.saveButton' | translate }}
-          </button>
+          <div class="flex flex-wrap items-center gap-2">
+            <a
+              [routerLink]="['/admin/forms', activeForm.id, 'builder']"
+              hlmBtn
+              variant="outline"
+              data-testid="open-form-builder-link"
+            >
+              {{ 'adminProjects.forms.openBuilderButton' | translate }}
+            </a>
+            <button
+              type="button"
+              hlmBtn
+              variant="primary"
+              data-testid="save-acl-btn"
+              [disabled]="saving()"
+              (click)="onSaveAclRules()"
+            >
+              {{ 'adminProjects.acl.saveButton' | translate }}
+            </button>
+          </div>
         </div>
 
         <div class="grid gap-4 sm:grid-cols-4 sm:items-end">

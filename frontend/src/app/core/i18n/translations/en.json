@@ -71,7 +71,14 @@
       "UNAUTHORIZED": "Sign in to access this resource.",
       "LICENSE_INVALID": "The license key is invalid or corrupted.",
       "LICENSE_EXPIRED": "Your license has expired. Renew your license in Settings to create new processes.",
-      "INSTANCE_MISMATCH": "This license key is bound to a different Instance ID."
+      "INSTANCE_MISMATCH": "This license key is bound to a different Instance ID.",
+      "TASK_ALREADY_CLAIMED": "This task has already been claimed by someone else.",
+      "TASK_NOT_CLAIMED_BY_USER": "You can only unclaim a task that you claimed.",
+      "TASK_NOT_CLAIMABLE": "This task cannot be claimed in its current state.",
+      "TASK_ALREADY_COMPLETED": "This task has already been completed.",
+      "FORM_SCHEMA_INVALID": "The form schema contains validation errors.",
+      "ATTACHMENT_TOO_LARGE": "The uploaded file exceeds the maximum allowed size.",
+      "ATTACHMENT_TYPE_NOT_ALLOWED": "This file type is not allowed for this field."
     }
   },
   "onboarding": {
@@ -159,9 +166,47 @@
   "tasks": {
     "heading": "Your workflow tasks",
     "description": "Complete human steps from your connected workflow engines, online or offline.",
+    "loading": "Loading tasks...",
     "emptyTitle": "No pending tasks yet",
     "emptyDescription": "When a Camunda or n8n workflow assigns a form to you, it will appear here.",
-    "openSettingsCta": "Open preferences"
+    "openSettingsCta": "Open preferences",
+    "scopeLabel": "Task queue filter",
+    "queuedOfflineBadge": "Queued offline",
+    "scopes": {
+      "all": "All tasks",
+      "assigned": "Assigned to me",
+      "group_queue": "Group queue"
+    },
+    "status": {
+      "Pending": "Pending",
+      "InProgress": "In progress",
+      "NeedsAssignment": "Needs assignment",
+      "Completed": "Completed",
+      "Cancelled": "Cancelled",
+      "Expired": "Expired"
+    },
+    "actions": {
+      "claim": "Claim",
+      "unclaim": "Unclaim",
+      "open": "Open form"
+    },
+    "feedback": {
+      "claimed": "Task claimed. You can now fill out and submit the form.",
+      "unclaimed": "Task released back to the group queue and local draft cleared.",
+      "submitted": "Form submitted successfully and local draft cleared.",
+      "queuedOffline": "You are offline. Submission saved locally and queued for automatic sync.",
+      "syncedOffline": "Queued offline submission synced successfully."
+    },
+    "detail": {
+      "backToTasks": "Back to tasks",
+      "heading": "Task form",
+      "loading": "Loading task form...",
+      "offlineTitle": "Offline mode",
+      "offlineDraftMessage": "Changes are saved locally in IndexedDB until you are back online.",
+      "queuedMessage": "This submission is queued offline and will sync automatically when you reconnect.",
+      "claimRequiredTitle": "Claim required",
+      "claimRequiredMessage": "Claim this group task first to edit and submit the form."
+    }
   },
   "settings": {
     "heading": "Preferences",
@@ -299,7 +344,8 @@
       "selectProcessTitle": "Select a process",
       "selectProcessDescription": "Choose a workflow process to view or create its forms.",
       "emptyTitle": "No forms yet",
-      "emptyDescription": "Add a draft form step to this workflow process."
+      "emptyDescription": "Add a draft form step to this workflow process.",
+      "openBuilderButton": "Open Form Builder"
     },
     "acl": {
       "title": "Access Control (ACL) — {{name}}",
@@ -355,6 +401,152 @@
       "activeConnectors": "Active connectors",
       "adminUsers": "Admin users",
       "endUsers": "End users"
+    }
+  },
+  "formRenderer": {
+    "submit": "Submit form",
+    "submitting": "Submitting...",
+    "previousStep": "Previous",
+    "nextStep": "Next",
+    "wizardStepsLabel": "Form steps",
+    "stepAnnounce": "Step {{current}} of {{total}}: {{title}}",
+    "selectPlaceholder": "Choose an option...",
+    "sensitiveBadge": "Sensitive (GDPR)",
+    "readOnlyBadge": "Read-only",
+    "addRow": "Add row",
+    "removeRow": "Remove",
+    "errors": {
+      "min": "Enter a value of at least {{min}}.",
+      "max": "Enter a value of at most {{max}}.",
+      "pattern": "Value does not match the required format.",
+      "compareField": "Value does not satisfy the field comparison rule.",
+      "expression": "Value does not satisfy the validation rule.",
+      "invalidFileType": "This file type is not allowed.",
+      "fileTooLarge": "File exceeds the maximum size of {{maxMb}} MB.",
+      "fixStepErrors": "Fix the validation errors in this step before continuing.",
+      "fixFormErrors": "Fix the highlighted validation errors before submitting."
+    }
+  },
+  "formBuilder": {
+    "backToProjects": "Back to Projects",
+    "formNameLabel": "Form name",
+    "loading": "Loading form builder...",
+    "saveDraft": "Save draft",
+    "saving": "Saving...",
+    "publishVersion": "Publish version",
+    "publishing": "Publishing...",
+    "validationIssuesTitle": "Schema validation issue",
+    "addStep": "Add step",
+    "status": {
+      "Draft": "Draft",
+      "Published": "Published",
+      "Archived": "Archived"
+    },
+    "layout": {
+      "single": "Single page",
+      "wizard": "Wizard steps"
+    },
+    "tabs": {
+      "label": "Form builder mode",
+      "design": "Design",
+      "preview": "Live preview",
+      "versions": "Versions"
+    },
+    "palette": {
+      "title": "Controls",
+      "categories": {
+        "data": "Data fields",
+        "choice": "Choices",
+        "layout": "Layout",
+        "advanced": "Advanced"
+      }
+    },
+    "controls": {
+      "text": "Text",
+      "textarea": "Long text",
+      "number": "Number",
+      "email": "Email",
+      "phone": "Phone",
+      "url": "URL",
+      "date": "Date",
+      "time": "Time",
+      "datetime": "Date & time",
+      "select": "Select",
+      "radio": "Radio",
+      "checkbox": "Checkbox",
+      "checkbox_group": "Checkbox group",
+      "toggle": "Toggle",
+      "file": "File upload",
+      "repeater": "Repeater",
+      "section": "Section",
+      "grid": "Grid columns",
+      "heading": "Heading",
+      "text_block": "Text block",
+      "divider": "Divider"
+    },
+    "canvas": {
+      "title": "Form canvas",
+      "emptyTitle": "No fields yet",
+      "emptyDescription": "Add controls from the palette on the left using mouse or keyboard.",
+      "moveUp": "Move {{label}} up",
+      "moveDown": "Move {{label}} down",
+      "delete": "Remove {{label}}"
+    },
+    "inspector": {
+      "title": "Field inspector",
+      "emptyTitle": "Select a field",
+      "emptyDescription": "Choose any field on the canvas to configure its properties, translations, and rules.",
+      "variableKeyLabel": "Workflow variable key",
+      "variableKeyRequired": "Variable key is required.",
+      "variableKeyInvalid": "Use letters, digits, and underscores starting with a letter.",
+      "variableKeyDuplicate": "Variable key must be unique across the form.",
+      "preFilled": "Pre-filled from workflow",
+      "readOnly": "Read-only",
+      "isSensitive": "Sensitive data (GDPR AES-GCM & Claim-Check)",
+      "translationsTitle": "Translations",
+      "labelField": "Label",
+      "descriptionField": "Hint / description",
+      "placeholderField": "Placeholder",
+      "optionsTitle": "Options",
+      "addOption": "Add option",
+      "optionValue": "Option value",
+      "optionLabel": "Option label",
+      "validatorsTitle": "Validators",
+      "rulesTitle": "Conditional & AST rules",
+      "expressionLabel": "AST validation expression",
+      "expressionErrorPlaceholder": "Localized validation error message"
+    },
+    "validators": {
+      "required": "Required",
+      "min": "Minimum value",
+      "max": "Maximum value",
+      "minLength": "Minimum length",
+      "maxLength": "Maximum length",
+      "email": "Email format",
+      "regex": "Regular expression",
+      "compareField": "Compare with field",
+      "expression": "Custom AST expression"
+    },
+    "preview": {
+      "desktop": "Desktop",
+      "mobile": "Mobile",
+      "backToDraft": "Back to draft preview"
+    },
+    "versions": {
+      "title": "Published immutable versions",
+      "emptyTitle": "No published versions yet",
+      "emptyDescription": "Save your draft and publish to create immutable version v1.",
+      "previewButton": "Preview"
+    },
+    "feedback": {
+      "draftSaved": "Draft saved successfully.",
+      "published": "New immutable form version published."
+    },
+    "a11y": {
+      "fieldAdded": "Added {{label}} to the form.",
+      "fieldMoved": "Moved {{label}} to position {{position}}.",
+      "fieldRemoved": "Removed {{label}} from the form.",
+      "stepAdded": "Added step {{index}}."
     }
   }
 }

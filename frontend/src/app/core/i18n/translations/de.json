@@ -71,7 +71,14 @@
       "UNAUTHORIZED": "Melde dich an, um auf diese Ressource zuzugreifen.",
       "LICENSE_INVALID": "Der Lizenzschlüssel ist ungültig oder beschädigt.",
       "LICENSE_EXPIRED": "Deine Lizenz ist abgelaufen. Erneuere deine Lizenz in den Einstellungen, um neue Prozesse zu erstellen.",
-      "INSTANCE_MISMATCH": "Dieser Lizenzschlüssel gehört zu einer anderen Instanz-ID."
+      "INSTANCE_MISMATCH": "Dieser Lizenzschlüssel gehört zu einer anderen Instanz-ID.",
+      "TASK_ALREADY_CLAIMED": "Diese Aufgabe wurde bereits von jemand anderem übernommen.",
+      "TASK_NOT_CLAIMED_BY_USER": "Du kannst nur eine Aufgabe freigeben, die du selbst übernommen hast.",
+      "TASK_NOT_CLAIMABLE": "Diese Aufgabe kann im aktuellen Zustand nicht übernommen werden.",
+      "TASK_ALREADY_COMPLETED": "Diese Aufgabe wurde bereits abgeschlossen.",
+      "FORM_SCHEMA_INVALID": "Das Formularschema enthält Validierungsfehler.",
+      "ATTACHMENT_TOO_LARGE": "Die hochgeladene Datei überschreitet die maximal zulässige Größe.",
+      "ATTACHMENT_TYPE_NOT_ALLOWED": "Dieser Dateityp ist für dieses Feld nicht erlaubt."
     }
   },
   "onboarding": {
@@ -159,9 +166,47 @@
   "tasks": {
     "heading": "Deine Workflow-Aufgaben",
     "description": "Fülle menschliche Schritte deiner verbundenen Workflow-Engines aus — online oder offline.",
+    "loading": "Aufgaben werden geladen...",
     "emptyTitle": "Noch keine offenen Aufgaben",
     "emptyDescription": "Sobald ein Camunda- oder n8n-Workflow dir ein Formular zuweist, erscheint es hier.",
-    "openSettingsCta": "Einstellungen öffnen"
+    "openSettingsCta": "Einstellungen öffnen",
+    "scopeLabel": "Aufgabenfilter",
+    "queuedOfflineBadge": "Offline vorgemerkt",
+    "scopes": {
+      "all": "Alle Aufgaben",
+      "assigned": "Mir zugewiesen",
+      "group_queue": "Gruppenwarteschlange"
+    },
+    "status": {
+      "Pending": "Offen",
+      "InProgress": "In Bearbeitung",
+      "NeedsAssignment": "Zuweisung nötig",
+      "Completed": "Abgeschlossen",
+      "Cancelled": "Abgebrochen",
+      "Expired": "Abgelaufen"
+    },
+    "actions": {
+      "claim": "Übernehmen",
+      "unclaim": "Freigeben",
+      "open": "Formular öffnen"
+    },
+    "feedback": {
+      "claimed": "Aufgabe übernommen. Du kannst das Formular jetzt ausfüllen und absenden.",
+      "unclaimed": "Aufgabe zurück in die Gruppenwarteschlange gegeben und lokaler Entwurf gelöscht.",
+      "submitted": "Formular erfolgreich gesendet und lokaler Entwurf gelöscht.",
+      "queuedOffline": "Du bist offline. Eingabe lokal gespeichert und für automatische Synchronisierung vorgemerkt.",
+      "syncedOffline": "Vorgemerkte Offline-Eingabe erfolgreich synchronisiert."
+    },
+    "detail": {
+      "backToTasks": "Zurück zu Aufgaben",
+      "heading": "Aufgabenformular",
+      "loading": "Aufgabenformular wird geladen...",
+      "offlineTitle": "Offline-Modus",
+      "offlineDraftMessage": "Änderungen werden lokal in IndexedDB gespeichert, bis du wieder online bist.",
+      "queuedMessage": "Diese Eingabe ist offline vorgemerkt und wird automatisch gesendet, sobald du wieder verbunden bist.",
+      "claimRequiredTitle": "Übernahme erforderlich",
+      "claimRequiredMessage": "Übernimm diese Gruppenaufgabe zuerst, um das Formular auszufüllen und abzusenden."
+    }
   },
   "settings": {
     "heading": "Einstellungen",
@@ -299,7 +344,8 @@
       "selectProcessTitle": "Wähle einen Prozess",
       "selectProcessDescription": "Wähle einen Workflow-Prozess, um seine Formulare anzuzeigen oder zu erstellen.",
       "emptyTitle": "Noch keine Formulare",
-      "emptyDescription": "Füge diesem Workflow-Prozess einen Entwurfsformular-Schritt hinzu."
+      "emptyDescription": "Füge diesem Workflow-Prozess einen Entwurfsformular-Schritt hinzu.",
+      "openBuilderButton": "Formular-Builder öffnen"
     },
     "acl": {
       "title": "Zugriffskontrolle (ACL) — {{name}}",
@@ -355,6 +401,152 @@
       "activeConnectors": "Aktive Konnektoren",
       "adminUsers": "Admin-Nutzer",
       "endUsers": "Endnutzer"
+    }
+  },
+  "formRenderer": {
+    "submit": "Formular absenden",
+    "submitting": "Wird gesendet...",
+    "previousStep": "Zurück",
+    "nextStep": "Weiter",
+    "wizardStepsLabel": "Formularschritte",
+    "stepAnnounce": "Schritt {{current}} von {{total}}: {{title}}",
+    "selectPlaceholder": "Option wählen...",
+    "sensitiveBadge": "Sensibel (DSGVO)",
+    "readOnlyBadge": "Schreibgeschützt",
+    "addRow": "Zeile hinzufügen",
+    "removeRow": "Entfernen",
+    "errors": {
+      "min": "Gib einen Wert von mindestens {{min}} ein.",
+      "max": "Gib einen Wert von höchstens {{max}} ein.",
+      "pattern": "Der Wert entspricht nicht dem erforderlichen Format.",
+      "compareField": "Der Wert erfüllt nicht die Feldvergleichsregel.",
+      "expression": "Der Wert erfüllt nicht die Validierungsregel.",
+      "invalidFileType": "Dieser Dateityp ist nicht erlaubt.",
+      "fileTooLarge": "Die Datei überschreitet das Limit von {{maxMb}} MB.",
+      "fixStepErrors": "Korrigiere die Validierungsfehler in diesem Schritt, bevor du fortfährst.",
+      "fixFormErrors": "Korrigiere die markierten Validierungsfehler vor dem Absenden."
+    }
+  },
+  "formBuilder": {
+    "backToProjects": "Zurück zu Projekten",
+    "formNameLabel": "Formularname",
+    "loading": "Formular-Builder wird geladen...",
+    "saveDraft": "Entwurf speichern",
+    "saving": "Wird gespeichert...",
+    "publishVersion": "Version veröffentlichen",
+    "publishing": "Wird veröffentlicht...",
+    "validationIssuesTitle": "Fehler im Formularschema",
+    "addStep": "Schritt hinzufügen",
+    "status": {
+      "Draft": "Entwurf",
+      "Published": "Veröffentlicht",
+      "Archived": "Archiviert"
+    },
+    "layout": {
+      "single": "Einzelseite",
+      "wizard": "Mehrstufig (Wizard)"
+    },
+    "tabs": {
+      "label": "Modus des Formular-Builders",
+      "design": "Entwurf",
+      "preview": "Live-Vorschau",
+      "versions": "Versionen"
+    },
+    "palette": {
+      "title": "Steuerelemente",
+      "categories": {
+        "data": "Datenfelder",
+        "choice": "Auswahl",
+        "layout": "Layout",
+        "advanced": "Erweitert"
+      }
+    },
+    "controls": {
+      "text": "Textfeld",
+      "textarea": "Mehrzeiliger Text",
+      "number": "Zahl",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "url": "URL",
+      "date": "Datum",
+      "time": "Uhrzeit",
+      "datetime": "Datum & Uhrzeit",
+      "select": "Auswahl",
+      "radio": "Optionsgruppe",
+      "checkbox": "Kontrollkästchen",
+      "checkbox_group": "Mehrfachauswahl",
+      "toggle": "Schalter",
+      "file": "Datei-Upload",
+      "repeater": "Wiederholungsliste",
+      "section": "Abschnitt",
+      "grid": "Spaltenraster",
+      "heading": "Überschrift",
+      "text_block": "Infotext",
+      "divider": "Trennlinie"
+    },
+    "canvas": {
+      "title": "Formularfläche",
+      "emptyTitle": "Noch keine Felder",
+      "emptyDescription": "Füge Steuerelemente aus der Palette links per Maus oder Tastatur hinzu.",
+      "moveUp": "{{label}} nach oben verschieben",
+      "moveDown": "{{label}} nach unten verschieben",
+      "delete": "{{label}} entfernen"
+    },
+    "inspector": {
+      "title": "Feldinspektor",
+      "emptyTitle": "Wähle ein Feld aus",
+      "emptyDescription": "Klicke ein Feld auf der Fläche an, um Eigenschaften, Übersetzungen und Regeln zu bearbeiten.",
+      "variableKeyLabel": "Workflow-Variablenschlüssel",
+      "variableKeyRequired": "Variablenschlüssel ist erforderlich.",
+      "variableKeyInvalid": "Verwende Buchstaben, Ziffern und Unterstriche beginnend mit einem Buchstaben.",
+      "variableKeyDuplicate": "Der Variablenschlüssel muss im Formular eindeutig sein.",
+      "preFilled": "Aus Workflow vorausgefüllt",
+      "readOnly": "Schreibgeschützt",
+      "isSensitive": "Sensible Daten (DSGVO AES-GCM & Claim-Check)",
+      "translationsTitle": "Übersetzungen",
+      "labelField": "Beschriftung",
+      "descriptionField": "Hinweis / Beschreibung",
+      "placeholderField": "Platzhalter",
+      "optionsTitle": "Optionen",
+      "addOption": "Option hinzufügen",
+      "optionValue": "Optionswert",
+      "optionLabel": "Optionsbeschriftung",
+      "validatorsTitle": "Validatoren",
+      "rulesTitle": "Bedingte & AST-Regeln",
+      "expressionLabel": "AST-Validierungsausdruck",
+      "expressionErrorPlaceholder": "Übersetzte Fehlermeldung"
+    },
+    "validators": {
+      "required": "Erforderlich",
+      "min": "Mindestwert",
+      "max": "Höchstwert",
+      "minLength": "Mindestlänge",
+      "maxLength": "Höchstlänge",
+      "email": "E-Mail-Format",
+      "regex": "Regulärer Ausdruck",
+      "compareField": "Mit Feld vergleichen",
+      "expression": "Eigener AST-Ausdruck"
+    },
+    "preview": {
+      "desktop": "Desktop",
+      "mobile": "Mobil",
+      "backToDraft": "Zurück zur Entwurfsvorschau"
+    },
+    "versions": {
+      "title": "Veröffentlichte unveränderliche Versionen",
+      "emptyTitle": "Noch keine veröffentlichten Versionen",
+      "emptyDescription": "Speichere deinen Entwurf und veröffentliche, um Version v1 zu erstellen.",
+      "previewButton": "Vorschau"
+    },
+    "feedback": {
+      "draftSaved": "Entwurf erfolgreich gespeichert.",
+      "published": "Neue unveränderliche Formularversion veröffentlicht."
+    },
+    "a11y": {
+      "fieldAdded": "{{label}} zum Formular hinzugefügt.",
+      "fieldMoved": "{{label}} an Position {{position}} verschoben.",
+      "fieldRemoved": "{{label}} aus dem Formular entfernt.",
+      "stepAdded": "Schritt {{index}} hinzugefügt."
     }
   }
 }
