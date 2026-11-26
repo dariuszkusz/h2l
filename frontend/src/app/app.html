@@ -8,9 +8,10 @@
       <div class="flex items-center gap-3">
         <a
           [routerLink]="isAuthenticated() ? '/tasks' : isSetupInitialized() === false ? '/setup' : '/login'"
-          class="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 text-lg font-bold tracking-tight text-[var(--h2l-fg)]"
+          class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-1.5 text-[var(--h2l-fg)]"
+          data-testid="header-brand-link"
         >
-          <span>{{ 'app.title' | translate }}</span>
+          <app-brand-logo variant="full" size="sm" />
         </a>
         <span class="hidden text-xs text-[var(--h2l-fg-muted)] sm:inline">
           {{ 'app.subtitle' | translate }}
@@ -144,7 +145,10 @@
 
   <footer class="border-t border-[var(--h2l-border-subtle)] bg-[var(--h2l-surface)]">
     <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 text-xs text-[var(--h2l-fg-muted)] sm:px-6">
-      <span>{{ 'app.title' | translate }}</span>
+      <span class="inline-flex items-center gap-2">
+        <app-brand-logo variant="mark" size="sm" [decorative]="true" />
+        <span class="font-medium text-[var(--h2l-fg)]">{{ 'app.title' | translate }}</span>
+      </span>
       <span>{{ 'app.footer.version' | translate }}</span>
     </div>
   </footer>

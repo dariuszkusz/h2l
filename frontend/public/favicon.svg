@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <defs>
+    <linearGradient id="h2l-fav-grad" x1="6" y1="32" x2="58" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="50%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#67e8f9" />
+    </linearGradient>
+    <mask id="h2l-fav-mask">
+      <rect width="240" height="128" fill="#ffffff" />
+      <circle cx="18" cy="64" r="8.5" fill="#000000" />
+      <circle cx="89.4" cy="94" r="8.5" fill="#000000" />
+      <circle cx="180" cy="22" r="8.5" fill="#000000" />
+      <circle cx="222" cy="64" r="8.5" fill="#000000" />
+      <circle cx="180" cy="106" r="8.5" fill="#000000" />
+    </mask>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#081326" />
+  <g transform="translate(5, 17.6) scale(0.225)" mask="url(#h2l-fav-mask)">
+    <path
+      d="M 109 53.2 L 89.4 34 A 42 42 0 1 0 89.4 94 L 150.6 34 A 42 42 0 1 1 150.6 94 L 131 74.8"
+      stroke="url(#h2l-fav-grad)"
+      stroke-width="14"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <circle cx="18" cy="64" r="15" fill="url(#h2l-fav-grad)" />
+    <circle cx="89.4" cy="94" r="15" fill="url(#h2l-fav-grad)" />
+    <circle cx="180" cy="22" r="15" fill="url(#h2l-fav-grad)" />
+    <circle cx="222" cy="64" r="15" fill="url(#h2l-fav-grad)" />
+    <circle cx="180" cy="106" r="15" fill="url(#h2l-fav-grad)" />
+  </g>
+</svg>

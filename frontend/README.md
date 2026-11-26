@@ -1,6 +1,18 @@
-# H2lWeb
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/brand/h2l-logo-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="public/brand/h2l-logo-light.svg" />
+    <img src="public/brand/h2l-logo-light.svg" alt="h2l — Human-to-Loop Workflow Integrator" width="320" />
+  </picture>
+</p>
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.3.0.
+# h2l Web (Angular PWA)
+
+Frontend aplikacji **h2l (Human-in-the-Loop)** zbudowany w Angular (NgRx, PWA, Tailwind CSS, WCAG 2.1 AA, i18n EN/DE/PL, Cypress).
+
+## Brand assets
+
+Zasoby logo znajdują się w `public/brand/` (`h2l-mark.svg`, `h2l-wordmark-*.svg`, `h2l-logo-*.svg`, `h2l-banner.jpg`), a w komponentach UI należy używać `BrandLogoComponent` (`src/app/shared/components/brand-logo/`, warianty `full | mark | wordmark`).
 
 ## Development server
 

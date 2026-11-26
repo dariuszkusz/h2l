@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 128" fill="none" role="img" aria-label="h2l logo mark">
+  <defs>
+    <linearGradient id="h2l-mark-grad" x1="12" y1="64" x2="228" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="50%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+    <mask id="h2l-mark-nodes-mask">
+      <rect width="240" height="128" fill="#ffffff" />
+      <circle cx="18" cy="64" r="8.5" fill="#000000" />
+      <circle cx="89.4" cy="94" r="8.5" fill="#000000" />
+      <circle cx="180" cy="22" r="8.5" fill="#000000" />
+      <circle cx="222" cy="64" r="8.5" fill="#000000" />
+      <circle cx="180" cy="106" r="8.5" fill="#000000" />
+    </mask>
+  </defs>
+  <g mask="url(#h2l-mark-nodes-mask)">
+    <!-- Continuous under/over infinity path with clean center crossing gap -->
+    <path
+      d="M 109 53.2 L 89.4 34 A 42 42 0 1 0 89.4 94 L 150.6 34 A 42 42 0 1 1 150.6 94 L 131 74.8"
+      stroke="url(#h2l-mark-grad)"
+      stroke-width="13"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <!-- Outer rings of the 5 workflow nodes -->
+    <circle cx="18" cy="64" r="14.5" fill="url(#h2l-mark-grad)" />
+    <circle cx="89.4" cy="94" r="14.5" fill="url(#h2l-mark-grad)" />
+    <circle cx="180" cy="22" r="14.5" fill="url(#h2l-mark-grad)" />
+    <circle cx="222" cy="64" r="14.5" fill="url(#h2l-mark-grad)" />
+    <circle cx="180" cy="106" r="14.5" fill="url(#h2l-mark-grad)" />
+  </g>
+</svg>

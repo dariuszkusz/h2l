@@ -21,6 +21,7 @@ import { SetupActions } from './core/setup/store/setup.actions';
 import { selectIsSetupInitialized } from './core/setup/store/setup.selectors';
 import { ThemeActions } from './core/theme/store/theme.actions';
 import { FirstRunLanguageDialogComponent } from './features/onboarding/first-run-language-dialog/first-run-language-dialog.component';
+import { BrandLogoComponent } from './shared/components/brand-logo/brand-logo.component';
 import { ConnectivityBannerComponent } from './shared/components/connectivity-banner/connectivity-banner.component';
 import { UiStateBannerComponent } from './shared/components/ui-state-banner/ui-state-banner.component';
 import { TranslatePipe } from './shared/pipes/translate.pipe';
@@ -37,6 +38,7 @@ import { HlmButtonDirective } from './shared/ui/hlm-button.directive';
     TranslatePipe,
     HlmButtonDirective,
     HlmBadgeDirective,
+    BrandLogoComponent,
     ConnectivityBannerComponent,
     FirstRunLanguageDialogComponent,
     UiStateBannerComponent,

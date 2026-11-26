@@ -1,0 +1,73 @@
+<span
+  class="inline-flex items-center gap-2.5 select-none"
+  data-testid="brand-logo"
+  [attr.aria-hidden]="decorative() ? 'true' : null"
+>
+  @if (showMark()) {
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 240 128"
+      fill="none"
+      [class]="markSizeClass() + ' shrink-0'"
+      data-testid="brand-logo-mark"
+      [attr.role]="!decorative() && !showWordmark() ? 'img' : null"
+      [attr.aria-label]="!decorative() && !showWordmark() ? ('app.title' | translate) : null"
+      [attr.aria-hidden]="decorative() || showWordmark() ? 'true' : null"
+    >
+      <defs>
+        <linearGradient
+          [attr.id]="gradientId"
+          x1="12"
+          y1="64"
+          x2="228"
+          y2="64"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stop-color="#0284c7" />
+          <stop offset="50%" stop-color="#0ea5e9" />
+          <stop offset="100%" stop-color="#38bdf8" />
+        </linearGradient>
+        <mask [attr.id]="maskId">
+          <rect width="240" height="128" fill="#ffffff" />
+          <circle cx="18" cy="64" r="8.5" fill="#000000" />
+          <circle cx="89.4" cy="94" r="8.5" fill="#000000" />
+          <circle cx="180" cy="22" r="8.5" fill="#000000" />
+          <circle cx="222" cy="64" r="8.5" fill="#000000" />
+          <circle cx="180" cy="106" r="8.5" fill="#000000" />
+        </mask>
+      </defs>
+      <g [attr.mask]="'url(#' + maskId + ')'">
+        <path
+          d="M 109 53.2 L 89.4 34 A 42 42 0 1 0 89.4 94 L 150.6 34 A 42 42 0 1 1 150.6 94 L 131 74.8"
+          [attr.stroke]="'url(#' + gradientId + ')'"
+          stroke-width="13"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <circle cx="18" cy="64" r="14.5" [attr.fill]="'url(#' + gradientId + ')'" />
+        <circle cx="89.4" cy="94" r="14.5" [attr.fill]="'url(#' + gradientId + ')'" />
+        <circle cx="180" cy="22" r="14.5" [attr.fill]="'url(#' + gradientId + ')'" />
+        <circle cx="222" cy="64" r="14.5" [attr.fill]="'url(#' + gradientId + ')'" />
+        <circle cx="180" cy="106" r="14.5" [attr.fill]="'url(#' + gradientId + ')'" />
+      </g>
+    </svg>
+  }
+
+  @if (showWordmark()) {
+    <span class="inline-flex flex-col leading-none" data-testid="brand-logo-wordmark">
+      <span
+        [class]="wordmarkSizeClass() + ' font-bold tracking-tight text-[var(--h2l-fg)]'"
+      >
+        {{ 'app.title' | translate }}
+      </span>
+      @if (showTagline()) {
+        <span
+          [class]="taglineSizeClass() + ' mt-0.5 font-semibold uppercase text-[var(--h2l-fg-muted)]'"
+          data-testid="brand-logo-tagline"
+        >
+          {{ 'app.subtitle' | translate }}
+        </span>
+      }
+    </span>
+  }
+</span>

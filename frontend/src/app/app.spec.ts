@@ -65,6 +65,8 @@ describe('App', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('[data-testid="header-brand-link"]')).not.toBeNull();
+    expect(compiled.querySelector('[data-testid="brand-logo-mark"]')).not.toBeNull();
     expect(compiled.querySelector('[data-testid="first-run-language-dialog"]')).not.toBeNull();
     expect(compiled.querySelector('[data-testid="connectivity-banner"]')).not.toBeNull();
     expect(compiled.querySelector('[data-testid="nav-login"]')).not.toBeNull();
