@@ -154,7 +154,7 @@ export class TasksEffects {
       ofType(TasksActions.claimTaskFailure),
       filter(({ error }) => error.status === 409 || error.errorCode === 'TASK_ALREADY_CLAIMED'),
       withLatestFrom(this.store.select(selectTasksScope)),
-      map(([, scope]) => TasksActions.loadTasks({ scope })),
+      map(([, scope]) => TasksActions.loadTasks({ scope, preserveError: true })),
     ),
   );
 

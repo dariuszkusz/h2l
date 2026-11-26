@@ -11,6 +11,7 @@ export const TasksActions = createActionGroup({
       scope?: components['schemas']['TaskListScope'];
       page?: number;
       pageSize?: number;
+      preserveError?: boolean;
     }>(),
     'Load Tasks Success': props<{
       response: components['schemas']['TaskListResponse'];

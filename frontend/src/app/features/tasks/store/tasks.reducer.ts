@@ -12,13 +12,13 @@ export const tasksReducer = createReducer(
     page: 1,
   })),
 
-  on(TasksActions.loadTasks, (state, { scope, page, pageSize }) => ({
+  on(TasksActions.loadTasks, (state, { scope, page, pageSize, preserveError }) => ({
     ...state,
     scope: scope ?? state.scope,
     page: page ?? state.page,
     pageSize: pageSize ?? state.pageSize,
     loadingList: true,
-    error: null,
+    error: preserveError ? state.error : null,
   })),
   on(TasksActions.loadTasksSuccess, (state, { response }) => ({
     ...state,
