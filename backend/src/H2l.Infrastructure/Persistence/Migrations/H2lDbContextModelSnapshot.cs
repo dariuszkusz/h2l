@@ -395,6 +395,307 @@ namespace H2l.Infrastructure.Persistence.Migrations
                     b.ToTable("user_groups", "app");
                 });
 
+            modelBuilder.Entity("H2l.Domain.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DeadLetterReason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("dead_letter_reason");
+
+                    b.Property<Guid?>("FormSubmissionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("form_submission_id");
+
+                    b.Property<Guid>("HumanTaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("human_task_id");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("message_type");
+
+                    b.Property<DateTimeOffset>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
+
+                    b.Property<DateTimeOffset?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_at");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("retry_count");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_outbox_messages");
+
+                    b.HasIndex("FormSubmissionId")
+                        .HasDatabaseName("ix_outbox_messages_form_submission_id");
+
+                    b.HasIndex("HumanTaskId")
+                        .HasDatabaseName("ix_outbox_messages_human_task_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_outbox_messages_tenant_id");
+
+                    b.HasIndex("Status", "NextAttemptAt")
+                        .HasDatabaseName("ix_outbox_messages_status_next_attempt_at");
+
+                    b.ToTable("outbox_messages", "app");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Tasks.FormSubmission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("AnonymizedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("anonymized_at");
+
+                    b.Property<string>("EncryptedSensitiveData")
+                        .HasColumnType("text")
+                        .HasColumnName("encrypted_sensitive_data");
+
+                    b.Property<Guid>("FormVersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("form_version_id");
+
+                    b.Property<Guid>("HumanTaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("human_task_id");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("idempotency_key");
+
+                    b.Property<string>("PublicDataJsonb")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("public_data_jsonb");
+
+                    b.Property<DateTimeOffset?>("RetentionUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("retention_until");
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<Guid>("SubmittedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("submitted_by_user_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_form_submissions");
+
+                    b.HasIndex("FormVersionId")
+                        .HasDatabaseName("ix_form_submissions_form_version_id");
+
+                    b.HasIndex("HumanTaskId")
+                        .HasDatabaseName("ix_form_submissions_human_task_id");
+
+                    b.HasIndex("RetentionUntil")
+                        .HasDatabaseName("ix_form_submissions_retention_until")
+                        .HasFilter("anonymized_at IS NULL");
+
+                    b.HasIndex("SubmittedByUserId")
+                        .HasDatabaseName("ix_form_submissions_submitted_by_user_id");
+
+                    b.HasIndex("TenantId", "HumanTaskId", "IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_form_submissions_tenant_id_human_task_id_idempotency_key");
+
+                    b.ToTable("form_submissions", "app");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Tasks.HumanTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AssignedUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_user_id");
+
+                    b.Property<Guid?>("ClaimedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("claimed_by_user_id");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<Guid>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid")
+                        .HasColumnName("concurrency_stamp");
+
+                    b.Property<Guid?>("ConnectorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("connector_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("EncryptedResumeUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("encrypted_resume_url");
+
+                    b.Property<DateTimeOffset?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("ExternalTaskId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("external_task_id");
+
+                    b.Property<Guid>("FormVersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("form_version_id");
+
+                    b.Property<string>("PrefilledDataJsonb")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("prefilled_data_jsonb");
+
+                    b.Property<string>("SensitiveDataMode")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("sensitive_data_mode");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_human_tasks");
+
+                    b.HasIndex("AssignedUserId")
+                        .HasDatabaseName("ix_human_tasks_assigned_user_id");
+
+                    b.HasIndex("ClaimedByUserId")
+                        .HasDatabaseName("ix_human_tasks_claimed_by_user_id");
+
+                    b.HasIndex("FormVersionId")
+                        .HasDatabaseName("ix_human_tasks_form_version_id");
+
+                    b.HasIndex("TenantId", "ConnectorId", "ExternalTaskId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_human_tasks_tenant_id_connector_id_external_task_id");
+
+                    b.HasIndex("TenantId", "Status", "ExpiresAt")
+                        .HasDatabaseName("ix_human_tasks_tenant_id_status_expires_at");
+
+                    b.ToTable("human_tasks", "app");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Tasks.SubmissionAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("content_type");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("FieldVariableKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("field_variable_key");
+
+                    b.Property<Guid?>("FormSubmissionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("form_submission_id");
+
+                    b.Property<Guid>("HumanTaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("human_task_id");
+
+                    b.Property<bool>("IsEncrypted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_encrypted");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("original_file_name");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("storage_path");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_submission_attachments");
+
+                    b.HasIndex("FormSubmissionId")
+                        .HasDatabaseName("ix_submission_attachments_form_submission_id");
+
+                    b.HasIndex("HumanTaskId")
+                        .HasDatabaseName("ix_submission_attachments_human_task_id");
+
+                    b.HasIndex("TenantId", "HumanTaskId")
+                        .HasDatabaseName("ix_submission_attachments_tenant_id_human_task_id");
+
+                    b.ToTable("submission_attachments", "app");
+                });
+
             modelBuilder.Entity("H2l.Domain.Workflows.FormAccessRule", b =>
                 {
                     b.Property<Guid>("Id")
@@ -500,6 +801,53 @@ namespace H2l.Infrastructure.Persistence.Migrations
                         .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("form_definitions", "app");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Workflows.FormVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("FormDefinitionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("form_definition_id");
+
+                    b.Property<DateTimeOffset>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<Guid>("PublishedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("published_by_user_id");
+
+                    b.Property<string>("SchemaJsonb")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("schema_jsonb");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<int>("VersionNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("version_number");
+
+                    b.HasKey("Id")
+                        .HasName("pk_form_versions");
+
+                    b.HasIndex("FormDefinitionId")
+                        .HasDatabaseName("ix_form_versions_form_definition_id");
+
+                    b.HasIndex("PublishedByUserId")
+                        .HasDatabaseName("ix_form_versions_published_by_user_id");
+
+                    b.HasIndex("TenantId", "FormDefinitionId", "VersionNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ix_form_versions_tenant_id_form_definition_id_version_number");
+
+                    b.ToTable("form_versions", "app");
                 });
 
             modelBuilder.Entity("H2l.Domain.Workflows.Project", b =>
@@ -697,6 +1045,112 @@ namespace H2l.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_user_groups_users_user_id");
                 });
 
+            modelBuilder.Entity("H2l.Domain.Outbox.OutboxMessage", b =>
+                {
+                    b.HasOne("H2l.Domain.Tasks.FormSubmission", null)
+                        .WithMany()
+                        .HasForeignKey("FormSubmissionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_outbox_messages_form_submissions_form_submission_id");
+
+                    b.HasOne("H2l.Domain.Tasks.HumanTask", null)
+                        .WithMany()
+                        .HasForeignKey("HumanTaskId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_outbox_messages_human_tasks_human_task_id");
+
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_outbox_messages_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Tasks.FormSubmission", b =>
+                {
+                    b.HasOne("H2l.Domain.Workflows.FormVersion", null)
+                        .WithMany()
+                        .HasForeignKey("FormVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_form_submissions_form_versions_form_version_id");
+
+                    b.HasOne("H2l.Domain.Tasks.HumanTask", null)
+                        .WithMany()
+                        .HasForeignKey("HumanTaskId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_form_submissions_human_tasks_human_task_id");
+
+                    b.HasOne("H2l.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("SubmittedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_form_submissions_users_submitted_by_user_id");
+
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_form_submissions_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Tasks.HumanTask", b =>
+                {
+                    b.HasOne("H2l.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_human_tasks_users_assigned_user_id");
+
+                    b.HasOne("H2l.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("ClaimedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_human_tasks_users_claimed_by_user_id");
+
+                    b.HasOne("H2l.Domain.Workflows.FormVersion", null)
+                        .WithMany()
+                        .HasForeignKey("FormVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_human_tasks_form_versions_form_version_id");
+
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_human_tasks_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Tasks.SubmissionAttachment", b =>
+                {
+                    b.HasOne("H2l.Domain.Tasks.FormSubmission", null)
+                        .WithMany()
+                        .HasForeignKey("FormSubmissionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_submission_attachments_form_submissions_form_submission_id");
+
+                    b.HasOne("H2l.Domain.Tasks.HumanTask", null)
+                        .WithMany()
+                        .HasForeignKey("HumanTaskId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_submission_attachments_human_tasks_human_task_id");
+
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_submission_attachments_tenants_tenant_id");
+                });
+
             modelBuilder.Entity("H2l.Domain.Workflows.FormAccessRule", b =>
                 {
                     b.HasOne("H2l.Domain.Workflows.FormDefinition", null)
@@ -741,6 +1195,30 @@ namespace H2l.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_form_definitions_workflow_processes_workflow_process_id");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Workflows.FormVersion", b =>
+                {
+                    b.HasOne("H2l.Domain.Workflows.FormDefinition", null)
+                        .WithMany()
+                        .HasForeignKey("FormDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_form_versions_form_definitions_form_definition_id");
+
+                    b.HasOne("H2l.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("PublishedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_form_versions_users_published_by_user_id");
+
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_form_versions_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("H2l.Domain.Workflows.Project", b =>

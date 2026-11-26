@@ -1,6 +1,8 @@
 using H2l.Application.Common;
 using H2l.Domain.Audit;
 using H2l.Domain.Identity;
+using H2l.Domain.Outbox;
+using H2l.Domain.Tasks;
 using H2l.Domain.Workflows;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,7 +34,17 @@ public sealed class H2lDbContext : DbContext
 
     public DbSet<FormDefinition> FormDefinitions => Set<FormDefinition>();
 
+    public DbSet<FormVersion> FormVersions => Set<FormVersion>();
+
     public DbSet<FormAccessRule> FormAccessRules => Set<FormAccessRule>();
+
+    public DbSet<HumanTask> HumanTasks => Set<HumanTask>();
+
+    public DbSet<FormSubmission> FormSubmissions => Set<FormSubmission>();
+
+    public DbSet<SubmissionAttachment> SubmissionAttachments => Set<SubmissionAttachment>();
+
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
@@ -79,6 +91,21 @@ public sealed class H2lDbContext : DbContext
             .HasQueryFilter(e => (CurrentTenantId == null || e.TenantId == CurrentTenantId) && e.DeletedAt == null);
 
         modelBuilder.Entity<FormAccessRule>()
+            .HasQueryFilter(e => CurrentTenantId == null || e.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<FormVersion>()
+            .HasQueryFilter(e => CurrentTenantId == null || e.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<HumanTask>()
+            .HasQueryFilter(e => CurrentTenantId == null || e.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<FormSubmission>()
+            .HasQueryFilter(e => CurrentTenantId == null || e.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<SubmissionAttachment>()
+            .HasQueryFilter(e => CurrentTenantId == null || e.TenantId == CurrentTenantId);
+
+        modelBuilder.Entity<OutboxMessage>()
             .HasQueryFilter(e => CurrentTenantId == null || e.TenantId == CurrentTenantId);
 
         modelBuilder.Entity<AuditLog>()

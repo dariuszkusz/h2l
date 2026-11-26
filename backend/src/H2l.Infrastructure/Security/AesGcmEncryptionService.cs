@@ -96,4 +96,76 @@ public sealed class AesGcmEncryptionService : IAesGcmEncryptionService
 
         return Encoding.UTF8.GetString(plaintextBytes);
     }
+
+    public byte[] EncryptBytes(ReadOnlySpan<byte> plaintext, string? associatedData = null)
+    {
+        var keyIdBytes = Encoding.UTF8.GetBytes(_keyId);
+        if (keyIdBytes.Length > byte.MaxValue)
+        {
+            throw new InvalidOperationException("Encryption KeyId exceeds 255 bytes.");
+        }
+
+        var nonce = new byte[NonceSizeBytes];
+        RandomNumberGenerator.Fill(nonce);
+
+        var tag = new byte[TagSizeBytes];
+        var ciphertext = new byte[plaintext.Length];
+        var aadBytes = string.IsNullOrEmpty(associatedData)
+            ? []
+            : Encoding.UTF8.GetBytes(associatedData);
+
+        using var aesGcm = new AesGcm(_keyBytes, TagSizeBytes);
+        aesGcm.Encrypt(nonce, plaintext, ciphertext, tag, aadBytes);
+
+        var output = new byte[1 + keyIdBytes.Length + NonceSizeBytes + TagSizeBytes + ciphertext.Length];
+        var offset = 0;
+        output[offset++] = (byte)keyIdBytes.Length;
+        Buffer.BlockCopy(keyIdBytes, 0, output, offset, keyIdBytes.Length);
+        offset += keyIdBytes.Length;
+        Buffer.BlockCopy(nonce, 0, output, offset, NonceSizeBytes);
+        offset += NonceSizeBytes;
+        Buffer.BlockCopy(tag, 0, output, offset, TagSizeBytes);
+        offset += TagSizeBytes;
+        Buffer.BlockCopy(ciphertext, 0, output, offset, ciphertext.Length);
+
+        return output;
+    }
+
+    public byte[] DecryptBytes(ReadOnlySpan<byte> ciphertext, string? associatedData = null)
+    {
+        if (ciphertext.Length < 1 + NonceSizeBytes + TagSizeBytes)
+        {
+            throw new CryptographicException("Encrypted binary payload is truncated.");
+        }
+
+        var keyIdLen = ciphertext[0];
+        var headerLen = 1 + keyIdLen + NonceSizeBytes + TagSizeBytes;
+        if (keyIdLen == 0 || ciphertext.Length < headerLen)
+        {
+            throw new CryptographicException("Encrypted binary payload header is invalid.");
+        }
+
+        var keyId = Encoding.UTF8.GetString(ciphertext.Slice(1, keyIdLen));
+        if (!string.Equals(keyId, _keyId, StringComparison.Ordinal))
+        {
+            throw new CryptographicException("Encrypted binary payload key identifier does not match active key.");
+        }
+
+        var nonceOffset = 1 + keyIdLen;
+        var tagOffset = nonceOffset + NonceSizeBytes;
+        var dataOffset = tagOffset + TagSizeBytes;
+
+        var nonce = ciphertext.Slice(nonceOffset, NonceSizeBytes);
+        var tag = ciphertext.Slice(tagOffset, TagSizeBytes);
+        var encryptedData = ciphertext.Slice(dataOffset);
+        var plaintext = new byte[encryptedData.Length];
+        var aadBytes = string.IsNullOrEmpty(associatedData)
+            ? []
+            : Encoding.UTF8.GetBytes(associatedData);
+
+        using var aesGcm = new AesGcm(_keyBytes, TagSizeBytes);
+        aesGcm.Decrypt(nonce, encryptedData, tag, plaintext, aadBytes);
+
+        return plaintext;
+    }
 }

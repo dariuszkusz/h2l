@@ -8,5 +8,6 @@ public enum ErrorType
     Unauthorized = 3,
     Forbidden = 4,
     PaymentRequired = 5,
-    Failure = 6
+    Failure = 6,
+    PayloadTooLarge = 7
 }

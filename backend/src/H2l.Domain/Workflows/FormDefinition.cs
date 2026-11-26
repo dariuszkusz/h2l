@@ -110,6 +110,51 @@ public sealed class FormDefinition : AggregateRoot, ITenantScoped, ISoftDeletabl
         return Result.Success();
     }
 
+    public Result UpdateDraft(string? name, string draftSchemaJsonb, DateTimeOffset? updatedAt = null)
+    {
+        if (DeletedAt is not null)
+        {
+            return Result.Failure(Error.Validation("FORM_DELETED", "Cannot update a deleted form definition."));
+        }
+
+        if (string.IsNullOrWhiteSpace(draftSchemaJsonb))
+        {
+            return Result.Failure(Error.Validation("DRAFT_SCHEMA_REQUIRED", "Draft schema is required."));
+        }
+
+        if (name is not null)
+        {
+            var trimmedName = name.Trim();
+            if (trimmedName.Length == 0)
+            {
+                return Result.Failure(Error.Validation("FORM_NAME_REQUIRED", "Form definition name is required."));
+            }
+
+            if (trimmedName.Length > 200)
+            {
+                return Result.Failure(Error.Validation("FORM_NAME_TOO_LONG", "Form definition name cannot exceed 200 characters."));
+            }
+
+            Name = trimmedName;
+        }
+
+        DraftSchemaJsonb = draftSchemaJsonb;
+        UpdatedAt = updatedAt ?? DateTimeOffset.UtcNow;
+        return Result.Success();
+    }
+
+    public Result MarkPublished(DateTimeOffset? updatedAt = null)
+    {
+        if (DeletedAt is not null)
+        {
+            return Result.Failure(Error.Validation("FORM_DELETED", "Cannot publish a deleted form definition."));
+        }
+
+        Status = FormDefinitionStatus.Published;
+        UpdatedAt = updatedAt ?? DateTimeOffset.UtcNow;
+        return Result.Success();
+    }
+
     public void SoftDelete(DateTimeOffset? deletedAt = null)
     {
         DeletedAt = deletedAt ?? DateTimeOffset.UtcNow;

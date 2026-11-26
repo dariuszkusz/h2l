@@ -16,5 +16,7 @@ public sealed record Error(string Code, string Message, ErrorType Type)
 
     public static Error PaymentRequired(string code, string message) => new(code, message, ErrorType.PaymentRequired);
 
+    public static Error PayloadTooLarge(string code, string message) => new(code, message, ErrorType.PayloadTooLarge);
+
     public static Error Failure(string code, string message) => new(code, message, ErrorType.Failure);
 }

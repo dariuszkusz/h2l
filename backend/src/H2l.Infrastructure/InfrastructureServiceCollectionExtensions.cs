@@ -3,6 +3,8 @@ using H2l.Application.Licensing;
 using H2l.Domain.Audit;
 using H2l.Domain.Common;
 using H2l.Domain.Identity;
+using H2l.Domain.Outbox;
+using H2l.Domain.Tasks;
 using H2l.Domain.Workflows;
 using H2l.Infrastructure.Email;
 using H2l.Infrastructure.Health;
@@ -11,6 +13,7 @@ using H2l.Infrastructure.Options;
 using H2l.Infrastructure.Persistence;
 using H2l.Infrastructure.Persistence.Repositories;
 using H2l.Infrastructure.Security;
+using H2l.Infrastructure.Storage;
 using H2l.Infrastructure.Tenancy;
 using H2l.Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
@@ -116,8 +119,28 @@ public static class InfrastructureServiceCollectionExtensions
                 }
             });
 
+        services.AddOptions<AttachmentsOptions>()
+            .Bind(configuration.GetSection(AttachmentsOptions.SectionName))
+            .PostConfigure(options =>
+            {
+                var maxSizeMb = configuration["ATTACHMENTS_MAX_SIZE_MB"];
+                if (!string.IsNullOrWhiteSpace(maxSizeMb) && int.TryParse(maxSizeMb, out var parsedMb))
+                {
+                    options.MaxSizeMb = parsedMb;
+                }
+
+                var storagePath = configuration["ATTACHMENTS_STORAGE_PATH"];
+                if (!string.IsNullOrWhiteSpace(storagePath))
+                {
+                    options.StoragePath = storagePath;
+                }
+            })
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
         services.AddSingleton<IAesGcmEncryptionService, AesGcmEncryptionService>();
+        services.AddSingleton<IAttachmentStorageService, EncryptedLocalAttachmentStorageService>();
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<IOpaqueTokenGenerator, OpaqueTokenGenerator>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
@@ -151,7 +174,12 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<IWorkflowProcessRepository, WorkflowProcessRepository>();
         services.AddScoped<IFormDefinitionRepository, FormDefinitionRepository>();
+        services.AddScoped<IFormVersionRepository, FormVersionRepository>();
         services.AddScoped<IFormAccessRuleRepository, FormAccessRuleRepository>();
+        services.AddScoped<IHumanTaskRepository, HumanTaskRepository>();
+        services.AddScoped<IFormSubmissionRepository, FormSubmissionRepository>();
+        services.AddScoped<ISubmissionAttachmentRepository, SubmissionAttachmentRepository>();
+        services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
 
         services.AddQuartz();
         services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
