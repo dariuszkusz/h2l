@@ -16,6 +16,11 @@ export class OfflineDraftStorageService {
   async saveDraft(
     taskId: string,
     payload: Readonly<Record<string, unknown>>,
+    options?: {
+      readonly queuedForSubmission?: boolean;
+      readonly idempotencyKey?: string | null;
+      readonly attachmentIds?: readonly string[];
+    },
   ): Promise<void> {
     const db = await this.openDatabase();
     if (!db) {
@@ -26,6 +31,9 @@ export class OfflineDraftStorageService {
       taskId,
       payload,
       updatedAt: new Date().toISOString(),
+      queuedForSubmission: options?.queuedForSubmission ?? false,
+      idempotencyKey: options?.idempotencyKey ?? null,
+      attachmentIds: options?.attachmentIds ?? [],
     };
 
     try {
@@ -67,6 +75,35 @@ export class OfflineDraftStorageService {
     } finally {
       db.close();
     }
+  }
+
+  async listDrafts(): Promise<readonly OfflineDraftRecord[]> {
+    const db = await this.openDatabase();
+    if (!db) {
+      return [];
+    }
+
+    try {
+      return await new Promise<readonly OfflineDraftRecord[]>((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+          const result = request.result as OfflineDraftRecord[] | undefined;
+          resolve(result ?? []);
+        };
+        request.onerror = () =>
+          reject(request.error ?? new Error('Failed to list offline drafts.'));
+      });
+    } finally {
+      db.close();
+    }
+  }
+
+  async listQueuedSubmissions(): Promise<readonly OfflineDraftRecord[]> {
+    const all = await this.listDrafts();
+    return all.filter((record) => record.queuedForSubmission === true);
   }
 
   async deleteDraft(taskId: string): Promise<void> {

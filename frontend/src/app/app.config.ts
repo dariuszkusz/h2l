@@ -28,6 +28,10 @@ import { AdminProjectsEffects } from './features/admin-projects/store/admin-proj
 import { adminProjectsReducer } from './features/admin-projects/store/admin-projects.reducer';
 import { AdminUsersEffects } from './features/admin-users/store/admin-users.effects';
 import { adminUsersReducer } from './features/admin-users/store/admin-users.reducer';
+import { FormBuilderEffects } from './features/form-builder/store/form-builder.effects';
+import { formBuilderReducer } from './features/form-builder/store/form-builder.reducer';
+import { TasksEffects } from './features/tasks/store/tasks.effects';
+import { tasksReducer } from './features/tasks/store/tasks.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -44,6 +48,8 @@ export const appConfig: ApplicationConfig = {
       licensing: licensingReducer,
       adminUsers: adminUsersReducer,
       adminProjects: adminProjectsReducer,
+      formBuilder: formBuilderReducer,
+      tasks: tasksReducer,
     }),
     provideEffects([
       I18nEffects,
@@ -54,6 +60,8 @@ export const appConfig: ApplicationConfig = {
       LicensingEffects,
       AdminUsersEffects,
       AdminProjectsEffects,
+      FormBuilderEffects,
+      TasksEffects,
     ]),
     provideStoreDevtools({
       maxAge: 25,

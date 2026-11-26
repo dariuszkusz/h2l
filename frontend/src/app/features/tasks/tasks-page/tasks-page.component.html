@@ -1,22 +1,128 @@
-<section class="space-y-6">
-  <header class="space-y-1">
-    <h1 class="text-2xl font-semibold tracking-tight text-[var(--h2l-fg)]">
-      {{ 'tasks.heading' | translate }}
-    </h1>
-    <p class="text-sm text-[var(--h2l-fg-muted)]">
-      {{ 'tasks.description' | translate }}
-    </p>
+<section class="space-y-6" data-testid="tasks-page">
+  <header class="flex flex-wrap items-start justify-between gap-4">
+    <div class="space-y-1">
+      <h1 class="text-2xl font-semibold tracking-tight text-[var(--h2l-fg)]" data-testid="tasks-heading">
+        {{ 'tasks.heading' | translate }}
+      </h1>
+      <p class="text-sm text-[var(--h2l-fg-muted)]">
+        {{ 'tasks.description' | translate }}
+      </p>
+    </div>
+
+    <div role="tablist" [attr.aria-label]="'tasks.scopeLabel' | translate" class="flex flex-wrap gap-2">
+      @for (tabScope of scopes; track tabScope) {
+        <button
+          type="button"
+          role="tab"
+          hlmBtn
+          [variant]="scope() === tabScope ? 'primary' : 'outline'"
+          [attr.aria-selected]="scope() === tabScope"
+          [attr.data-testid]="'tasks-scope-' + tabScope"
+          (click)="onSelectScope(tabScope)"
+        >
+          {{ 'tasks.scopes.' + tabScope | translate }}
+        </button>
+      }
+    </div>
   </header>
 
-  <div hlmCard class="flex flex-col items-start gap-4" data-testid="tasks-empty-state">
-    <h2 class="text-lg font-medium text-[var(--h2l-fg)]">
-      {{ 'tasks.emptyTitle' | translate }}
-    </h2>
-    <p class="text-sm text-[var(--h2l-fg-muted)]">
-      {{ 'tasks.emptyDescription' | translate }}
-    </p>
-    <a routerLink="/settings" hlmBtn variant="outline" data-testid="open-settings-cta">
-      {{ 'tasks.openSettingsCta' | translate }}
-    </a>
-  </div>
+  @if (error(); as apiError) {
+    <app-ui-state-banner
+      kind="error"
+      testId="tasks-error-banner"
+      [title]="'errors.title' | translate"
+      [message]="apiError.messageKey | translate: apiError.messageParams"
+      [detail]="apiError.detail"
+    />
+  }
+
+  @if (successKey(); as key) {
+    <app-ui-state-banner
+      kind="success"
+      testId="tasks-success-banner"
+      [title]="'common.successTitle' | translate"
+      [message]="key | translate"
+    />
+  }
+
+  @if (loading()) {
+    <app-ui-state-banner
+      kind="loading"
+      testId="tasks-loading"
+      [message]="'tasks.loading' | translate"
+    />
+  } @else if (items().length === 0) {
+    <div hlmCard class="flex flex-col items-start gap-4" data-testid="tasks-empty-state">
+      <h2 class="text-lg font-medium text-[var(--h2l-fg)]">
+        {{ 'tasks.emptyTitle' | translate }}
+      </h2>
+      <p class="text-sm text-[var(--h2l-fg-muted)]">
+        {{ 'tasks.emptyDescription' | translate }}
+      </p>
+      <a routerLink="/settings" hlmBtn variant="outline" data-testid="open-settings-cta">
+        {{ 'tasks.openSettingsCta' | translate }}
+      </a>
+    </div>
+  } @else {
+    <ul class="space-y-3" data-testid="tasks-list">
+      @for (task of items(); track task.id) {
+        <li hlmCard class="flex flex-wrap items-center justify-between gap-4" [attr.data-testid]="'task-card-' + task.id">
+          <div class="space-y-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+                {{ task.formName }}
+              </h2>
+              <span hlmBadge [variant]="statusBadgeVariant(task.status)" [attr.data-testid]="'task-status-' + task.id">
+                {{ 'tasks.status.' + task.status | translate }}
+              </span>
+              <span hlmBadge variant="neutral">v{{ task.formVersionNumber }}</span>
+              @if (isQueuedOffline(task.id)) {
+                <span hlmBadge variant="warning" [attr.data-testid]="'task-queued-' + task.id">
+                  {{ 'tasks.queuedOfflineBadge' | translate }}
+                </span>
+              }
+            </div>
+            <p class="text-xs text-[var(--h2l-fg-muted)]">
+              {{ task.projectName }} · {{ task.processName }}
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            @if (task.canClaim) {
+              <button
+                type="button"
+                hlmBtn
+                variant="primary"
+                [disabled]="mutating()"
+                [attr.data-testid]="'task-claim-btn-' + task.id"
+                (click)="onClaim(task.id)"
+              >
+                {{ 'tasks.actions.claim' | translate }}
+              </button>
+            }
+            @if (task.canUnclaim) {
+              <button
+                type="button"
+                hlmBtn
+                variant="outline"
+                [disabled]="mutating()"
+                [attr.data-testid]="'task-unclaim-btn-' + task.id"
+                (click)="onUnclaim(task.id)"
+              >
+                {{ 'tasks.actions.unclaim' | translate }}
+              </button>
+            }
+            <a
+              [routerLink]="['/tasks', task.id]"
+              hlmBtn
+              [variant]="task.canClaim ? 'outline' : 'primary'"
+              [attr.data-testid]="'task-open-btn-' + task.id"
+            >
+              {{ 'tasks.actions.open' | translate }}
+            </a>
+          </div>
+        </li>
+      }
+    </ul>
+  }
 </section>

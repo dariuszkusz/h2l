@@ -44,6 +44,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'tasks/:taskId',
+    canActivate: [setupRequiredGuard, authGuard],
+    loadComponent: () =>
+      import('./features/tasks/task-detail-page/task-detail-page.component').then(
+        (m) => m.TaskDetailPageComponent,
+      ),
+  },
+  {
     path: 'settings',
     canActivate: [setupRequiredGuard, authGuard],
     loadComponent: () =>
@@ -65,6 +73,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/admin-projects/admin-projects-page/admin-projects-page.component').then(
         (m) => m.AdminProjectsPageComponent,
+      ),
+  },
+  {
+    path: 'admin/forms/:formId/builder',
+    canActivate: [setupRequiredGuard, authGuard, roleGuard(['Admin', 'ProcessDesigner'])],
+    loadComponent: () =>
+      import('./features/form-builder/form-builder-page/form-builder-page.component').then(
+        (m) => m.FormBuilderPageComponent,
       ),
   },
   {

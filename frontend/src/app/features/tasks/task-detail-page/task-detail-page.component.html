@@ -1,0 +1,114 @@
+<section class="space-y-6" data-testid="task-detail-page">
+  <header class="flex flex-wrap items-center justify-between gap-4">
+    <div class="flex flex-wrap items-center gap-3">
+      <a routerLink="/tasks" hlmBtn variant="ghost" data-testid="task-detail-back-link">
+        {{ 'tasks.detail.backToTasks' | translate }}
+      </a>
+      @if (task(); as activeTask) {
+        <h1 class="text-xl font-semibold tracking-tight text-[var(--h2l-fg)]" data-testid="task-detail-heading">
+          {{ 'tasks.detail.heading' | translate }}
+        </h1>
+        <span hlmBadge variant="info" data-testid="task-detail-version">
+          v{{ activeTask.formVersionNumber }}
+        </span>
+        <span hlmBadge variant="neutral" data-testid="task-detail-status">
+          {{ 'tasks.status.' + activeTask.status | translate }}
+        </span>
+      }
+    </div>
+
+    @if (task(); as activeTask) {
+      <div class="flex flex-wrap items-center gap-2">
+        @if (activeTask.canClaim) {
+          <button
+            type="button"
+            hlmBtn
+            variant="primary"
+            data-testid="task-detail-claim-btn"
+            [disabled]="mutating()"
+            (click)="onClaim()"
+          >
+            {{ 'tasks.actions.claim' | translate }}
+          </button>
+        }
+        @if (activeTask.canUnclaim && activeTask.status !== 'Completed') {
+          <button
+            type="button"
+            hlmBtn
+            variant="outline"
+            data-testid="task-detail-unclaim-btn"
+            [disabled]="mutating()"
+            (click)="onUnclaim()"
+          >
+            {{ 'tasks.actions.unclaim' | translate }}
+          </button>
+        }
+      </div>
+    }
+  </header>
+
+  @if (!isOnline() || isQueuedOffline()) {
+    <app-ui-state-banner
+      kind="info"
+      testId="task-detail-offline-banner"
+      [title]="'tasks.detail.offlineTitle' | translate"
+      [message]="
+        isQueuedOffline()
+          ? ('tasks.detail.queuedMessage' | translate)
+          : ('tasks.detail.offlineDraftMessage' | translate)
+      "
+    />
+  }
+
+  @if (error(); as apiError) {
+    <app-ui-state-banner
+      kind="error"
+      testId="task-detail-error-banner"
+      [title]="'errors.title' | translate"
+      [message]="apiError.messageKey | translate: apiError.messageParams"
+      [detail]="apiError.detail"
+      [fieldErrors]="apiError.fieldErrors"
+    />
+  }
+
+  @if (successKey(); as key) {
+    <app-ui-state-banner
+      kind="success"
+      testId="task-detail-success-banner"
+      [title]="'common.successTitle' | translate"
+      [message]="key | translate"
+    />
+  }
+
+  @if (loading()) {
+    <app-ui-state-banner
+      kind="loading"
+      testId="task-detail-loading"
+      [message]="'tasks.detail.loading' | translate"
+    />
+  } @else if (task(); as activeTask) {
+    @if (activeTask.canClaim) {
+      <app-ui-state-banner
+        kind="empty"
+        testId="task-detail-claim-required"
+        [title]="'tasks.detail.claimRequiredTitle' | translate"
+        [message]="'tasks.detail.claimRequiredMessage' | translate"
+      />
+    }
+
+    <div hlmCard>
+      <app-form-renderer
+        [schema]="activeTask.schema"
+        [language]="currentLanguage()"
+        [prefilledData]="activeTask.prefilledData"
+        [initialDraftValues]="localDraftValues()"
+        [readOnlyMode]="isReadOnlyForm()"
+        [submitting]="mutating()"
+        [uploadedAttachments]="uploadedAttachments()"
+        (valuesChanged)="onValuesChanged($event)"
+        (fileSelected)="onFileSelected($event)"
+        (formSubmitted)="onFormSubmitted($event)"
+      />
+    </div>
+  }
+</section>
