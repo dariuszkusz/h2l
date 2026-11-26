@@ -292,14 +292,18 @@ describe('Stage 3 — Connectors, Dead-Letter, NeedsAssignment, Workflow Templat
     cy.document().then((doc) => doc.documentElement.setAttribute('data-theme', 'high-contrast'));
     cy.checkA11y();
 
-    // Verify DE and PL i18n rendering + WCAG
-    visitAsAdmin('/admin/connectors', 'de');
+    // Verify DE and PL i18n rendering + WCAG via runtime language switching
+    cy.get('[data-testid="nav-settings"]').click();
+    cy.get('[data-testid="settings-lang-de"]').click();
+    cy.get('[data-testid="nav-admin-connectors"]').click();
     cy.wait('@listConnectors');
     cy.get('[data-testid="admin-connectors-heading"]').should('contain.text', 'Workflow-Konnektoren');
     cy.injectAxe();
     cy.checkA11y();
 
-    visitAsAdmin('/admin/connectors', 'pl');
+    cy.get('[data-testid="nav-settings"]').click();
+    cy.get('[data-testid="settings-lang-pl"]').click();
+    cy.get('[data-testid="nav-admin-connectors"]').click();
     cy.wait('@listConnectors');
     cy.get('[data-testid="admin-connectors-heading"]').should('contain.text', 'Konektory workflow');
     cy.injectAxe();

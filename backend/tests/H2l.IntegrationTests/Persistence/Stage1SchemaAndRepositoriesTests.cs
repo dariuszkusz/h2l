@@ -89,7 +89,7 @@ public sealed class Stage1SchemaAndRepositoriesTests
             """;
 
         var connectorFk = await fkCmd.ExecuteScalarAsync();
-        Assert.Null(connectorFk);
+        Assert.Equal("connector_id", connectorFk?.ToString());
     }
 
     [Fact]
