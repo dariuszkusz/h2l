@@ -8,6 +8,17 @@ describe('Stage 2 — Form Builder (DnD + Keyboard + Live Preview + Publish + WC
       statusCode: 200,
       body: { isInitialized: true, instanceId: 'inst-1' },
     });
+    cy.intercept('GET', '/api/v1/license/status', {
+      statusCode: 200,
+      body: {
+        tier: 'Free',
+        status: 'Active',
+        maxActiveProcesses: 1,
+        currentActiveProcesses: 1,
+        gracePeriodEndsAt: null,
+        expiresAt: null,
+      },
+    });
     cy.intercept('GET', '/api/v1/users/me', {
       statusCode: 200,
       body: {
@@ -77,8 +88,8 @@ describe('Stage 2 — Form Builder (DnD + Keyboard + Live Preview + Publish + WC
     cy.visit(`/admin/forms/${formId}/builder`, {
       onBeforeLoad(win) {
         win.localStorage.setItem('h2l.language.v1', 'en');
-        win.localStorage.setItem('h2l.access_token.v1', 'tok-admin');
-        win.localStorage.setItem('h2l.refresh_token.v1', 'ref-admin');
+        win.sessionStorage.setItem('h2l.auth.accessToken', 'tok-admin');
+        win.sessionStorage.setItem('h2l.auth.refreshToken', 'ref-admin');
       },
     });
 

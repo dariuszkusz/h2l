@@ -42,6 +42,21 @@ describe('Stage 2 — End-User Tasks PWA Portal, Claim/Unclaim, 409 Conflict & O
       statusCode: 200,
       body: { isInitialized: true, instanceId: 'inst-1' },
     });
+    cy.intercept('GET', '/api/v1/license/status', {
+      statusCode: 200,
+      body: {
+        tier: 'Free',
+        status: 'Active',
+        maxActiveProcesses: 1,
+        currentActiveProcesses: 1,
+        gracePeriodEndsAt: null,
+        expiresAt: null,
+      },
+    });
+    cy.intercept('POST', '/hubs/tasks/negotiate*', {
+      statusCode: 200,
+      body: {},
+    });
     cy.intercept('GET', '/api/v1/users/me', {
       statusCode: 200,
       body: {
@@ -96,8 +111,8 @@ describe('Stage 2 — End-User Tasks PWA Portal, Claim/Unclaim, 409 Conflict & O
     cy.visit('/tasks', {
       onBeforeLoad(win) {
         win.localStorage.setItem('h2l.language.v1', 'en');
-        win.localStorage.setItem('h2l.access_token.v1', 'tok-end');
-        win.localStorage.setItem('h2l.refresh_token.v1', 'ref-end');
+        win.sessionStorage.setItem('h2l.auth.accessToken', 'tok-end');
+        win.sessionStorage.setItem('h2l.auth.refreshToken', 'ref-end');
       },
     });
 
@@ -136,8 +151,8 @@ describe('Stage 2 — End-User Tasks PWA Portal, Claim/Unclaim, 409 Conflict & O
     cy.visit(`/tasks/${taskId}`, {
       onBeforeLoad(win) {
         win.localStorage.setItem('h2l.language.v1', 'en');
-        win.localStorage.setItem('h2l.access_token.v1', 'tok-end');
-        win.localStorage.setItem('h2l.refresh_token.v1', 'ref-end');
+        win.sessionStorage.setItem('h2l.auth.accessToken', 'tok-end');
+        win.sessionStorage.setItem('h2l.auth.refreshToken', 'ref-end');
       },
     });
 
