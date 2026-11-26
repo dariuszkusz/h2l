@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   OnInit,
   signal,
@@ -50,6 +51,9 @@ type SystemRole = components['schemas']['SystemRole'];
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-users-page.component.html',
+  host: {
+    '(document:keydown.escape)': 'onEscapeKey()',
+  },
 })
 export class AdminUsersPageComponent implements OnInit {
   private readonly store = inject(Store);
@@ -90,6 +94,15 @@ export class AdminUsersPageComponent implements OnInit {
     name: ['', [Validators.required, Validators.maxLength(200)]],
     code: ['', [Validators.required, Validators.maxLength(100)]],
   });
+
+  constructor() {
+    effect(() => {
+      const key = this.successKey();
+      if (key === 'adminUsers.groups.createSuccess') {
+        this.createGroupModalOpen.set(false);
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.store.dispatch(AdminUsersActions.clearFeedback());
@@ -164,7 +177,6 @@ export class AdminUsersPageComponent implements OnInit {
         },
       }),
     );
-    this.createGroupModalOpen.set(false);
   }
 
   protected onSelectGroup(groupId: string): void {
@@ -209,6 +221,14 @@ export class AdminUsersPageComponent implements OnInit {
       });
     } else {
       this.copiedLink.set(true);
+    }
+  }
+
+  protected onEscapeKey(): void {
+    if (this.inviteModalOpen()) {
+      this.closeInviteModal();
+    } else if (this.createGroupModalOpen()) {
+      this.closeCreateGroupModal();
     }
   }
 

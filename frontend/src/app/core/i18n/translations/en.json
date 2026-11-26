@@ -29,6 +29,7 @@
     "loading": "Loading...",
     "dismiss": "Dismiss",
     "cancel": "Cancel",
+    "retry": "Retry",
     "successTitle": "Saved",
     "validation": {
       "required": "This field is required.",

@@ -170,7 +170,7 @@
                   (click)="onSelectProcess(process.id)"
                 >
                   <span class="truncate">{{ process.name }}</span>
-                  <span class="text-xs opacity-80">
+                  <span class="text-xs">
                     {{ 'adminProjects.processes.status.' + process.status | translate }}
                   </span>
                 </button>
@@ -233,7 +233,7 @@
                   (click)="onSelectForm(form.id)"
                 >
                   <span class="truncate">{{ form.name }}</span>
-                  <span class="text-xs opacity-80">{{ form.stepKey }}</span>
+                  <span class="text-xs">{{ form.stepKey }}</span>
                 </button>
               </li>
             }

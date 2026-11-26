@@ -69,6 +69,9 @@ type DraftAccessRule = {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-projects-page.component.html',
+  host: {
+    '(document:keydown.escape)': 'onEscapeKey()',
+  },
 })
 export class AdminProjectsPageComponent implements OnInit {
   private readonly store = inject(Store);
@@ -117,6 +120,16 @@ export class AdminProjectsPageComponent implements OnInit {
     'GroupUserSubset',
     'DirectUser',
   ];
+
+  protected onEscapeKey(): void {
+    if (this.projectModalOpen()) {
+      this.projectModalOpen.set(false);
+    } else if (this.processModalOpen()) {
+      this.processModalOpen.set(false);
+    } else if (this.formModalOpen()) {
+      this.formModalOpen.set(false);
+    }
+  }
 
   protected readonly isAdmin = computed(() => this.currentUserRole() === 'Admin');
 

@@ -311,9 +311,14 @@
             [attr.aria-invalid]="
               licenseForm.controls.licenseKey.touched && licenseForm.controls.licenseKey.invalid
             "
+            [attr.aria-describedby]="
+              licenseForm.controls.licenseKey.touched && licenseForm.controls.licenseKey.invalid
+                ? 'license-key-error'
+                : null
+            "
           ></textarea>
           @if (licenseForm.controls.licenseKey.touched && licenseForm.controls.licenseKey.invalid) {
-            <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+            <p id="license-key-error" class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
               {{ 'common.validation.required' | translate }}
             </p>
           }

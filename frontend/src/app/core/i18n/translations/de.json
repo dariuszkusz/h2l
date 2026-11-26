@@ -29,6 +29,7 @@
     "loading": "Wird geladen...",
     "dismiss": "Schließen",
     "cancel": "Abbrechen",
+    "retry": "Erneut versuchen",
     "successTitle": "Gespeichert",
     "validation": {
       "required": "Dieses Feld ist erforderlich.",

@@ -11,6 +11,25 @@
     </p>
   </header>
 
+  <div
+    role="group"
+    [attr.aria-label]="'auth.login.languageLabel' | translate"
+    class="flex flex-wrap gap-2"
+  >
+    @for (lang of languages; track lang) {
+      <button
+        type="button"
+        hlmBtn
+        [variant]="currentLanguage() === lang ? 'primary' : 'outline'"
+        [attr.aria-pressed]="currentLanguage() === lang"
+        [attr.data-testid]="'activate-lang-' + lang"
+        (click)="changeLanguage(lang)"
+      >
+        {{ 'languages.' + lang | translate }}
+      </button>
+    }
+  </div>
+
   @if (activationStatus() === 'loading') {
     <app-ui-state-banner
       kind="loading"
@@ -46,7 +65,7 @@
   } @else {
     @if (!hasTokenValue()) {
       <app-ui-state-banner
-        kind="empty"
+        kind="error"
         testId="activate-empty-token-banner"
         [title]="'auth.activate.emptyTokenTitle' | translate"
         [message]="'auth.activate.emptyTokenDescription' | translate"

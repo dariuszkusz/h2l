@@ -29,14 +29,27 @@
   }
 
   @if (setupError(); as apiError) {
-    <app-ui-state-banner
-      kind="error"
-      testId="setup-error-banner"
-      [title]="'errors.title' | translate"
-      [message]="apiError.messageKey | translate: apiError.messageParams"
-      [detail]="apiError.detail"
-      [fieldErrors]="apiError.fieldErrors"
-    />
+    <div class="space-y-2">
+      <app-ui-state-banner
+        kind="error"
+        testId="setup-error-banner"
+        [title]="'errors.title' | translate"
+        [message]="apiError.messageKey | translate: apiError.messageParams"
+        [detail]="apiError.detail"
+        [fieldErrors]="apiError.fieldErrors"
+      />
+      <div>
+        <button
+          type="button"
+          hlmBtn
+          variant="outline"
+          data-testid="setup-retry-btn"
+          (click)="retryStatus()"
+        >
+          {{ 'common.retry' | translate }}
+        </button>
+      </div>
+    </div>
   }
 
   @if (!loadingStatus() && !initializedSuccess()) {

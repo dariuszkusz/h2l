@@ -208,7 +208,7 @@
                   (click)="onSelectGroup(group.id)"
                 >
                   <span>{{ group.name }} ({{ group.code }})</span>
-                  <span class="text-xs opacity-80">
+                  <span class="text-xs">
                     {{ 'adminUsers.groups.memberCount' | translate: { count: group.memberCount } }}
                   </span>
                 </button>
@@ -338,9 +338,14 @@
             formControlName="email"
             data-testid="invite-email-input"
             [attr.aria-invalid]="inviteForm.controls.email.touched && inviteForm.controls.email.invalid"
+            [attr.aria-describedby]="
+              inviteForm.controls.email.touched && inviteForm.controls.email.invalid
+                ? 'invite-email-error'
+                : null
+            "
           />
           @if (inviteForm.controls.email.touched && inviteForm.controls.email.invalid) {
-            <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+            <p id="invite-email-error" class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
               {{ 'common.validation.invalidEmail' | translate }}
             </p>
           }
@@ -356,7 +361,20 @@
             hlmInput
             formControlName="externalId"
             data-testid="invite-external-id-input"
+            [attr.aria-invalid]="
+              inviteForm.controls.externalId.touched && inviteForm.controls.externalId.invalid
+            "
+            [attr.aria-describedby]="
+              inviteForm.controls.externalId.touched && inviteForm.controls.externalId.invalid
+                ? 'invite-external-id-error'
+                : null
+            "
           />
+          @if (inviteForm.controls.externalId.touched && inviteForm.controls.externalId.invalid) {
+            <p id="invite-external-id-error" class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+              {{ 'common.validation.maxLength' | translate: { max: 200 } }}
+            </p>
+          }
         </div>
 
         <div class="space-y-1">

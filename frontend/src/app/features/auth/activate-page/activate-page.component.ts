@@ -23,6 +23,9 @@ import {
   selectActivationError,
   selectActivationStatus,
 } from '../../../core/auth/store/auth.selectors';
+import { SupportedLanguage } from '../../../core/i18n/models/supported-language.type';
+import { I18nActions } from '../../../core/i18n/store/i18n.actions';
+import { selectCurrentLanguage } from '../../../core/i18n/store/i18n.selectors';
 import { UiStateBannerComponent } from '../../../shared/components/ui-state-banner/ui-state-banner.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { HlmButtonDirective } from '../../../shared/ui/hlm-button.directive';
@@ -65,6 +68,12 @@ export class ActivatePageComponent implements OnInit, OnDestroy {
 
   protected readonly activationStatus = this.store.selectSignal(selectActivationStatus);
   protected readonly activationError = this.store.selectSignal(selectActivationError);
+  protected readonly currentLanguage = this.store.selectSignal(selectCurrentLanguage);
+  protected readonly languages: readonly SupportedLanguage[] = ['en', 'de', 'pl'];
+
+  protected changeLanguage(language: SupportedLanguage): void {
+    this.store.dispatch(I18nActions.changeLanguage({ language }));
+  }
 
   protected readonly showPassword = signal(false);
   protected readonly showConfirmPassword = signal(false);

@@ -29,6 +29,7 @@
     "loading": "Ładowanie...",
     "dismiss": "Zamknij",
     "cancel": "Anuluj",
+    "retry": "Ponów próbę",
     "successTitle": "Zapisano",
     "validation": {
       "required": "To pole jest wymagane.",

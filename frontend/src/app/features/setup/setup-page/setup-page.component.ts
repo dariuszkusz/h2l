@@ -114,6 +114,10 @@ export class SetupPageComponent implements OnInit {
     this.store.dispatch(ThemeActions.setThemeMode({ mode }));
   }
 
+  protected retryStatus(): void {
+    this.store.dispatch(SetupActions.checkStatus());
+  }
+
   protected isControlInvalid(controlName: 'adminEmail' | 'adminPassword'): boolean {
     const control = this.setupForm.controls[controlName];
     return control.invalid && (control.touched || control.dirty);
