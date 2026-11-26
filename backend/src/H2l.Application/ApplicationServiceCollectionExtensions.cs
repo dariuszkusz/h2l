@@ -1,4 +1,7 @@
 using FluentValidation;
+using H2l.Application.Forms.Expressions;
+using H2l.Application.Forms.Schema;
+using H2l.Application.Tasks;
 using Mapster;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +21,11 @@ public static class ApplicationServiceCollectionExtensions
 
         services.AddSingleton(typeAdapterConfig);
         services.AddSingleton<IMapper>(new Mapper(typeAdapterConfig));
+
+        services.AddSingleton<ISafeExpressionEvaluator, SafeExpressionEvaluator>();
+        services.AddSingleton<IFormSchemaValidator, FormSchemaValidator>();
+        services.AddSingleton<IFormSubmissionValidator, FormSubmissionValidator>();
+        services.AddScoped<ITaskAccessEvaluator, TaskAccessEvaluator>();
 
         return services;
     }

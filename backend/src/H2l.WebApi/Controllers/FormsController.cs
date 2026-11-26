@@ -61,6 +61,82 @@ public sealed class FormsController : ApiControllerBase
             result.IsSuccess ? $"/api/v1/processes/{processId}/forms/{result.Value.Id}" : null);
     }
 
+    [HttpGet("forms/{formId:guid}")]
+    [Authorize(Roles = "Admin,ProcessDesigner")]
+    [ProducesResponseType(typeof(FormDefinitionDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json")]
+    public async Task<IActionResult> GetFormDefinition(
+        [FromRoute] Guid formId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _messageBus.InvokeAsync<Result<FormDefinitionDetailResponse>>(
+            new GetFormDefinitionQuery(formId),
+            cancellationToken);
+
+        return ToActionResult(result);
+    }
+
+    [HttpPut("forms/{formId:guid}/draft")]
+    [Authorize(Roles = "Admin,ProcessDesigner")]
+    [ProducesResponseType(typeof(FormDefinitionDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json")]
+    public async Task<IActionResult> UpdateFormDraft(
+        [FromRoute] Guid formId,
+        [FromBody] UpdateFormDraftRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _messageBus.InvokeAsync<Result<FormDefinitionDetailResponse>>(
+            new UpdateFormDraftCommand(formId, request.Name, request.DraftSchema),
+            cancellationToken);
+
+        return ToActionResult(result);
+    }
+
+    [HttpGet("forms/{formId:guid}/versions")]
+    [Authorize(Roles = "Admin,ProcessDesigner")]
+    [ProducesResponseType(typeof(IReadOnlyList<FormVersionSummaryResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json")]
+    public async Task<IActionResult> ListFormVersions(
+        [FromRoute] Guid formId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _messageBus.InvokeAsync<Result<IReadOnlyList<FormVersionSummaryResponse>>>(
+            new ListFormVersionsQuery(formId),
+            cancellationToken);
+
+        return ToActionResult(result);
+    }
+
+    [HttpPost("forms/{formId:guid}/publish")]
+    [Authorize(Roles = "Admin,ProcessDesigner")]
+    [ProducesResponseType(typeof(FormVersionResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status402PaymentRequired, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json")]
+    public async Task<IActionResult> PublishFormVersion(
+        [FromRoute] Guid formId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _messageBus.InvokeAsync<Result<FormVersionResponse>>(
+            new PublishFormVersionCommand(formId),
+            cancellationToken);
+
+        return ToCreatedResult(
+            result,
+            result.IsSuccess ? $"/api/v1/forms/{formId}/versions" : null);
+    }
+
     [HttpGet("forms/{formId:guid}/access-rules")]
     [Authorize(Roles = "Admin,ProcessDesigner")]
     [ProducesResponseType(typeof(FormAccessRulesResponse), StatusCodes.Status200OK)]

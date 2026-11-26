@@ -48,6 +48,7 @@ public abstract class ApiControllerBase : ControllerBase
             ErrorType.Forbidden => (StatusCodes.Status403Forbidden, "Forbidden", "https://tools.ietf.org/html/rfc9110#section-15.5.4"),
             ErrorType.NotFound => (StatusCodes.Status404NotFound, "Not Found", "https://tools.ietf.org/html/rfc9110#section-15.5.5"),
             ErrorType.Conflict => (StatusCodes.Status409Conflict, "Conflict", "https://tools.ietf.org/html/rfc9110#section-15.5.10"),
+            ErrorType.PayloadTooLarge => (StatusCodes.Status413PayloadTooLarge, "Payload Too Large", "https://tools.ietf.org/html/rfc9110#section-15.5.14"),
             _ => (StatusCodes.Status500InternalServerError, "Internal Server Error", "https://tools.ietf.org/html/rfc9110#section-15.6.1")
         };
 

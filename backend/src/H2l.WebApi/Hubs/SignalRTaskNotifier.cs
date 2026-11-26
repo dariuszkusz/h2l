@@ -23,4 +23,16 @@ public sealed class SignalRTaskNotifier : IRealtimeTaskNotifier
             .Group(groupName)
             .SendAsync("TaskAssigned", new { taskId }, cancellationToken);
     }
+
+    public Task NotifyTaskUpdatedAsync(
+        Guid tenantId,
+        Guid taskId,
+        string eventType,
+        CancellationToken cancellationToken = default)
+    {
+        var groupName = TasksHub.BuildTenantGroupName(tenantId);
+        return _hubContext.Clients
+            .Group(groupName)
+            .SendAsync("TaskUpdated", new { taskId, eventType }, cancellationToken);
+    }
 }

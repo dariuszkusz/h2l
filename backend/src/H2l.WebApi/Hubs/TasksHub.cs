@@ -25,11 +25,16 @@ public sealed class TasksHub : Hub
             return;
         }
 
-        var groupName = BuildUserGroupName(tenantId, userId);
-        await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+        var userGroupName = BuildUserGroupName(tenantId, userId);
+        var tenantGroupName = BuildTenantGroupName(tenantId);
+        await Groups.AddToGroupAsync(Context.ConnectionId, userGroupName);
+        await Groups.AddToGroupAsync(Context.ConnectionId, tenantGroupName);
         await base.OnConnectedAsync();
     }
 
     public static string BuildUserGroupName(Guid tenantId, Guid userId)
         => $"tenant:{tenantId:N}:user:{userId:N}";
+
+    public static string BuildTenantGroupName(Guid tenantId)
+        => $"tenant:{tenantId:N}";
 }
