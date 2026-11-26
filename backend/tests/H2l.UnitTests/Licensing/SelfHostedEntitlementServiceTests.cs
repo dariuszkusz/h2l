@@ -1,6 +1,7 @@
 using H2l.Application.Common;
 using H2l.Application.Licensing;
 using H2l.Domain.Common;
+using H2l.Domain.Connectors;
 using H2l.Domain.Identity;
 using H2l.Domain.Licensing;
 using H2l.Domain.Workflows;
@@ -20,6 +21,7 @@ public sealed class SelfHostedEntitlementServiceTests
     private readonly IInstanceSettingsRepository _settingsRepository = Substitute.For<IInstanceSettingsRepository>();
     private readonly IUserRepository _userRepository = Substitute.For<IUserRepository>();
     private readonly IWorkflowProcessRepository _processRepository = Substitute.For<IWorkflowProcessRepository>();
+    private readonly IWorkflowConnectorRepository _connectorRepository = Substitute.For<IWorkflowConnectorRepository>();
     private readonly IAesGcmEncryptionService _encryptionService;
     private readonly TestEd25519LicenseSigner _signer = new();
     private readonly ILicenseVerifier _licenseVerifier;
@@ -43,6 +45,7 @@ public sealed class SelfHostedEntitlementServiceTests
             _settingsRepository,
             _userRepository,
             _processRepository,
+            _connectorRepository,
             _encryptionService,
             _licenseVerifier,
             _dateTimeProvider);
@@ -53,6 +56,7 @@ public sealed class SelfHostedEntitlementServiceTests
         var settings = InstanceSettings.Create(_tenantId).Value;
         _settingsRepository.GetByTenantIdAsync(_tenantId, Arg.Any<CancellationToken>()).Returns(settings);
         _processRepository.CountActiveAsync(Arg.Any<CancellationToken>()).Returns(1);
+        _connectorRepository.CountActiveAsync(Arg.Any<CancellationToken>()).Returns(1);
         _userRepository.CountActiveAdminsAsync(Arg.Any<CancellationToken>()).Returns(1);
         _userRepository.CountActiveEndUsersAsync(Arg.Any<CancellationToken>()).Returns(250);
 
@@ -62,6 +66,7 @@ public sealed class SelfHostedEntitlementServiceTests
         Assert.True(statusResult.IsSuccess);
         Assert.Equal(LicensePlan.Free, statusResult.Value.Plan);
         Assert.Equal(1, statusResult.Value.Limits.MaxActiveProcesses);
+        Assert.Equal(1, statusResult.Value.Limits.MaxActiveConnectors);
         Assert.Equal(1, statusResult.Value.Limits.MaxAdminUsers);
         Assert.Null(statusResult.Value.Limits.MaxEndUsers);
         Assert.Equal(250, statusResult.Value.Usage.EndUsers);
@@ -69,6 +74,11 @@ public sealed class SelfHostedEntitlementServiceTests
         var processCheck = await sut.CanActivateWorkflowProcessAsync();
         Assert.True(processCheck.IsFailure);
         Assert.Equal(ErrorType.PaymentRequired, processCheck.Error.Type);
+
+        var connectorCheck = await sut.CanActivateConnectorAsync();
+        Assert.True(connectorCheck.IsFailure);
+        Assert.Equal(ErrorType.PaymentRequired, connectorCheck.Error.Type);
+        Assert.Equal("CONNECTOR_LIMIT_EXCEEDED", connectorCheck.Error.Code);
 
         var adminCheck = await sut.CanCreateAdminUserAsync();
         Assert.True(adminCheck.IsFailure);

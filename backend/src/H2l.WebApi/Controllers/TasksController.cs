@@ -102,6 +102,26 @@ public sealed class TasksController : ApiControllerBase
         return ToActionResult(result);
     }
 
+    [HttpPost("{taskId:guid}/assign")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(TaskDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json")]
+    public async Task<IActionResult> AssignTask(
+        [FromRoute] Guid taskId,
+        [FromBody] AssignTaskRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _messageBus.InvokeAsync<Result<TaskDetailResponse>>(
+            new AssignTaskCommand(taskId, request.UserId),
+            cancellationToken);
+
+        return ToActionResult(result);
+    }
+
     [HttpPost("{taskId:guid}/submit")]
     [ProducesResponseType(typeof(SubmitTaskResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json")]

@@ -9,4 +9,6 @@ public interface IEntitlementService
     Task<Result> CanCreateAdminUserAsync(CancellationToken cancellationToken = default);
 
     Task<Result> CanActivateWorkflowProcessAsync(CancellationToken cancellationToken = default);
+
+    Task<Result> CanActivateConnectorAsync(CancellationToken cancellationToken = default);
 }

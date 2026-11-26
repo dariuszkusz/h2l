@@ -17,4 +17,8 @@ public interface IAttachmentStorageService
         Guid attachmentId,
         string storagePath,
         CancellationToken cancellationToken = default);
+
+    Task DeleteIfExistsAsync(
+        string storagePath,
+        CancellationToken cancellationToken = default);
 }

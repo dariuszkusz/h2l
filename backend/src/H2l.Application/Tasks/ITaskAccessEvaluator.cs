@@ -9,4 +9,9 @@ public interface ITaskAccessEvaluator
         HumanTask task,
         Guid formDefinitionId,
         CancellationToken cancellationToken = default);
+
+    Task<bool> CanUserAccessFormAsync(
+        Guid userId,
+        Guid formDefinitionId,
+        CancellationToken cancellationToken = default);
 }

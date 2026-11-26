@@ -1,3 +1,5 @@
+using System.Text.Json;
+using H2l.Application.Connectors.DTOs;
 using H2l.Application.Forms.Commands;
 using H2l.Application.Forms.DTOs;
 using H2l.Application.Forms.Queries;
@@ -168,6 +170,45 @@ public sealed class FormsController : ApiControllerBase
     {
         var result = await _messageBus.InvokeAsync<Result>(
             new UpdateFormAccessRulesCommand(formId, request.Rules),
+            cancellationToken);
+
+        return ToActionResult(result);
+    }
+
+    [HttpGet("forms/{formId:guid}/templates/camunda-element-template")]
+    [Authorize(Roles = "Admin,ProcessDesigner")]
+    [ProducesResponseType(typeof(JsonElement), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json")]
+    public async Task<IActionResult> GetCamundaElementTemplate(
+        [FromRoute] Guid formId,
+        [FromQuery] bool generic = false,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _messageBus.InvokeAsync<Result<JsonElement>>(
+            new GetCamundaElementTemplateQuery(formId, generic),
+            cancellationToken);
+
+        return ToActionResult(result);
+    }
+
+    [HttpGet("forms/{formId:guid}/templates/n8n-nodes")]
+    [Authorize(Roles = "Admin,ProcessDesigner")]
+    [ProducesResponseType(typeof(N8nNodesTemplateResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json")]
+    public async Task<IActionResult> GetN8nNodesTemplate(
+        [FromRoute] Guid formId,
+        [FromQuery] string variant = "community-node",
+        [FromQuery] Guid? connectorId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _messageBus.InvokeAsync<Result<N8nNodesTemplateResponse>>(
+            new GetN8nNodesTemplateQuery(formId, variant, connectorId),
             cancellationToken);
 
         return ToActionResult(result);

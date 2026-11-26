@@ -38,6 +38,19 @@ public sealed class TaskAccessEvaluator : ITaskAccessEvaluator
             return false;
         }
 
+        return await CanUserAccessFormAsync(userId, formDefinitionId, cancellationToken);
+    }
+
+    public async Task<bool> CanUserAccessFormAsync(
+        Guid userId,
+        Guid formDefinitionId,
+        CancellationToken cancellationToken = default)
+    {
+        if (userId == Guid.Empty)
+        {
+            return false;
+        }
+
         var rules = await _formAccessRuleRepository.ListByFormDefinitionIdAsync(formDefinitionId, cancellationToken);
         if (rules.Count == 0)
         {

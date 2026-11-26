@@ -189,7 +189,7 @@ public sealed class SubmitTaskCommandHandler
         }
 
         var now = _dateTimeProvider.UtcNow;
-        var completeResult = task.Complete(userId, now);
+        var completeResult = task.Complete(userId, now, clearResumeUrl: task.ConnectorId is null);
         if (completeResult.IsFailure)
         {
             return Result.Failure<SubmitTaskResponse>(completeResult.Error);
