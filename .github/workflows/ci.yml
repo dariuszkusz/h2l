@@ -97,6 +97,40 @@ jobs:
           curl -sSf http://localhost:4200 >/dev/null
           xvfb-run --auto-servernum npm run cy:run
 
+  n8n-node:
+    name: n8n Community Node (Build, Lint, Test & Audit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: integrations/n8n-nodes-h2l/package-lock.json
+
+      - name: Install dependencies
+        working-directory: integrations/n8n-nodes-h2l
+        run: npm ci
+
+      - name: Build n8n node
+        working-directory: integrations/n8n-nodes-h2l
+        run: npm run build
+
+      - name: Lint n8n node
+        working-directory: integrations/n8n-nodes-h2l
+        run: npm run lint
+
+      - name: Run unit tests
+        working-directory: integrations/n8n-nodes-h2l
+        run: npm test
+
+      - name: Audit npm dependencies
+        working-directory: integrations/n8n-nodes-h2l
+        run: npm audit --audit-level=high
+
   openapi-check:
     name: OpenAPI Contract Sync Check
     runs-on: ubuntu-latest

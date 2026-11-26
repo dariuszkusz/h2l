@@ -1,0 +1,109 @@
+# Production Docker Compose configuration for h2l (Human-in-the-Loop).
+#
+# Quickstart:
+#   cp .env.example .env   # Set strong POSTGRES_PASSWORD, JWT_SIGNING_KEY, ENCRYPTION_AES_GCM_KEY
+#   docker compose up -d
+#
+# With automatic HTTPS via Caddy:
+#   H2L_DOMAIN=h2l.example.com docker compose --profile https up -d
+#
+# Database migrations:
+#   DB_AUTO_MIGRATE defaults to `false` here so multi-replica / production upgrades can run
+#   the EF Core Migration Bundle (`./efbundle --connection "$DB_CONNECTION_STRING"`) before
+#   starting new replicas. For a single-instance self-hosted deployment, you may set
+#   DB_AUTO_MIGRATE=true in `.env`.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: h2l-postgres
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-h2l}
+      POSTGRES_USER: ${POSTGRES_USER:-h2l}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+    volumes:
+      - h2l_postgres_data:/var/lib/postgresql/data
+    networks:
+      - h2l_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-h2l} -d $${POSTGRES_DB:-h2l}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  h2l:
+    image: ghcr.io/dariuszkusz/h2l:${H2L_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: h2l-app
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      DB_CONNECTION_STRING: Host=postgres;Port=5432;Database=${POSTGRES_DB:-h2l};Username=${POSTGRES_USER:-h2l};Password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      # Keep `false` for multi-replica / production upgrades using EF Core Migration Bundle;
+      # set `true` in `.env` for single-instance automatic migrations on startup.
+      DB_AUTO_MIGRATE: ${DB_AUTO_MIGRATE:-false}
+      ATTACHMENTS_STORAGE_PATH: /data/attachments
+    ports:
+      - "${H2L_PORT:-8080}:8080"
+    volumes:
+      - h2l_app_data:/data
+    networks:
+      - h2l_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/health/live || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: h2l-caddy
+    profiles:
+      - https
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      h2l:
+        condition: service_healthy
+    environment:
+      H2L_DOMAIN: ${H2L_DOMAIN:?H2L_DOMAIN must be set when using the https profile}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - h2l_caddy_data:/data
+      - h2l_caddy_config:/config
+    networks:
+      - h2l_net
+
+networks:
+  h2l_net:
+    driver: bridge
+
+volumes:
+  h2l_postgres_data:
+    name: h2l_postgres_data
+  h2l_app_data:
+    name: h2l_app_data
+  h2l_caddy_data:
+    name: h2l_caddy_data
+  h2l_caddy_config:
+    name: h2l_caddy_config
