@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" fill="none" role="img" aria-label="h2l icon">
+  <defs>
+    <linearGradient id="h2l-grad" x1="4" y1="30" x2="56" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="50%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+    <mask id="h2l-nodes-mask">
+      <rect width="60" height="60" fill="#ffffff" />
+      <circle cx="7" cy="30" r="2.2" fill="#000000" />
+      <circle cx="22.8" cy="37" r="2.2" fill="#000000" />
+      <circle cx="43.5" cy="20.5" r="2.2" fill="#000000" />
+      <circle cx="53" cy="30" r="2.2" fill="#000000" />
+      <circle cx="43.5" cy="39.5" r="2.2" fill="#000000" />
+    </mask>
+  </defs>
+  <g mask="url(#h2l-nodes-mask)">
+    <path
+      d="M 27.3 27.5 L 22.8 23 A 9.6 9.6 0 1 0 22.8 37 L 37.2 23 A 9.6 9.6 0 1 1 37.2 37 L 32.7 32.5"
+      stroke="url(#h2l-grad)"
+      stroke-width="3.2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <circle cx="7" cy="30" r="3.6" fill="url(#h2l-grad)" />
+    <circle cx="22.8" cy="37" r="3.6" fill="url(#h2l-grad)" />
+    <circle cx="43.5" cy="20.5" r="3.6" fill="url(#h2l-grad)" />
+    <circle cx="53" cy="30" r="3.6" fill="url(#h2l-grad)" />
+    <circle cx="43.5" cy="39.5" r="3.6" fill="url(#h2l-grad)" />
+  </g>
+</svg>

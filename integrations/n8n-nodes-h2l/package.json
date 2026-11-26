@@ -1,0 +1,63 @@
+{
+  "name": "n8n-nodes-h2l",
+  "version": "0.1.0",
+  "description": "Official n8n Community Node for h2l (Human-in-the-Loop) Workflow Integrator",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "h2l",
+    "human-in-the-loop",
+    "workflow",
+    "forms"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/h2l-io/h2l",
+  "author": {
+    "name": "h2l Team"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/h2l-io/h2l.git",
+    "directory": "integrations/n8n-nodes-h2l"
+  },
+  "main": "dist/nodes/H2l/H2l.node.js",
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/H2lApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/H2l/H2l.node.js"
+    ]
+  },
+  "scripts": {
+    "build": "tsc && node scripts/copy-assets.mjs",
+    "lint": "eslint nodes credentials test",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build && npm run lint && npm test"
+  },
+  "engines": {
+    "node": ">=20.15.0"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@typescript-eslint/eslint-plugin": "^8.32.0",
+    "@typescript-eslint/parser": "^8.32.0",
+    "eslint": "^9.26.0",
+    "eslint-plugin-n8n-nodes-base": "^2.0.0",
+    "n8n-workflow": "^2.49.5",
+    "typescript": "^5.8.3",
+    "vitest": "^5.1.2"
+  },
+  "overrides": {
+    "zod": "^4.6.6"
+  }
+}
