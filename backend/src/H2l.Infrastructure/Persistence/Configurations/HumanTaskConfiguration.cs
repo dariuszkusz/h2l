@@ -1,3 +1,4 @@
+using H2l.Domain.Connectors;
 using H2l.Domain.Identity;
 using H2l.Domain.Tasks;
 using H2l.Domain.Workflows;
@@ -26,7 +27,7 @@ public sealed class HumanTaskConfiguration : IEntityTypeConfiguration<HumanTask>
             .IsRequired();
 
         builder.Property(x => x.ExternalTaskId)
-            .HasMaxLength(200)
+            .HasMaxLength(255)
             .IsRequired();
 
         builder.Property(x => x.Status)
@@ -83,6 +84,11 @@ public sealed class HumanTaskConfiguration : IEntityTypeConfiguration<HumanTask>
         builder.HasOne<User>()
             .WithMany()
             .HasForeignKey(x => x.ClaimedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<WorkflowConnector>()
+            .WithMany()
+            .HasForeignKey(x => x.ConnectorId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Ignore(x => x.DomainEvents);

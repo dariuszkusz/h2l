@@ -22,6 +22,23 @@ public sealed class HumanTaskRepository : IHumanTaskRepository
         => _dbContext.HumanTasks
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
+    public Task<HumanTask?> GetByIdIgnoringTenantFilterForUpdateAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+        => _dbContext.HumanTasks
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+
+    public Task<HumanTask?> GetByExternalTaskIdAsync(
+        Guid connectorId,
+        string externalTaskId,
+        CancellationToken cancellationToken = default)
+        => _dbContext.HumanTasks
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                t => t.ConnectorId == connectorId && t.ExternalTaskId == externalTaskId,
+                cancellationToken);
+
     public async Task<HumanTaskDetailRecord?> GetDetailByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)
@@ -115,6 +132,38 @@ public sealed class HumanTaskRepository : IHumanTaskRepository
 
         return new PagedHumanTasksResult(items, totalCount);
     }
+
+    public async Task<IReadOnlyList<HumanTask>> ListExpiredOpenTasksIgnoringTenantFilterAsync(
+        DateTimeOffset utcNow,
+        int batchSize,
+        CancellationToken cancellationToken = default)
+        => await _dbContext.HumanTasks
+            .IgnoreQueryFilters()
+            .Where(t =>
+                t.ExpiresAt != null
+                && t.ExpiresAt <= utcNow
+                && (t.Status == HumanTaskStatus.Pending
+                    || t.Status == HumanTaskStatus.InProgress
+                    || t.Status == HumanTaskStatus.NeedsAssignment))
+            .OrderBy(t => t.ExpiresAt)
+            .Take(batchSize)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<HumanTask>> ListActiveTasksByConnectorIgnoringTenantFilterAsync(
+        Guid connectorId,
+        int batchSize,
+        CancellationToken cancellationToken = default)
+        => await _dbContext.HumanTasks
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(t =>
+                t.ConnectorId == connectorId
+                && (t.Status == HumanTaskStatus.Pending
+                    || t.Status == HumanTaskStatus.InProgress
+                    || t.Status == HumanTaskStatus.NeedsAssignment))
+            .OrderBy(t => t.CreatedAt)
+            .Take(batchSize)
+            .ToListAsync(cancellationToken);
 
     public async Task AddAsync(HumanTask task, CancellationToken cancellationToken = default)
         => await _dbContext.HumanTasks.AddAsync(task, cancellationToken);

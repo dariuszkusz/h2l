@@ -6,6 +6,8 @@ public interface IGroupRepository
 
     Task<Group?> GetByCodeAsync(string code, CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<Group>> ListByCodesAsync(IReadOnlyCollection<string> codes, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<Group>> ListAsync(CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<Group>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default);

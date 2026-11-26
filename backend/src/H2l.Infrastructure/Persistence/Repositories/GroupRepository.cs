@@ -25,6 +25,32 @@ public sealed class GroupRepository : IGroupRepository
             .FirstOrDefaultAsync(g => g.Code == normalizedCode, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Group>> ListByCodesAsync(
+        IReadOnlyCollection<string> codes,
+        CancellationToken cancellationToken = default)
+    {
+        if (codes.Count == 0)
+        {
+            return [];
+        }
+
+        var normalized = codes
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .Select(c => c.Trim().ToLowerInvariant())
+            .Distinct()
+            .ToArray();
+
+        if (normalized.Length == 0)
+        {
+            return [];
+        }
+
+        return await _dbContext.Groups
+            .AsNoTracking()
+            .Where(g => normalized.Contains(g.Code))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Group>> ListAsync(CancellationToken cancellationToken = default)
         => await _dbContext.Groups
             .AsNoTracking()

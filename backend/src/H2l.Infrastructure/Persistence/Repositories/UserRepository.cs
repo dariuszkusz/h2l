@@ -36,6 +36,17 @@ public sealed class UserRepository : IUserRepository
             .FirstOrDefaultAsync(u => u.Email == normalized, cancellationToken);
     }
 
+    public Task<User?> GetByEmailOrExternalIdAsync(string identifier, CancellationToken cancellationToken = default)
+    {
+        var trimmed = identifier.Trim();
+        var normalizedEmail = trimmed.ToLowerInvariant();
+        return _dbContext.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                u => u.Email == normalizedEmail || (u.ExternalId != null && u.ExternalId == trimmed),
+                cancellationToken);
+    }
+
     public async Task<IReadOnlyList<User>> ListAsync(CancellationToken cancellationToken = default)
         => await _dbContext.Users
             .AsNoTracking()

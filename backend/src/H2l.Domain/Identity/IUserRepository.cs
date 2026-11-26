@@ -10,6 +10,8 @@ public interface IUserRepository
 
     Task<User?> GetByEmailForUpdateAsync(string email, CancellationToken cancellationToken = default);
 
+    Task<User?> GetByEmailOrExternalIdAsync(string identifier, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<User>> ListAsync(CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<User>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken = default);

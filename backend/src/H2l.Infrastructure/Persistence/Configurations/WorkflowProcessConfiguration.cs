@@ -1,3 +1,4 @@
+using H2l.Domain.Connectors;
 using H2l.Domain.Identity;
 using H2l.Domain.Workflows;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +58,11 @@ public sealed class WorkflowProcessConfiguration : IEntityTypeConfiguration<Work
         builder.HasOne<Project>()
             .WithMany()
             .HasForeignKey(x => x.ProjectId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<WorkflowConnector>()
+            .WithMany()
+            .HasForeignKey(x => x.ConnectorId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Ignore(x => x.DomainEvents);

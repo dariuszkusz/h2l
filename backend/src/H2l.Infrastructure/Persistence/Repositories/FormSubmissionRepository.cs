@@ -17,6 +17,12 @@ public sealed class FormSubmissionRepository : IFormSubmissionRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
+    public Task<FormSubmission?> GetByIdIgnoringTenantFilterAsync(Guid id, CancellationToken cancellationToken = default)
+        => _dbContext.FormSubmissions
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+
     public Task<FormSubmission?> GetByTaskAndIdempotencyKeyAsync(
         Guid humanTaskId,
         string idempotencyKey,
@@ -33,6 +39,17 @@ public sealed class FormSubmissionRepository : IFormSubmissionRepository
         => _dbContext.FormSubmissions
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.HumanTaskId == humanTaskId, cancellationToken);
+
+    public async Task<IReadOnlyList<FormSubmission>> ListExpiredForRetentionIgnoringTenantFilterAsync(
+        DateTimeOffset utcNow,
+        int batchSize,
+        CancellationToken cancellationToken = default)
+        => await _dbContext.FormSubmissions
+            .IgnoreQueryFilters()
+            .Where(s => s.AnonymizedAt == null && s.RetentionUntil != null && s.RetentionUntil <= utcNow)
+            .OrderBy(s => s.RetentionUntil)
+            .Take(batchSize)
+            .ToListAsync(cancellationToken);
 
     public async Task AddAsync(FormSubmission submission, CancellationToken cancellationToken = default)
         => await _dbContext.FormSubmissions.AddAsync(submission, cancellationToken);

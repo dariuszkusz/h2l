@@ -6,6 +6,13 @@ public interface IHumanTaskRepository
 
     Task<HumanTask?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default);
 
+    Task<HumanTask?> GetByIdIgnoringTenantFilterForUpdateAsync(Guid id, CancellationToken cancellationToken = default);
+
+    Task<HumanTask?> GetByExternalTaskIdAsync(
+        Guid connectorId,
+        string externalTaskId,
+        CancellationToken cancellationToken = default);
+
     Task<HumanTaskDetailRecord?> GetDetailByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<PagedHumanTasksResult> ListForUserAsync(
@@ -15,6 +22,16 @@ public interface IHumanTaskRepository
         TaskListScope scope,
         int page,
         int pageSize,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<HumanTask>> ListExpiredOpenTasksIgnoringTenantFilterAsync(
+        DateTimeOffset utcNow,
+        int batchSize,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<HumanTask>> ListActiveTasksByConnectorIgnoringTenantFilterAsync(
+        Guid connectorId,
+        int batchSize,
         CancellationToken cancellationToken = default);
 
     Task AddAsync(HumanTask task, CancellationToken cancellationToken = default);

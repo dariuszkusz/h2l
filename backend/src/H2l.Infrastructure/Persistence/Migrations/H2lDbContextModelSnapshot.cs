@@ -71,6 +71,83 @@ namespace H2l.Infrastructure.Persistence.Migrations
                     b.ToTable("audit_logs", "audit");
                 });
 
+            modelBuilder.Entity("H2l.Domain.Connectors.WorkflowConnector", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AuthType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("auth_type");
+
+                    b.Property<string>("BaseUrl")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("base_url");
+
+                    b.Property<string>("CallbackUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("callback_url");
+
+                    b.Property<string>("ConnectorType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("connector_type");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("EncryptedConfig")
+                        .HasColumnType("text")
+                        .HasColumnName("encrypted_config");
+
+                    b.Property<bool>("HasCredentials")
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_credentials");
+
+                    b.Property<bool>("HasCustomCaCertificate")
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_custom_ca_certificate");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_workflow_connectors");
+
+                    b.HasIndex("TenantId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_workflow_connectors_tenant_id_name")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.HasIndex("TenantId", "ConnectorType", "IsActive")
+                        .HasDatabaseName("ix_workflow_connectors_tenant_id_connector_type_is_active");
+
+                    b.ToTable("workflow_connectors", "app");
+                });
+
             modelBuilder.Entity("H2l.Domain.Identity.Group", b =>
                 {
                     b.Property<Guid>("Id")
@@ -577,8 +654,8 @@ namespace H2l.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("ExternalTaskId")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("external_task_id");
 
                     b.Property<Guid>("FormVersionId")
@@ -613,6 +690,9 @@ namespace H2l.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ClaimedByUserId")
                         .HasDatabaseName("ix_human_tasks_claimed_by_user_id");
+
+                    b.HasIndex("ConnectorId")
+                        .HasDatabaseName("ix_human_tasks_connector_id");
 
                     b.HasIndex("FormVersionId")
                         .HasDatabaseName("ix_human_tasks_form_version_id");
@@ -937,6 +1017,9 @@ namespace H2l.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_workflow_processes");
 
+                    b.HasIndex("ConnectorId")
+                        .HasDatabaseName("ix_workflow_processes_connector_id");
+
                     b.HasIndex("ProjectId")
                         .HasDatabaseName("ix_workflow_processes_project_id");
 
@@ -949,6 +1032,16 @@ namespace H2l.Infrastructure.Persistence.Migrations
                         .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("workflow_processes", "app");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Connectors.WorkflowConnector", b =>
+                {
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_workflow_connectors_tenants_tenant_id");
                 });
 
             modelBuilder.Entity("H2l.Domain.Identity.Group", b =>
@@ -1113,6 +1206,12 @@ namespace H2l.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_human_tasks_users_claimed_by_user_id");
 
+                    b.HasOne("H2l.Domain.Connectors.WorkflowConnector", null)
+                        .WithMany()
+                        .HasForeignKey("ConnectorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_human_tasks_workflow_connectors_connector_id");
+
                     b.HasOne("H2l.Domain.Workflows.FormVersion", null)
                         .WithMany()
                         .HasForeignKey("FormVersionId")
@@ -1233,6 +1332,12 @@ namespace H2l.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("H2l.Domain.Workflows.WorkflowProcess", b =>
                 {
+                    b.HasOne("H2l.Domain.Connectors.WorkflowConnector", null)
+                        .WithMany()
+                        .HasForeignKey("ConnectorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_workflow_processes_workflow_connectors_connector_id");
+
                     b.HasOne("H2l.Domain.Workflows.Project", null)
                         .WithMany()
                         .HasForeignKey("ProjectId")

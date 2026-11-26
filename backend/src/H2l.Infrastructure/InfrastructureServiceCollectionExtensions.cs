@@ -1,13 +1,18 @@
 using H2l.Application.Common;
+using H2l.Application.Connectors.Contracts;
 using H2l.Application.Licensing;
 using H2l.Domain.Audit;
 using H2l.Domain.Common;
+using H2l.Domain.Connectors;
 using H2l.Domain.Identity;
 using H2l.Domain.Outbox;
 using H2l.Domain.Tasks;
 using H2l.Domain.Workflows;
+using H2l.Infrastructure.Connectors;
+using H2l.Infrastructure.Connectors.Security;
 using H2l.Infrastructure.Email;
 using H2l.Infrastructure.Health;
+using H2l.Infrastructure.Jobs;
 using H2l.Infrastructure.Licensing;
 using H2l.Infrastructure.Options;
 using H2l.Infrastructure.Persistence;
@@ -138,6 +143,14 @@ public static class InfrastructureServiceCollectionExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        var connectorOptions = new ConnectorSecurityOptions();
+        configuration.GetSection(ConnectorSecurityOptions.SectionName).Bind(connectorOptions);
+        ApplyConnectorEnvironmentOverrides(configuration, connectorOptions);
+
+        services.AddOptions<ConnectorSecurityOptions>()
+            .Bind(configuration.GetSection(ConnectorSecurityOptions.SectionName))
+            .PostConfigure(options => ApplyConnectorEnvironmentOverrides(configuration, options));
+
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
         services.AddSingleton<IAesGcmEncryptionService, AesGcmEncryptionService>();
         services.AddSingleton<IAttachmentStorageService, EncryptedLocalAttachmentStorageService>();
@@ -148,6 +161,25 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<ILicensePublicKeyProvider, ConfiguredLicensePublicKeyProvider>();
         services.AddSingleton<ILicenseVerifier, Ed25519LicenseVerifier>();
         services.AddScoped<IEntitlementService, SelfHostedEntitlementService>();
+
+        services.AddSingleton<IDnsResolver, SystemDnsResolver>();
+        services.AddSingleton<ISsrfGuard, SsrfGuard>();
+        services.AddSingleton<IHmacWebhookSigner, HmacWebhookSigner>();
+        services.AddSingleton<IConnectorHttpClientFactory, ConnectorHttpClientFactory>();
+        services.AddSingleton<ITokenProvider, ConnectorTokenProvider>();
+
+        services.AddSingleton<UniversalHttpWorkflowConnector>();
+        services.AddSingleton<N8nWorkflowConnector>();
+        services.AddSingleton<Camunda8WorkflowConnector>();
+        services.AddSingleton<IWorkflowConnector>(sp => sp.GetRequiredService<UniversalHttpWorkflowConnector>());
+        services.AddSingleton<IWorkflowConnector>(sp => sp.GetRequiredService<N8nWorkflowConnector>());
+        services.AddSingleton<IWorkflowConnector>(sp => sp.GetRequiredService<Camunda8WorkflowConnector>());
+        services.AddSingleton<IWorkflowConnectorRegistry, WorkflowConnectorRegistry>();
+
+        if (connectorOptions.EnableCamundaPullWorker)
+        {
+            services.AddHostedService<Camunda8PullWorkerBackgroundService>();
+        }
 
         services.AddScoped<DefaultTenantContext>();
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<DefaultTenantContext>());
@@ -172,6 +204,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IUserActivationTokenRepository, UserActivationTokenRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<IWorkflowConnectorRepository, WorkflowConnectorRepository>();
         services.AddScoped<IWorkflowProcessRepository, WorkflowProcessRepository>();
         services.AddScoped<IFormDefinitionRepository, FormDefinitionRepository>();
         services.AddScoped<IFormVersionRepository, FormVersionRepository>();
@@ -181,7 +214,72 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<ISubmissionAttachmentRepository, SubmissionAttachmentRepository>();
         services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
 
-        services.AddQuartz();
+        var quartzConnectionString = configuration["DB_CONNECTION_STRING"]
+            ?? configuration["H2L_DB_CONNECTION_STRING"]
+            ?? configuration.GetConnectionString("DefaultConnection")
+            ?? configuration["Database:ConnectionString"];
+
+        services.AddQuartz(q =>
+        {
+            q.SchedulerId = "AUTO";
+            q.SchedulerName = "h2l-scheduler";
+
+            if (connectorOptions.UsePersistentQuartzStore && !string.IsNullOrWhiteSpace(quartzConnectionString))
+            {
+                q.UsePersistentStore(store =>
+                {
+                    store.UseProperties = true;
+                    store.UsePostgres(pg =>
+                    {
+                        pg.ConnectionString = quartzConnectionString;
+                        pg.TablePrefix = "quartz.qrtz_";
+                    });
+                    store.UseSystemTextJsonSerializer();
+                    store.UseClustering();
+                });
+            }
+
+            var outboxJobKey = new JobKey("outbox-delivery-job", "h2l");
+            q.AddJob<OutboxDeliveryJob>(opts => opts.WithIdentity(outboxJobKey));
+            q.AddTrigger(opts => opts
+                .ForJob(outboxJobKey)
+                .WithIdentity("outbox-delivery-trigger", "h2l")
+                .StartNow()
+                .WithSimpleSchedule(x => x
+                    .WithIntervalInSeconds(Math.Max(5, connectorOptions.OutboxPollIntervalSeconds))
+                    .RepeatForever()));
+
+            var expirationJobKey = new JobKey("task-expiration-job", "h2l");
+            q.AddJob<TaskExpirationJob>(opts => opts.WithIdentity(expirationJobKey));
+            q.AddTrigger(opts => opts
+                .ForJob(expirationJobKey)
+                .WithIdentity("task-expiration-trigger", "h2l")
+                .StartNow()
+                .WithSimpleSchedule(x => x
+                    .WithIntervalInSeconds(Math.Max(15, connectorOptions.TaskExpirationPollIntervalSeconds))
+                    .RepeatForever()));
+
+            var retentionJobKey = new JobKey("data-retention-job", "h2l");
+            q.AddJob<DataRetentionJob>(opts => opts.WithIdentity(retentionJobKey));
+            q.AddTrigger(opts => opts
+                .ForJob(retentionJobKey)
+                .WithIdentity("data-retention-trigger", "h2l")
+                .StartNow()
+                .WithSimpleSchedule(x => x
+                    .WithIntervalInMinutes(Math.Max(5, connectorOptions.DataRetentionPollIntervalMinutes))
+                    .RepeatForever()));
+
+            var lockExtendJobKey = new JobKey("camunda-lock-extension-job", "h2l");
+            q.AddJob<CamundaLockExtensionJob>(opts => opts.WithIdentity(lockExtendJobKey));
+            q.AddTrigger(opts => opts
+                .ForJob(lockExtendJobKey)
+                .WithIdentity("camunda-lock-extension-trigger", "h2l")
+                .StartNow()
+                .WithSimpleSchedule(x => x
+                    .WithIntervalInMinutes(Math.Max(1, connectorOptions.CamundaLockExtendIntervalMinutes))
+                    .RepeatForever()));
+        });
+
         services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
         services.AddHealthChecks()
@@ -189,5 +287,37 @@ public static class InfrastructureServiceCollectionExtensions
             .AddCheck<QuartzHealthCheck>("quartz", tags: ["ready"]);
 
         return services;
+    }
+
+    private static void ApplyConnectorEnvironmentOverrides(
+        IConfiguration configuration,
+        ConnectorSecurityOptions options)
+    {
+        var allowPrivate = configuration["CONNECTOR_ALLOW_PRIVATE_NETWORKS"];
+        if (!string.IsNullOrWhiteSpace(allowPrivate) && bool.TryParse(allowPrivate, out var parsedAllow))
+        {
+            options.AllowPrivateNetworks = parsedAllow;
+        }
+
+        var allowedHosts = configuration["CONNECTOR_ALLOWED_HOSTS"];
+        if (!string.IsNullOrWhiteSpace(allowedHosts))
+        {
+            options.AllowedHosts = allowedHosts
+                .Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        var persistentQuartz = configuration["QUARTZ_USE_PERSISTENT_STORE"];
+        if (!string.IsNullOrWhiteSpace(persistentQuartz) && bool.TryParse(persistentQuartz, out var parsedQuartz))
+        {
+            options.UsePersistentQuartzStore = parsedQuartz;
+        }
+
+        var enableCamundaWorker = configuration["CAMUNDA_PULL_WORKER_ENABLED"];
+        if (!string.IsNullOrWhiteSpace(enableCamundaWorker) && bool.TryParse(enableCamundaWorker, out var parsedCamunda))
+        {
+            options.EnableCamundaPullWorker = parsedCamunda;
+        }
     }
 }

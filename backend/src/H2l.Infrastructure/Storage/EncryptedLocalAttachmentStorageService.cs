@@ -63,6 +63,19 @@ public sealed class EncryptedLocalAttachmentStorageService : IAttachmentStorageS
             $"attachment:{tenantId:N}:{attachmentId:N}");
     }
 
+    public Task DeleteIfExistsAsync(
+        string storagePath,
+        CancellationToken cancellationToken = default)
+    {
+        var fullPath = ResolveSafePath(storagePath);
+        if (File.Exists(fullPath))
+        {
+            File.Delete(fullPath);
+        }
+
+        return Task.CompletedTask;
+    }
+
     private string ResolveSafePath(string relativePath)
     {
         if (string.IsNullOrWhiteSpace(relativePath) || Path.IsPathRooted(relativePath))

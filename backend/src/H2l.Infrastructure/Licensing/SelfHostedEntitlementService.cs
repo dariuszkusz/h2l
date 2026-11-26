@@ -1,6 +1,7 @@
 using H2l.Application.Common;
 using H2l.Application.Licensing;
 using H2l.Domain.Common;
+using H2l.Domain.Connectors;
 using H2l.Domain.Identity;
 using H2l.Domain.Licensing;
 using H2l.Domain.Workflows;
@@ -19,6 +20,7 @@ public sealed class SelfHostedEntitlementService : IEntitlementService
     private readonly IInstanceSettingsRepository _instanceSettingsRepository;
     private readonly IUserRepository _userRepository;
     private readonly IWorkflowProcessRepository _workflowProcessRepository;
+    private readonly IWorkflowConnectorRepository _workflowConnectorRepository;
     private readonly IAesGcmEncryptionService _encryptionService;
     private readonly ILicenseVerifier _licenseVerifier;
     private readonly IDateTimeProvider _dateTimeProvider;
@@ -28,6 +30,7 @@ public sealed class SelfHostedEntitlementService : IEntitlementService
         IInstanceSettingsRepository instanceSettingsRepository,
         IUserRepository userRepository,
         IWorkflowProcessRepository workflowProcessRepository,
+        IWorkflowConnectorRepository workflowConnectorRepository,
         IAesGcmEncryptionService encryptionService,
         ILicenseVerifier licenseVerifier,
         IDateTimeProvider dateTimeProvider)
@@ -36,6 +39,7 @@ public sealed class SelfHostedEntitlementService : IEntitlementService
         _instanceSettingsRepository = instanceSettingsRepository;
         _userRepository = userRepository;
         _workflowProcessRepository = workflowProcessRepository;
+        _workflowConnectorRepository = workflowConnectorRepository;
         _encryptionService = encryptionService;
         _licenseVerifier = licenseVerifier;
         _dateTimeProvider = dateTimeProvider;
@@ -59,12 +63,13 @@ public sealed class SelfHostedEntitlementService : IEntitlementService
         }
 
         var activeProcesses = await _workflowProcessRepository.CountActiveAsync(cancellationToken);
+        var activeConnectors = await _workflowConnectorRepository.CountActiveAsync(cancellationToken);
         var adminUsers = await _userRepository.CountActiveAdminsAsync(cancellationToken);
         var endUsers = await _userRepository.CountActiveEndUsersAsync(cancellationToken);
 
         var usage = new LicenseUsage(
             ActiveProcesses: activeProcesses,
-            ActiveConnectors: 0,
+            ActiveConnectors: activeConnectors,
             AdminUsers: adminUsers,
             EndUsers: endUsers);
 
@@ -174,6 +179,26 @@ public sealed class SelfHostedEntitlementService : IEntitlementService
             return Result.Failure(Error.PaymentRequired(
                 "WORKFLOW_PROCESS_LIMIT_EXCEEDED",
                 $"Current plan ({status.Plan}) allows at most {status.Limits.MaxActiveProcesses.Value} active workflow process(es). Upgrade your license to activate more processes."));
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> CanActivateConnectorAsync(CancellationToken cancellationToken = default)
+    {
+        var statusResult = await GetStatusAsync(cancellationToken);
+        if (statusResult.IsFailure)
+        {
+            return Result.Failure(statusResult.Error);
+        }
+
+        var status = statusResult.Value;
+        if (status.Limits.MaxActiveConnectors.HasValue &&
+            status.Usage.ActiveConnectors >= status.Limits.MaxActiveConnectors.Value)
+        {
+            return Result.Failure(Error.PaymentRequired(
+                "CONNECTOR_LIMIT_EXCEEDED",
+                $"Current plan ({status.Plan}) allows at most {status.Limits.MaxActiveConnectors.Value} active workflow connector(s). Upgrade your license to add more connectors."));
         }
 
         return Result.Success();

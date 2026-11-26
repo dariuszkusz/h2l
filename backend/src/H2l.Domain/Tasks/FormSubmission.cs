@@ -117,4 +117,16 @@ public sealed class FormSubmission : AggregateRoot, ITenantScoped
             retentionUntil,
             submittedAt));
     }
+
+    public void Anonymize(DateTimeOffset anonymizedAt)
+    {
+        if (AnonymizedAt is not null)
+        {
+            return;
+        }
+
+        PublicDataJsonb = "{}";
+        EncryptedSensitiveData = null;
+        AnonymizedAt = anonymizedAt;
+    }
 }

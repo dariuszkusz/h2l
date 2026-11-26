@@ -91,4 +91,60 @@ public sealed class OutboxMessage : AggregateRoot, ITenantScoped
             now,
             now));
     }
+
+    public void MarkProcessed(DateTimeOffset processedAt)
+    {
+        Status = OutboxMessageStatus.Processed;
+        ProcessedAt = processedAt;
+        DeadLetterReason = null;
+    }
+
+    public void ScheduleRetry(int maxRetries, TimeSpan delay, string reason, DateTimeOffset now)
+    {
+        RetryCount++;
+        if (RetryCount >= maxRetries)
+        {
+            MoveToDeadLetter(reason, now);
+            return;
+        }
+
+        Status = OutboxMessageStatus.Pending;
+        NextAttemptAt = now.Add(delay);
+        DeadLetterReason = null;
+    }
+
+    public void MoveToDeadLetter(string reason, DateTimeOffset now)
+    {
+        Status = OutboxMessageStatus.DeadLetter;
+        DeadLetterReason = SanitizeReason(reason);
+        ProcessedAt = now;
+    }
+
+    public Result RetryFromDeadLetter(DateTimeOffset now)
+    {
+        if (Status != OutboxMessageStatus.DeadLetter)
+        {
+            return Result.Failure(Error.Conflict(
+                "OUTBOX_NOT_DEAD_LETTER",
+                $"Outbox message in status '{Status}' cannot be retried from dead-letter."));
+        }
+
+        Status = OutboxMessageStatus.Pending;
+        RetryCount = 0;
+        NextAttemptAt = now;
+        DeadLetterReason = null;
+        ProcessedAt = null;
+        return Result.Success();
+    }
+
+    private static string SanitizeReason(string? reason)
+    {
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            return "Delivery failed.";
+        }
+
+        var trimmed = reason.Trim();
+        return trimmed.Length <= 2000 ? trimmed : trimmed[..2000];
+    }
 }

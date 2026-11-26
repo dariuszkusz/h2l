@@ -104,9 +104,9 @@ public sealed class HumanTask : AggregateRoot, ITenantScoped
         }
 
         var trimmedExternalTaskId = externalTaskId.Trim();
-        if (trimmedExternalTaskId.Length > 200)
+        if (trimmedExternalTaskId.Length > 255)
         {
-            return Result.Failure<HumanTask>(Error.Validation("EXTERNAL_TASK_ID_TOO_LONG", "External task identifier cannot exceed 200 characters."));
+            return Result.Failure<HumanTask>(Error.Validation("EXTERNAL_TASK_ID_TOO_LONG", "External task identifier cannot exceed 255 characters."));
         }
 
         var task = new HumanTask(
@@ -213,7 +213,7 @@ public sealed class HumanTask : AggregateRoot, ITenantScoped
         return Result.Success();
     }
 
-    public Result Complete(Guid userId, DateTimeOffset completedAt)
+    public Result Complete(Guid userId, DateTimeOffset completedAt, bool clearResumeUrl = true)
     {
         if (userId == Guid.Empty)
         {
@@ -243,8 +243,82 @@ public sealed class HumanTask : AggregateRoot, ITenantScoped
 
         Status = HumanTaskStatus.Completed;
         CompletedAt = completedAt;
-        EncryptedResumeUrl = null;
+        if (clearResumeUrl)
+        {
+            EncryptedResumeUrl = null;
+        }
+
         ConcurrencyStamp = Guid.CreateVersion7();
         return Result.Success();
+    }
+
+    public Result AssignToUser(Guid userId)
+    {
+        if (userId == Guid.Empty)
+        {
+            return Result.Failure(Error.Validation("USER_ID_REQUIRED", "User identifier is required."));
+        }
+
+        if (Status is HumanTaskStatus.Completed or HumanTaskStatus.Cancelled or HumanTaskStatus.Expired)
+        {
+            return Result.Failure(Error.Conflict(
+                "TASK_NOT_ASSIGNABLE",
+                $"Task in status '{Status}' cannot be assigned."));
+        }
+
+        AssignedUserId = userId;
+        ClaimedByUserId = null;
+        Status = HumanTaskStatus.Pending;
+        ConcurrencyStamp = Guid.CreateVersion7();
+        return Result.Success();
+    }
+
+    public Result Expire(DateTimeOffset expiredAt, bool clearResumeUrl = false)
+    {
+        if (Status is HumanTaskStatus.Completed or HumanTaskStatus.Cancelled or HumanTaskStatus.Expired)
+        {
+            return Result.Failure(Error.Conflict(
+                "TASK_ALREADY_CLOSED",
+                $"Task in status '{Status}' cannot be expired."));
+        }
+
+        Status = HumanTaskStatus.Expired;
+        CompletedAt = expiredAt;
+        if (clearResumeUrl)
+        {
+            EncryptedResumeUrl = null;
+        }
+
+        ConcurrencyStamp = Guid.CreateVersion7();
+        return Result.Success();
+    }
+
+    public Result Cancel(DateTimeOffset cancelledAt, bool clearResumeUrl = false)
+    {
+        if (Status is HumanTaskStatus.Completed or HumanTaskStatus.Cancelled or HumanTaskStatus.Expired)
+        {
+            return Result.Failure(Error.Conflict(
+                "TASK_ALREADY_CLOSED",
+                $"Task in status '{Status}' cannot be cancelled."));
+        }
+
+        Status = HumanTaskStatus.Cancelled;
+        CompletedAt = cancelledAt;
+        if (clearResumeUrl)
+        {
+            EncryptedResumeUrl = null;
+        }
+
+        ConcurrencyStamp = Guid.CreateVersion7();
+        return Result.Success();
+    }
+
+    public void ClearResumeUrl()
+    {
+        if (EncryptedResumeUrl is not null)
+        {
+            EncryptedResumeUrl = null;
+            ConcurrencyStamp = Guid.CreateVersion7();
+        }
     }
 }

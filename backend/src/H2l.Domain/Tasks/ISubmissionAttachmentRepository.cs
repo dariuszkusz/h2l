@@ -9,5 +9,11 @@ public interface ISubmissionAttachmentRepository
         IReadOnlyCollection<Guid> attachmentIds,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<SubmissionAttachment>> ListBySubmissionIdsIgnoringTenantFilterAsync(
+        IReadOnlyCollection<Guid> submissionIds,
+        CancellationToken cancellationToken = default);
+
+    void RemoveRange(IEnumerable<SubmissionAttachment> attachments);
+
     Task AddAsync(SubmissionAttachment attachment, CancellationToken cancellationToken = default);
 }

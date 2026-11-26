@@ -1,5 +1,6 @@
 using H2l.Application.Common;
 using H2l.Domain.Audit;
+using H2l.Domain.Connectors;
 using H2l.Domain.Identity;
 using H2l.Domain.Outbox;
 using H2l.Domain.Tasks;
@@ -29,6 +30,8 @@ public sealed class H2lDbContext : DbContext
     public DbSet<UserGroup> UserGroups => Set<UserGroup>();
 
     public DbSet<Project> Projects => Set<Project>();
+
+    public DbSet<WorkflowConnector> WorkflowConnectors => Set<WorkflowConnector>();
 
     public DbSet<WorkflowProcess> WorkflowProcesses => Set<WorkflowProcess>();
 
@@ -82,6 +85,9 @@ public sealed class H2lDbContext : DbContext
             .HasQueryFilter(e => CurrentTenantId == null || e.TenantId == CurrentTenantId);
 
         modelBuilder.Entity<Project>()
+            .HasQueryFilter(e => (CurrentTenantId == null || e.TenantId == CurrentTenantId) && e.DeletedAt == null);
+
+        modelBuilder.Entity<WorkflowConnector>()
             .HasQueryFilter(e => (CurrentTenantId == null || e.TenantId == CurrentTenantId) && e.DeletedAt == null);
 
         modelBuilder.Entity<WorkflowProcess>()

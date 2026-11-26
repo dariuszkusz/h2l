@@ -4,6 +4,17 @@ public interface IFormVersionRepository
 {
     Task<FormVersion?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
+    Task<FormVersion?> GetByIdIgnoringTenantFilterAsync(Guid id, CancellationToken cancellationToken = default);
+
+    Task<FormVersion?> GetByFormDefinitionAndNumberAsync(
+        Guid formDefinitionId,
+        int versionNumber,
+        CancellationToken cancellationToken = default);
+
+    Task<FormVersion?> GetLatestByFormDefinitionIdAsync(
+        Guid formDefinitionId,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<FormVersion>> ListByFormDefinitionIdAsync(
         Guid formDefinitionId,
         CancellationToken cancellationToken = default);
