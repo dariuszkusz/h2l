@@ -17,6 +17,10 @@ public sealed class TenantRepository : ITenantRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
+    public Task<Tenant?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
+        => _dbContext.Tenants
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+
     public Task<Tenant?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
     {
         var normalized = slug.Trim().ToLowerInvariant();
@@ -24,6 +28,14 @@ public sealed class TenantRepository : ITenantRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Slug == normalized, cancellationToken);
     }
+
+    public Task<Tenant?> GetPrimaryAsync(CancellationToken cancellationToken = default)
+        => _dbContext.Tenants
+            .AsNoTracking()
+            .Where(t => t.IsActive)
+            .OrderBy(t => t.CreatedAt)
+            .ThenBy(t => t.Id)
+            .FirstOrDefaultAsync(cancellationToken);
 
     public Task<bool> AnyAsync(CancellationToken cancellationToken = default)
         => _dbContext.Tenants

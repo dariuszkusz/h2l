@@ -23,6 +23,10 @@ public sealed class InstanceSettingsRepository : IInstanceSettingsRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.TenantId == tenantId, cancellationToken);
 
+    public Task<InstanceSettings?> GetByTenantIdForUpdateAsync(Guid tenantId, CancellationToken cancellationToken = default)
+        => _dbContext.InstanceSettings
+            .FirstOrDefaultAsync(s => s.TenantId == tenantId, cancellationToken);
+
     public async Task AddAsync(InstanceSettings settings, CancellationToken cancellationToken = default)
         => await _dbContext.InstanceSettings.AddAsync(settings, cancellationToken);
 }

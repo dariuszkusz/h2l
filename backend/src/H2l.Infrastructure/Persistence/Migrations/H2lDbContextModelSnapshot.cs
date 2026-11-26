@@ -71,6 +71,42 @@ namespace H2l.Infrastructure.Persistence.Migrations
                     b.ToTable("audit_logs", "audit");
                 });
 
+            modelBuilder.Entity("H2l.Domain.Identity.Group", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_groups");
+
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_groups_tenant_id_code");
+
+                    b.ToTable("groups", "app");
+                });
+
             modelBuilder.Entity("H2l.Domain.Identity.InstanceSettings", b =>
                 {
                     b.Property<Guid>("Id")
@@ -125,6 +161,61 @@ namespace H2l.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_instance_settings_tenant_id");
 
                     b.ToTable("instance_settings", "app");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Identity.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid?>("ReplacedByTokenId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("replaced_by_token_id");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_refresh_tokens");
+
+                    b.HasIndex("ReplacedByTokenId")
+                        .HasDatabaseName("ix_refresh_tokens_replaced_by_token_id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_refresh_tokens_token_hash");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_refresh_tokens_user_id");
+
+                    b.HasIndex("TenantId", "UserId", "ExpiresAt")
+                        .HasDatabaseName("ix_refresh_tokens_tenant_id_user_id_expires_at");
+
+                    b.ToTable("refresh_tokens", "app");
                 });
 
             modelBuilder.Entity("H2l.Domain.Identity.Tenant", b =>
@@ -193,7 +284,6 @@ namespace H2l.Infrastructure.Persistence.Migrations
                         .HasColumnName("is_active");
 
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
                         .HasColumnName("password_hash");
@@ -231,6 +321,298 @@ namespace H2l.Infrastructure.Persistence.Migrations
                     b.ToTable("users", "app");
                 });
 
+            modelBuilder.Entity("H2l.Domain.Identity.UserActivationToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_activation_tokens");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_user_activation_tokens_token_hash");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_user_activation_tokens_user_id");
+
+                    b.HasIndex("TenantId", "UserId", "ExpiresAt")
+                        .HasDatabaseName("ix_user_activation_tokens_tenant_id_user_id_expires_at");
+
+                    b.ToTable("user_activation_tokens", "app");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Identity.UserGroup", b =>
+                {
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
+                    b.HasKey("TenantId", "UserId", "GroupId")
+                        .HasName("pk_user_groups");
+
+                    b.HasIndex("GroupId")
+                        .HasDatabaseName("ix_user_groups_group_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_user_groups_user_id");
+
+                    b.ToTable("user_groups", "app");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Workflows.FormAccessRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AccessScope")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("access_scope");
+
+                    b.Property<Guid>("FormDefinitionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("form_definition_id");
+
+                    b.Property<Guid?>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_form_access_rules");
+
+                    b.HasIndex("FormDefinitionId")
+                        .HasDatabaseName("ix_form_access_rules_form_definition_id");
+
+                    b.HasIndex("GroupId")
+                        .HasDatabaseName("ix_form_access_rules_group_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_form_access_rules_user_id");
+
+                    b.HasIndex("TenantId", "FormDefinitionId")
+                        .HasDatabaseName("ix_form_access_rules_tenant_id_form_definition_id");
+
+                    b.ToTable("form_access_rules", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_form_access_rules_target_required", "group_id IS NOT NULL OR user_id IS NOT NULL");
+                        });
+                });
+
+            modelBuilder.Entity("H2l.Domain.Workflows.FormDefinition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("DraftSchemaJsonb")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("draft_schema_jsonb");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("StepKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("step_key");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("WorkflowProcessId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("workflow_process_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_form_definitions");
+
+                    b.HasIndex("WorkflowProcessId")
+                        .HasDatabaseName("ix_form_definitions_workflow_process_id");
+
+                    b.HasIndex("TenantId", "WorkflowProcessId", "StepKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_form_definitions_tenant_id_workflow_process_id_step_key")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.ToTable("form_definitions", "app");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Workflows.Project", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_projects");
+
+                    b.HasIndex("TenantId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_projects_tenant_id_name")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.ToTable("projects", "app");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Workflows.WorkflowProcess", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ConnectorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("connector_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("ExternalProcessKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("external_process_key");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_workflow_processes");
+
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("ix_workflow_processes_project_id");
+
+                    b.HasIndex("TenantId", "ConnectorId")
+                        .HasDatabaseName("ix_workflow_processes_tenant_id_connector_id");
+
+                    b.HasIndex("TenantId", "ProjectId", "ExternalProcessKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_workflow_processes_tenant_id_project_id_external_process_key")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.ToTable("workflow_processes", "app");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Identity.Group", b =>
+                {
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_groups_tenants_tenant_id");
+                });
+
             modelBuilder.Entity("H2l.Domain.Identity.InstanceSettings", b =>
                 {
                     b.HasOne("H2l.Domain.Identity.Tenant", null)
@@ -241,6 +623,29 @@ namespace H2l.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_instance_settings_tenants_tenant_id");
                 });
 
+            modelBuilder.Entity("H2l.Domain.Identity.RefreshToken", b =>
+                {
+                    b.HasOne("H2l.Domain.Identity.RefreshToken", null)
+                        .WithMany()
+                        .HasForeignKey("ReplacedByTokenId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_refresh_tokens_refresh_tokens_replaced_by_token_id");
+
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_refresh_tokens_tenants_tenant_id");
+
+                    b.HasOne("H2l.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_refresh_tokens_users_user_id");
+                });
+
             modelBuilder.Entity("H2l.Domain.Identity.User", b =>
                 {
                     b.HasOne("H2l.Domain.Identity.Tenant", null)
@@ -249,6 +654,120 @@ namespace H2l.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_users_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Identity.UserActivationToken", b =>
+                {
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_activation_tokens_tenants_tenant_id");
+
+                    b.HasOne("H2l.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_activation_tokens_users_user_id");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Identity.UserGroup", b =>
+                {
+                    b.HasOne("H2l.Domain.Identity.Group", null)
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_groups_groups_group_id");
+
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_groups_tenants_tenant_id");
+
+                    b.HasOne("H2l.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_groups_users_user_id");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Workflows.FormAccessRule", b =>
+                {
+                    b.HasOne("H2l.Domain.Workflows.FormDefinition", null)
+                        .WithMany()
+                        .HasForeignKey("FormDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_form_access_rules_form_definitions_form_definition_id");
+
+                    b.HasOne("H2l.Domain.Identity.Group", null)
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_form_access_rules_groups_group_id");
+
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_form_access_rules_tenants_tenant_id");
+
+                    b.HasOne("H2l.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_form_access_rules_users_user_id");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Workflows.FormDefinition", b =>
+                {
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_form_definitions_tenants_tenant_id");
+
+                    b.HasOne("H2l.Domain.Workflows.WorkflowProcess", null)
+                        .WithMany()
+                        .HasForeignKey("WorkflowProcessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_form_definitions_workflow_processes_workflow_process_id");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Workflows.Project", b =>
+                {
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_projects_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("H2l.Domain.Workflows.WorkflowProcess", b =>
+                {
+                    b.HasOne("H2l.Domain.Workflows.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_workflow_processes_projects_project_id");
+
+                    b.HasOne("H2l.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_workflow_processes_tenants_tenant_id");
                 });
 #pragma warning restore 612, 618
         }

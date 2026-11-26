@@ -1,11 +1,18 @@
 using H2l.Application.Common;
+using H2l.Application.Licensing;
+using H2l.Domain.Audit;
 using H2l.Domain.Common;
 using H2l.Domain.Identity;
+using H2l.Domain.Workflows;
+using H2l.Infrastructure.Email;
 using H2l.Infrastructure.Health;
+using H2l.Infrastructure.Licensing;
 using H2l.Infrastructure.Options;
 using H2l.Infrastructure.Persistence;
 using H2l.Infrastructure.Persistence.Repositories;
+using H2l.Infrastructure.Security;
 using H2l.Infrastructure.Tenancy;
+using H2l.Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,11 +75,60 @@ public static class InfrastructureServiceCollectionExtensions
                 {
                     options.AccessTokenLifetimeMinutes = parsedMinutes;
                 }
+
+                var refreshDays = configuration["JWT_REFRESH_TOKEN_DAYS"];
+                if (!string.IsNullOrWhiteSpace(refreshDays) && int.TryParse(refreshDays, out var parsedDays))
+                {
+                    options.RefreshTokenLifetimeDays = parsedDays;
+                }
             })
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddScoped<ITenantContext, DefaultTenantContext>();
+        services.AddSingleton<IValidateOptions<EncryptionOptions>, EncryptionOptionsValidator>();
+        services.AddOptions<EncryptionOptions>()
+            .Bind(configuration.GetSection(EncryptionOptions.SectionName))
+            .PostConfigure(options =>
+            {
+                var keyId = configuration["ENCRYPTION_KEY_ID"];
+                if (!string.IsNullOrWhiteSpace(keyId))
+                {
+                    options.KeyId = keyId;
+                }
+
+                var aesKey = configuration["ENCRYPTION_AES_GCM_KEY"];
+                if (!string.IsNullOrWhiteSpace(aesKey))
+                {
+                    options.AesGcmKey = aesKey;
+                }
+            })
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<LicensingOptions>()
+            .Bind(configuration.GetSection(LicensingOptions.SectionName))
+            .PostConfigure(options =>
+            {
+                var publicKey = configuration["LICENSE_PUBLIC_KEY_BASE64"];
+                if (!string.IsNullOrWhiteSpace(publicKey))
+                {
+                    options.PublicKeyBase64 = publicKey;
+                }
+            });
+
+        services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
+        services.AddSingleton<IAesGcmEncryptionService, AesGcmEncryptionService>();
+        services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
+        services.AddSingleton<IOpaqueTokenGenerator, OpaqueTokenGenerator>();
+        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddSingleton<ISmtpInviteSender, SmtpInviteSender>();
+        services.AddSingleton<ILicensePublicKeyProvider, ConfiguredLicensePublicKeyProvider>();
+        services.AddSingleton<ILicenseVerifier, Ed25519LicenseVerifier>();
+        services.AddScoped<IEntitlementService, SelfHostedEntitlementService>();
+
+        services.AddScoped<DefaultTenantContext>();
+        services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<DefaultTenantContext>());
+        services.AddScoped<ITenantSetter>(sp => sp.GetRequiredService<DefaultTenantContext>());
 
         services.AddDbContext<H2lDbContext>((sp, options) =>
         {
@@ -88,6 +144,14 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<IInstanceSettingsRepository, InstanceSettingsRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IGroupRepository, GroupRepository>();
+        services.AddScoped<IUserActivationTokenRepository, UserActivationTokenRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<IWorkflowProcessRepository, WorkflowProcessRepository>();
+        services.AddScoped<IFormDefinitionRepository, FormDefinitionRepository>();
+        services.AddScoped<IFormAccessRuleRepository, FormAccessRuleRepository>();
 
         services.AddQuartz();
         services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);

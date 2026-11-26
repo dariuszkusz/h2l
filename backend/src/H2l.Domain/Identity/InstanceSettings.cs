@@ -4,6 +4,13 @@ namespace H2l.Domain.Identity;
 
 public sealed class InstanceSettings : AggregateRoot, ITenantScoped
 {
+    private static readonly HashSet<string> SupportedPalettes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "slate",
+        "ocean",
+        "forest"
+    };
+
     private static readonly HashSet<string> SupportedLanguages = new(StringComparer.OrdinalIgnoreCase)
     {
         "en",
@@ -15,7 +22,7 @@ public sealed class InstanceSettings : AggregateRoot, ITenantScoped
 
     public Guid InstanceId { get; private set; }
 
-    public string SelectedPalette { get; private set; } = "default";
+    public string SelectedPalette { get; private set; } = "slate";
 
     public string DefaultLanguage { get; private set; } = "en";
 
@@ -51,7 +58,7 @@ public sealed class InstanceSettings : AggregateRoot, ITenantScoped
 
     public static Result<InstanceSettings> Create(
         Guid tenantId,
-        string selectedPalette = "default",
+        string selectedPalette = "slate",
         string defaultLanguage = "en",
         int defaultRetentionDays = 90,
         DateTimeOffset? updatedAt = null)
@@ -66,6 +73,13 @@ public sealed class InstanceSettings : AggregateRoot, ITenantScoped
         {
             return Result.Failure<InstanceSettings>(
                 Error.Validation("PALETTE_REQUIRED", "Selected palette is required."));
+        }
+
+        var normalizedPalette = selectedPalette.Trim().ToLowerInvariant();
+        if (!SupportedPalettes.Contains(normalizedPalette))
+        {
+            return Result.Failure<InstanceSettings>(
+                Error.Validation("PALETTE_UNSUPPORTED", "Selected palette must be one of: slate, ocean, forest."));
         }
 
         if (!SupportedLanguages.Contains(defaultLanguage))
@@ -84,7 +98,7 @@ public sealed class InstanceSettings : AggregateRoot, ITenantScoped
             Guid.CreateVersion7(),
             tenantId,
             Guid.CreateVersion7(),
-            selectedPalette.Trim(),
+            normalizedPalette,
             defaultLanguage.Trim().ToLowerInvariant(),
             defaultRetentionDays,
             updatedAt ?? DateTimeOffset.UtcNow);
@@ -104,6 +118,13 @@ public sealed class InstanceSettings : AggregateRoot, ITenantScoped
             return Result.Failure(Error.Validation("PALETTE_REQUIRED", "Selected palette is required."));
         }
 
+        var normalizedPalette = selectedPalette.Trim().ToLowerInvariant();
+        if (!SupportedPalettes.Contains(normalizedPalette))
+        {
+            return Result.Failure(
+                Error.Validation("PALETTE_UNSUPPORTED", "Selected palette must be one of: slate, ocean, forest."));
+        }
+
         if (!SupportedLanguages.Contains(defaultLanguage))
         {
             return Result.Failure(Error.Validation("LANGUAGE_UNSUPPORTED", "Default language must be one of: en, de, pl."));
@@ -114,7 +135,7 @@ public sealed class InstanceSettings : AggregateRoot, ITenantScoped
             return Result.Failure(Error.Validation("RETENTION_DAYS_INVALID", "Default retention days must be greater than zero."));
         }
 
-        SelectedPalette = selectedPalette.Trim();
+        SelectedPalette = normalizedPalette;
         DefaultLanguage = defaultLanguage.Trim().ToLowerInvariant();
         DefaultRetentionDays = defaultRetentionDays;
         EncryptedSmtpConfig = encryptedSmtpConfig;

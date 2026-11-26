@@ -6,5 +6,7 @@ public interface IInstanceSettingsRepository
 
     Task<InstanceSettings?> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default);
 
+    Task<InstanceSettings?> GetByTenantIdForUpdateAsync(Guid tenantId, CancellationToken cancellationToken = default);
+
     Task AddAsync(InstanceSettings settings, CancellationToken cancellationToken = default);
 }

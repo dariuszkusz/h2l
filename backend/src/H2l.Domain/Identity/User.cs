@@ -24,7 +24,7 @@ public sealed class User : AggregateRoot, ITenantScoped, ISoftDeletable
 
     public string? ExternalId { get; private set; }
 
-    public string PasswordHash { get; private set; } = string.Empty;
+    public string? PasswordHash { get; private set; }
 
     public SystemRole SystemRole { get; private set; }
 
@@ -46,11 +46,12 @@ public sealed class User : AggregateRoot, ITenantScoped, ISoftDeletable
         Guid id,
         Guid tenantId,
         string email,
-        string passwordHash,
+        string? passwordHash,
         SystemRole systemRole,
         string preferredLanguage,
         string preferredTheme,
         string? externalId,
+        bool isActive,
         DateTimeOffset createdAt)
         : base(id)
     {
@@ -61,7 +62,7 @@ public sealed class User : AggregateRoot, ITenantScoped, ISoftDeletable
         PreferredLanguage = preferredLanguage;
         PreferredTheme = preferredTheme;
         ExternalId = externalId;
-        IsActive = true;
+        IsActive = isActive;
         CreatedAt = createdAt;
     }
 
@@ -75,19 +76,61 @@ public sealed class User : AggregateRoot, ITenantScoped, ISoftDeletable
         string? externalId = null,
         DateTimeOffset? createdAt = null)
     {
+        if (string.IsNullOrWhiteSpace(passwordHash))
+        {
+            return Result.Failure<User>(Error.Validation("USER_PASSWORD_HASH_REQUIRED", "Password hash is required."));
+        }
+
+        return CreateInternal(
+            tenantId,
+            email,
+            passwordHash,
+            systemRole,
+            preferredLanguage,
+            preferredTheme,
+            externalId,
+            isActive: true,
+            createdAt);
+    }
+
+    public static Result<User> CreateInvited(
+        Guid tenantId,
+        string email,
+        SystemRole systemRole,
+        string preferredLanguage = "en",
+        string preferredTheme = "light",
+        string? externalId = null,
+        DateTimeOffset? createdAt = null)
+        => CreateInternal(
+            tenantId,
+            email,
+            passwordHash: null,
+            systemRole,
+            preferredLanguage,
+            preferredTheme,
+            externalId,
+            isActive: false,
+            createdAt);
+
+    private static Result<User> CreateInternal(
+        Guid tenantId,
+        string email,
+        string? passwordHash,
+        SystemRole systemRole,
+        string preferredLanguage,
+        string preferredTheme,
+        string? externalId,
+        bool isActive,
+        DateTimeOffset? createdAt)
+    {
         if (tenantId == Guid.Empty)
         {
             return Result.Failure<User>(Error.Validation("TENANT_ID_REQUIRED", "Tenant identifier is required."));
         }
 
-        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@') || email.Trim().Length > 320)
         {
             return Result.Failure<User>(Error.Validation("USER_EMAIL_INVALID", "A valid user email is required."));
-        }
-
-        if (string.IsNullOrWhiteSpace(passwordHash))
-        {
-            return Result.Failure<User>(Error.Validation("USER_PASSWORD_HASH_REQUIRED", "Password hash is required."));
         }
 
         if (!SupportedLanguages.Contains(preferredLanguage))
@@ -109,9 +152,33 @@ public sealed class User : AggregateRoot, ITenantScoped, ISoftDeletable
             preferredLanguage.Trim().ToLowerInvariant(),
             preferredTheme.Trim().ToLowerInvariant(),
             string.IsNullOrWhiteSpace(externalId) ? null : externalId.Trim(),
+            isActive,
             createdAt ?? DateTimeOffset.UtcNow);
 
         return Result.Success(user);
+    }
+
+    public Result Activate(string passwordHash)
+    {
+        if (DeletedAt is not null)
+        {
+            return Result.Failure(Error.Validation("USER_DELETED", "A deleted user cannot be activated."));
+        }
+
+        if (IsActive)
+        {
+            return Result.Failure(Error.Conflict("USER_ALREADY_ACTIVE", "User account is already active."));
+        }
+
+        if (string.IsNullOrWhiteSpace(passwordHash))
+        {
+            return Result.Failure(Error.Validation("USER_PASSWORD_HASH_REQUIRED", "Password hash is required."));
+        }
+
+        PasswordHash = passwordHash;
+        IsActive = true;
+
+        return Result.Success();
     }
 
     public Result UpdatePreferences(string? preferredLanguage, string? preferredTheme)
