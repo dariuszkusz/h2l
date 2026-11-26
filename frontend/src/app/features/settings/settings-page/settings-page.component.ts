@@ -1,191 +1,151 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
+import { AuthActions } from '../../../core/auth/store/auth.actions';
+import {
+  selectCurrentUserRole,
+  selectIsAuthenticated,
+  selectPreferencesError,
+  selectPreferencesSaved,
+} from '../../../core/auth/store/auth.selectors';
 import { SupportedLanguage } from '../../../core/i18n/models/supported-language.type';
 import { I18nActions } from '../../../core/i18n/store/i18n.actions';
 import {
   selectActiveSessionProfileId,
   selectCurrentLanguage,
 } from '../../../core/i18n/store/i18n.selectors';
+import { LicensingActions } from '../../../core/licensing/store/licensing.actions';
+import {
+  selectIsInGracePeriod,
+  selectIsLicenseExpired,
+  selectLicensingActivating,
+  selectLicensingActivationSuccess,
+  selectLicensingError,
+  selectLicensingLoading,
+  selectLicensingStatus,
+} from '../../../core/licensing/store/licensing.selectors';
 import { ColorPalette } from '../../../core/theme/models/color-palette.type';
 import { ThemeMode } from '../../../core/theme/models/theme-mode.type';
 import { ThemeActions } from '../../../core/theme/store/theme.actions';
 import { selectColorPalette, selectThemeMode } from '../../../core/theme/store/theme.selectors';
+import { UiStateBannerComponent } from '../../../shared/components/ui-state-banner/ui-state-banner.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { HlmBadgeDirective } from '../../../shared/ui/hlm-badge.directive';
 import { HlmButtonDirective } from '../../../shared/ui/hlm-button.directive';
 import { HlmCardDirective } from '../../../shared/ui/hlm-card.directive';
+import { HlmInputDirective } from '../../../shared/ui/hlm-input.directive';
+import { HlmLabelDirective } from '../../../shared/ui/hlm-label.directive';
 
 @Component({
   selector: 'app-settings-page',
   standalone: true,
-  imports: [TranslatePipe, HlmButtonDirective, HlmCardDirective],
+  imports: [
+    ReactiveFormsModule,
+    TranslatePipe,
+    HlmButtonDirective,
+    HlmCardDirective,
+    HlmBadgeDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    UiStateBannerComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <section class="space-y-6">
-      <header class="space-y-1">
-        <h1 class="text-2xl font-semibold tracking-tight text-[var(--h2l-fg)]" data-testid="settings-heading">
-          {{ 'settings.heading' | translate }}
-        </h1>
-        <p class="text-sm text-[var(--h2l-fg-muted)]">
-          {{ 'settings.description' | translate }}
-        </p>
-      </header>
-
-      <div hlmCard class="space-y-4">
-        <div>
-          <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
-            {{ 'settings.language.title' | translate }}
-          </h2>
-          <p class="text-sm text-[var(--h2l-fg-muted)]">
-            {{ 'settings.language.description' | translate }}
-          </p>
-        </div>
-
-        <div
-          role="group"
-          [attr.aria-label]="'settings.language.label' | translate"
-          class="flex flex-wrap gap-3"
-        >
-          @for (lang of languages; track lang) {
-            <button
-              type="button"
-              hlmBtn
-              [variant]="currentLanguage() === lang ? 'primary' : 'outline'"
-              [attr.aria-pressed]="currentLanguage() === lang"
-              [attr.data-testid]="'settings-lang-' + lang"
-              (click)="onLanguageChange(lang)"
-            >
-              {{ 'languages.' + lang | translate }}
-            </button>
-          }
-        </div>
-      </div>
-
-      <div hlmCard class="space-y-4">
-        <div>
-          <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
-            {{ 'settings.theme.title' | translate }}
-          </h2>
-          <p class="text-sm text-[var(--h2l-fg-muted)]">
-            {{ 'settings.theme.description' | translate }}
-          </p>
-        </div>
-
-        <div
-          role="group"
-          [attr.aria-label]="'settings.theme.groupLabel' | translate"
-          class="flex flex-wrap gap-3"
-        >
-          @for (mode of themeModes; track mode.value) {
-            <button
-              type="button"
-              hlmBtn
-              [variant]="themeMode() === mode.value ? 'primary' : 'outline'"
-              [attr.aria-pressed]="themeMode() === mode.value"
-              [attr.data-testid]="'theme-mode-' + mode.value"
-              (click)="onThemeModeChange(mode.value)"
-            >
-              {{ mode.labelKey | translate }}
-            </button>
-          }
-        </div>
-      </div>
-
-      <div hlmCard class="space-y-4">
-        <div>
-          <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
-            {{ 'settings.palette.title' | translate }}
-          </h2>
-          <p class="text-sm text-[var(--h2l-fg-muted)]">
-            {{ 'settings.palette.description' | translate }}
-          </p>
-        </div>
-
-        <div
-          role="group"
-          [attr.aria-label]="'settings.palette.groupLabel' | translate"
-          class="flex flex-wrap gap-3"
-        >
-          @for (palette of palettes; track palette.value) {
-            <button
-              type="button"
-              hlmBtn
-              [variant]="colorPalette() === palette.value ? 'primary' : 'outline'"
-              [attr.aria-pressed]="colorPalette() === palette.value"
-              [attr.data-testid]="'palette-' + palette.value"
-              (click)="onPaletteChange(palette.value)"
-            >
-              {{ palette.labelKey | translate }}
-            </button>
-          }
-        </div>
-      </div>
-
-      <div hlmCard class="space-y-4">
-        <div>
-          <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
-            {{ 'settings.session.title' | translate }}
-          </h2>
-          <p class="text-sm text-[var(--h2l-fg-muted)]">
-            {{ 'settings.session.description' | translate }}
-          </p>
-        </div>
-
-        <div
-          role="group"
-          [attr.aria-label]="'settings.session.label' | translate"
-          class="flex flex-wrap gap-3"
-        >
-          @for (profile of sessionProfiles; track profile.id) {
-            <button
-              type="button"
-              hlmBtn
-              [variant]="activeSessionProfileId() === profile.id ? 'primary' : 'outline'"
-              [attr.aria-pressed]="activeSessionProfileId() === profile.id"
-              [attr.data-testid]="'session-profile-' + profile.id"
-              (click)="onSessionProfileSwitch(profile.id)"
-            >
-              {{ profile.labelKey | translate }}
-            </button>
-          }
-        </div>
-      </div>
-    </section>
-  `,
+  templateUrl: './settings-page.component.html',
 })
-export class SettingsPageComponent {
+export class SettingsPageComponent implements OnInit {
   private readonly store = inject(Store);
+  private readonly fb = inject(FormBuilder);
 
   protected readonly currentLanguage = this.store.selectSignal(selectCurrentLanguage);
   protected readonly themeMode = this.store.selectSignal(selectThemeMode);
   protected readonly colorPalette = this.store.selectSignal(selectColorPalette);
   protected readonly activeSessionProfileId = this.store.selectSignal(selectActiveSessionProfileId);
+  protected readonly isAuthenticated = this.store.selectSignal(selectIsAuthenticated);
+  protected readonly currentUserRole = this.store.selectSignal(selectCurrentUserRole);
+  protected readonly preferencesSaved = this.store.selectSignal(selectPreferencesSaved);
+  protected readonly preferencesError = this.store.selectSignal(selectPreferencesError);
+
+  protected readonly licensingStatus = this.store.selectSignal(selectLicensingStatus);
+  protected readonly licensingLoading = this.store.selectSignal(selectLicensingLoading);
+  protected readonly licensingActivating = this.store.selectSignal(selectLicensingActivating);
+  protected readonly licensingError = this.store.selectSignal(selectLicensingError);
+  protected readonly licensingActivationSuccess = this.store.selectSignal(
+    selectLicensingActivationSuccess,
+  );
+  protected readonly isInGracePeriod = this.store.selectSignal(selectIsInGracePeriod);
+  protected readonly isLicenseExpired = this.store.selectSignal(selectIsLicenseExpired);
+
+  protected readonly isAdmin = computed(() => this.currentUserRole() === 'Admin');
+  protected readonly copiedInstanceId = signal(false);
+
+  protected readonly licenseForm = this.fb.nonNullable.group({
+    licenseKey: ['', [Validators.required]],
+  });
 
   protected readonly languages: readonly SupportedLanguage[] = ['en', 'de', 'pl'];
 
-  protected readonly themeModes: readonly { readonly value: ThemeMode; readonly labelKey: string }[] = [
+  protected readonly themeModes: readonly {
+    readonly value: ThemeMode;
+    readonly labelKey: string;
+  }[] = [
     { value: 'light', labelKey: 'settings.theme.light' },
     { value: 'dark', labelKey: 'settings.theme.dark' },
     { value: 'high-contrast', labelKey: 'settings.theme.highContrast' },
   ];
 
-  protected readonly palettes: readonly { readonly value: ColorPalette; readonly labelKey: string }[] = [
+  protected readonly palettes: readonly {
+    readonly value: ColorPalette;
+    readonly labelKey: string;
+  }[] = [
     { value: 'slate', labelKey: 'settings.palette.slate' },
     { value: 'ocean', labelKey: 'settings.palette.ocean' },
     { value: 'forest', labelKey: 'settings.palette.forest' },
   ];
 
-  protected readonly sessionProfiles: readonly { readonly id: string; readonly labelKey: string }[] = [
+  protected readonly sessionProfiles: readonly {
+    readonly id: string;
+    readonly labelKey: string;
+  }[] = [
     { id: 'default', labelKey: 'settings.session.defaultUser' },
     { id: 'admin', labelKey: 'settings.session.adminUser' },
     { id: 'end-user', labelKey: 'settings.session.endUser' },
   ];
 
+  ngOnInit(): void {
+    this.store.dispatch(AuthActions.clearPreferencesFeedback());
+    if (this.isAdmin()) {
+      this.store.dispatch(LicensingActions.clearFeedback());
+      this.store.dispatch(LicensingActions.loadStatus());
+    }
+  }
+
   protected onLanguageChange(language: SupportedLanguage): void {
     this.store.dispatch(I18nActions.changeLanguage({ language }));
+    if (this.isAuthenticated()) {
+      this.store.dispatch(
+        AuthActions.updatePreferences({
+          request: { preferredLanguage: language },
+        }),
+      );
+    }
   }
 
   protected onThemeModeChange(mode: ThemeMode): void {
     this.store.dispatch(ThemeActions.setThemeMode({ mode }));
+    if (this.isAuthenticated()) {
+      this.store.dispatch(
+        AuthActions.updatePreferences({
+          request: { preferredTheme: mode },
+        }),
+      );
+    }
   }
 
   protected onPaletteChange(palette: ColorPalette): void {
@@ -194,5 +154,30 @@ export class SettingsPageComponent {
 
   protected onSessionProfileSwitch(sessionProfileId: string): void {
     this.store.dispatch(I18nActions.switchSessionProfile({ sessionProfileId }));
+  }
+
+  protected onCopyInstanceId(instanceId: string): void {
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      void navigator.clipboard.writeText(instanceId).then(() => {
+        this.copiedInstanceId.set(true);
+      });
+    } else {
+      this.copiedInstanceId.set(true);
+    }
+  }
+
+  protected onActivateLicenseSubmit(): void {
+    if (this.licenseForm.invalid) {
+      this.licenseForm.markAllAsTouched();
+      return;
+    }
+
+    const licenseKey = this.licenseForm.getRawValue().licenseKey.trim();
+    if (licenseKey.length === 0) {
+      this.licenseForm.controls.licenseKey.setErrors({ required: true });
+      return;
+    }
+
+    this.store.dispatch(LicensingActions.activateLicense({ request: { licenseKey } }));
   }
 }

@@ -12,24 +12,7 @@ export interface paths {
             cookie?: never;
         };
         /** Liveness probe */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Service is alive */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["getHealthLive"];
         put?: never;
         post?: never;
         delete?: never;
@@ -46,31 +29,7 @@ export interface paths {
             cookie?: never;
         };
         /** Readiness probe (PostgreSQL & Quartz.NET) */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Service is ready */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Dependencies unavailable */
-                503: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["getHealthReady"];
         put?: never;
         post?: never;
         delete?: never;
@@ -87,26 +46,7 @@ export interface paths {
             cookie?: never;
         };
         /** Check whether initial instance onboarding is completed */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Setup status */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["SetupStatusResponse"];
-                    };
-                };
-            };
-        };
+        get: operations["getSetupStatus"];
         put?: never;
         post?: never;
         delete?: never;
@@ -125,29 +65,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Initialize first Admin account, palette, default language and optional SMTP */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["InitializeSetupRequest"];
-                };
-            };
-            responses: {
-                /** @description Instance initialized */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                409: components["responses"]["ProblemDetailsResponse"];
-            };
-        };
+        post: operations["initializeSetup"];
         delete?: never;
         options?: never;
         head?: never;
@@ -164,31 +82,75 @@ export interface paths {
         get?: never;
         put?: never;
         /** Authenticate user and issue JWT tokens */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["LoginRequest"];
-                };
-            };
-            responses: {
-                /** @description Authenticated */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AuthTokenResponse"];
-                    };
-                };
-                401: components["responses"]["ProblemDetailsResponse"];
-            };
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
+        get?: never;
+        put?: never;
+        /** Exchange a valid refresh token for a new JWT access and refresh token pair */
+        post: operations["refreshToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke refresh token and end authenticated session */
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Activate an invited user account using a one-time activation token */
+        post: operations["activateAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get current authenticated user's profile and preferences */
+        get: operations["getCurrentUserProfile"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -209,28 +171,7 @@ export interface paths {
         options?: never;
         head?: never;
         /** Update current user's independent language (en/de/pl) and theme (light/dark/high-contrast) */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateUserPreferencesRequest"];
-                };
-            };
-            responses: {
-                /** @description Preferences updated */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        patch: operations["updateUserPreferences"];
         trace?: never;
     };
     "/users": {
@@ -241,49 +182,10 @@ export interface paths {
             cookie?: never;
         };
         /** List users (Admin) */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description User list */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["listUsers"];
         put?: never;
         /** Invite/create user by Admin (sends SMTP invite or returns one-time activation link) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateUserRequest"];
-                };
-            };
-            responses: {
-                /** @description User invited */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                403: components["responses"]["ProblemDetailsResponse"];
-            };
-        };
+        post: operations["createUser"];
         delete?: never;
         options?: never;
         head?: never;
@@ -298,45 +200,46 @@ export interface paths {
             cookie?: never;
         };
         /** List user groups (for ACL and candidateGroups) */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Group list */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["listGroups"];
         put?: never;
         /** Create group (Admin) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Group created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        post: operations["createGroup"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/groups/{groupId}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List members assigned to a group */
+        get: operations["listGroupMembers"];
+        put?: never;
+        /** Add user to a group (Admin) */
+        post: operations["addGroupMember"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/groups/{groupId}/members/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove user from a group (Admin) */
+        delete: operations["removeGroupMember"];
         options?: never;
         head?: never;
         patch?: never;
@@ -350,44 +253,10 @@ export interface paths {
             cookie?: never;
         };
         /** List projects visible to current user */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Project list */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["listProjects"];
         put?: never;
         /** Create project (Admin) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Project created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        post: operations["createProject"];
         delete?: never;
         options?: never;
         head?: never;
@@ -402,49 +271,10 @@ export interface paths {
             cookie?: never;
         };
         /** List workflow processes inside a project */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    projectId: components["parameters"]["ProjectId"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Workflow processes list */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["listProjectProcesses"];
         put?: never;
         /** Create workflow process (enforces Free plan limit via IEntitlementService) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    projectId: components["parameters"]["ProjectId"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Workflow process created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                402: components["responses"]["ProblemDetailsResponse"];
-            };
-        };
+        post: operations["createWorkflowProcess"];
         delete?: never;
         options?: never;
         head?: never;
@@ -459,48 +289,10 @@ export interface paths {
             cookie?: never;
         };
         /** List form definitions (steps) within a workflow process */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    processId: components["parameters"]["ProcessId"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Form definitions list */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["listProcessForms"];
         put?: never;
         /** Create draft form definition inside a workflow process */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    processId: components["parameters"]["ProcessId"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Draft form created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        post: operations["createFormDefinition"];
         delete?: never;
         options?: never;
         head?: never;
@@ -551,32 +343,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get ACL rules configured for a form */
+        get: operations["getFormAccessRules"];
         /** Replace ACL rules for a form (whole group, selected users from group, or direct users) */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    formId: components["parameters"]["FormId"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateFormAccessRulesRequest"];
-                };
-            };
-            responses: {
-                /** @description Access rules updated */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        put: operations["updateFormAccessRules"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1125,24 +895,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get current InstanceId, active plan, limits, and Grace Period status */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description License status */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["getLicensingStatus"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1161,29 +914,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Activate signed Ed25519 license key locally (offline-capable, bound to InstanceId) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ActivateLicenseRequest"];
-                };
-            };
-            responses: {
-                /** @description License activated */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                400: components["responses"]["ProblemDetailsResponse"];
-            };
-        };
+        post: operations["activateLicense"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1194,6 +925,26 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @enum {string} */
+        SupportedLanguage: "en" | "de" | "pl";
+        /** @enum {string} */
+        ThemeMode: "light" | "dark" | "high-contrast";
+        /** @enum {string} */
+        ColorPalette: "slate" | "ocean" | "forest";
+        /** @enum {string} */
+        SystemRole: "Admin" | "ProcessDesigner" | "EndUser";
+        /** @enum {string} */
+        InviteDeliveryMethod: "smtp" | "manual_link";
+        /** @enum {string} */
+        WorkflowProcessStatus: "Draft" | "Active" | "Archived";
+        /** @enum {string} */
+        FormDefinitionStatus: "Draft" | "Published" | "Archived";
+        /** @enum {string} */
+        FormAccessScope: "WholeGroup" | "GroupUserSubset" | "DirectUser";
+        /** @enum {string} */
+        LicensePlan: "Free" | "Pro" | "Enterprise";
+        /** @enum {string} */
+        LicenseStatus: "Active" | "GracePeriod" | "Expired";
         ProblemDetails: {
             type?: string;
             title?: string;
@@ -1211,36 +962,195 @@ export interface components {
             /** Format: uuid */
             instanceId: string;
         };
+        SmtpSettingsRequest: {
+            host: string;
+            port: number;
+            useSsl: boolean;
+            username?: string | null;
+            /** Format: password */
+            password?: string | null;
+            /** Format: email */
+            fromAddress: string;
+            fromName?: string | null;
+        };
         InitializeSetupRequest: {
             /** Format: email */
             adminEmail: string;
             adminPassword: string;
-            /** @enum {string} */
-            defaultLanguage: "en" | "de" | "pl";
-            selectedPalette: string;
+            defaultLanguage: components["schemas"]["SupportedLanguage"];
+            selectedPalette: components["schemas"]["ColorPalette"];
+            smtp?: components["schemas"]["SmtpSettingsRequest"] | null;
+        };
+        InitializeSetupResponse: {
+            /** Format: uuid */
+            instanceId: string;
+            /** Format: uuid */
+            adminUserId: string;
         };
         LoginRequest: {
             /** Format: email */
             email: string;
             password: string;
         };
+        UserProfileResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            externalId?: string | null;
+            systemRole: components["schemas"]["SystemRole"];
+            preferredLanguage: components["schemas"]["SupportedLanguage"];
+            preferredTheme: components["schemas"]["ThemeMode"];
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
         AuthTokenResponse: {
             accessToken: string;
+            refreshToken: string;
             expiresInSeconds: number;
+            user: components["schemas"]["UserProfileResponse"];
+        };
+        RefreshTokenRequest: {
+            refreshToken: string;
+        };
+        LogoutRequest: {
+            refreshToken: string;
+        };
+        ActivateAccountRequest: {
+            token: string;
+            password: string;
         };
         UpdateUserPreferencesRequest: {
-            /** @enum {string} */
-            preferredLanguage?: "en" | "de" | "pl";
-            /** @enum {string} */
-            preferredTheme?: "light" | "dark" | "high-contrast";
+            preferredLanguage?: components["schemas"]["SupportedLanguage"];
+            preferredTheme?: components["schemas"]["ThemeMode"];
+        };
+        UserSummaryResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            externalId?: string | null;
+            systemRole: components["schemas"]["SystemRole"];
+            preferredLanguage: components["schemas"]["SupportedLanguage"];
+            preferredTheme: components["schemas"]["ThemeMode"];
+            isActive: boolean;
+            groupIds: string[];
+            /** Format: date-time */
+            createdAt: string;
         };
         CreateUserRequest: {
             /** Format: email */
             email: string;
             externalId?: string | null;
-            /** @enum {string} */
-            systemRole: "Admin" | "ProcessDesigner" | "EndUser";
+            systemRole: components["schemas"]["SystemRole"];
             groupIds?: string[];
+        };
+        CreateUserResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            externalId?: string | null;
+            systemRole: components["schemas"]["SystemRole"];
+            isActive: boolean;
+            deliveryMethod: components["schemas"]["InviteDeliveryMethod"];
+            activationLink?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        CreateGroupRequest: {
+            name: string;
+            code: string;
+        };
+        GroupResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            code: string;
+            memberCount: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AddGroupMemberRequest: {
+            /** Format: uuid */
+            userId: string;
+        };
+        GroupMemberResponse: {
+            /** Format: uuid */
+            userId: string;
+            /** Format: email */
+            email: string;
+            externalId?: string | null;
+            systemRole: components["schemas"]["SystemRole"];
+            isActive: boolean;
+        };
+        CreateProjectRequest: {
+            name: string;
+            description?: string | null;
+        };
+        ProjectResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        CreateWorkflowProcessRequest: {
+            name: string;
+            externalProcessKey: string;
+            /** Format: uuid */
+            connectorId?: string | null;
+            status?: components["schemas"]["WorkflowProcessStatus"];
+        };
+        WorkflowProcessResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
+            connectorId?: string | null;
+            name: string;
+            externalProcessKey: string;
+            status: components["schemas"]["WorkflowProcessStatus"];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        CreateFormDefinitionRequest: {
+            name: string;
+            stepKey: string;
+            draftSchemaJsonb?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        FormDefinitionResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            workflowProcessId: string;
+            name: string;
+            stepKey: string;
+            status: components["schemas"]["FormDefinitionStatus"];
+            draftSchemaJsonb?: {
+                [key: string]: unknown;
+            } | null;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        FormAccessRuleItem: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            groupId?: string | null;
+            /** Format: uuid */
+            userId?: string | null;
+            accessScope: components["schemas"]["FormAccessScope"];
+        };
+        FormAccessRulesResponse: {
+            /** Format: uuid */
+            formId: string;
+            rules: components["schemas"]["FormAccessRuleItem"][];
         };
         UpdateFormAccessRulesRequest: {
             rules: {
@@ -1249,6 +1159,31 @@ export interface components {
                 /** Format: uuid */
                 userId?: string | null;
             }[];
+        };
+        LicenseUsage: {
+            activeProcesses: number;
+            activeConnectors: number;
+            adminUsers: number;
+            endUsers: number;
+        };
+        LicenseLimits: {
+            maxActiveProcesses: number | null;
+            maxActiveConnectors: number | null;
+            maxAdminUsers: number | null;
+            maxEndUsers: number | null;
+        };
+        LicensingStatusResponse: {
+            /** Format: uuid */
+            instanceId: string;
+            plan: components["schemas"]["LicensePlan"];
+            status: components["schemas"]["LicenseStatus"];
+            /** Format: date-time */
+            expiresAt?: string | null;
+            /** Format: date-time */
+            gracePeriodEndsAt?: string | null;
+            inGracePeriod: boolean;
+            usage: components["schemas"]["LicenseUsage"];
+            limits: components["schemas"]["LicenseLimits"];
         };
         SubmitTaskRequest: {
             values: {
@@ -1272,6 +1207,8 @@ export interface components {
         };
     };
     parameters: {
+        GroupId: string;
+        UserId: string;
         ProjectId: string;
         ProcessId: string;
         FormId: string;
@@ -1283,4 +1220,681 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
-export type operations = Record<string, never>;
+export interface operations {
+    getHealthLive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Service is alive */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getHealthReady: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Service is ready */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Dependencies unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getSetupStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Setup status */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupStatusResponse"];
+                };
+            };
+        };
+    };
+    initializeSetup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InitializeSetupRequest"];
+            };
+        };
+        responses: {
+            /** @description Instance initialized */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InitializeSetupResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Authenticated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthTokenResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    refreshToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshTokenRequest"];
+            };
+        };
+        responses: {
+            /** @description Token refreshed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthTokenResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogoutRequest"];
+            };
+        };
+        responses: {
+            /** @description Logged out */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    activateAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivateAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description Account activated */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    getCurrentUserProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current user profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserProfileResponse"];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    updateUserPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUserPreferencesRequest"];
+            };
+        };
+        responses: {
+            /** @description Preferences updated */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    listUsers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserSummaryResponse"][];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    createUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateUserRequest"];
+            };
+        };
+        responses: {
+            /** @description User invited */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateUserResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            402: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    listGroups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Group list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupResponse"][];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    createGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGroupRequest"];
+            };
+        };
+        responses: {
+            /** @description Group created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    listGroupMembers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                groupId: components["parameters"]["GroupId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Group member list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupMemberResponse"][];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    addGroupMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                groupId: components["parameters"]["GroupId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddGroupMemberRequest"];
+            };
+        };
+        responses: {
+            /** @description Group member added */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupMemberResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    removeGroupMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                groupId: components["parameters"]["GroupId"];
+                userId: components["parameters"]["UserId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Group member removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    listProjects: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Project list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectResponse"][];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    createProject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProjectRequest"];
+            };
+        };
+        responses: {
+            /** @description Project created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    listProjectProcesses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: components["parameters"]["ProjectId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Workflow processes list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowProcessResponse"][];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    createWorkflowProcess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: components["parameters"]["ProjectId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateWorkflowProcessRequest"];
+            };
+        };
+        responses: {
+            /** @description Workflow process created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowProcessResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            402: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    listProcessForms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                processId: components["parameters"]["ProcessId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Form definitions list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormDefinitionResponse"][];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    createFormDefinition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                processId: components["parameters"]["ProcessId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFormDefinitionRequest"];
+            };
+        };
+        responses: {
+            /** @description Draft form created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormDefinitionResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    getFormAccessRules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                formId: components["parameters"]["FormId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Access rules */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormAccessRulesResponse"];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    updateFormAccessRules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                formId: components["parameters"]["FormId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFormAccessRulesRequest"];
+            };
+        };
+        responses: {
+            /** @description Access rules updated */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    getLicensingStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description License status */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicensingStatusResponse"];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    activateLicense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivateLicenseRequest"];
+            };
+        };
+        responses: {
+            /** @description License activated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicensingStatusResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+}

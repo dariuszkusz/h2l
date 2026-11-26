@@ -1,0 +1,32 @@
+<div
+  role="status"
+  aria-live="polite"
+  [attr.aria-label]="'connectivity.statusLabel' | translate"
+  data-testid="connectivity-banner"
+  class="inline-flex min-h-9 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium"
+  [class]="
+    isOnline()
+      ? 'border-[var(--h2l-border-subtle)] bg-[var(--h2l-status-online-bg)] text-[var(--h2l-status-online-fg)]'
+      : 'border-[var(--h2l-border)] bg-[var(--h2l-status-offline-bg)] text-[var(--h2l-status-offline-fg)]'
+  "
+>
+  <span
+    aria-hidden="true"
+    class="inline-flex h-2.5 w-2.5 rounded-full"
+    [class]="isOnline() ? 'bg-current' : 'border-2 border-current bg-transparent'"
+  ></span>
+
+  @if (!isOnline()) {
+    <span>{{ 'connectivity.offline' | translate }}</span>
+  } @else if (syncStatus() === 'syncing') {
+    <span>{{ 'connectivity.syncing' | translate }}</span>
+  } @else {
+    <span>{{ 'connectivity.online' | translate }}</span>
+  }
+
+  @if (pendingDraftsCount() > 0) {
+    <span class="font-semibold">
+      ({{ 'connectivity.queued' | translate: { count: pendingDraftsCount() } }})
+    </span>
+  }
+</div>

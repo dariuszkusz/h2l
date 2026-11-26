@@ -6,10 +6,71 @@
     "nav": {
       "label": "Main navigation",
       "tasks": "Tasks",
-      "settings": "Settings"
+      "users": "Users & Groups",
+      "projects": "Projects & Processes",
+      "settings": "Settings",
+      "login": "Sign in",
+      "setup": "Setup",
+      "logout": "Sign out",
+      "signedInAs": "Signed in as {{email}}"
+    },
+    "roles": {
+      "Admin": "Admin",
+      "ProcessDesigner": "Process Designer",
+      "EndUser": "End User"
     },
     "footer": {
-      "version": "Stage 0 PWA Foundation"
+      "version": "Stage 1 PWA Foundation"
+    }
+  },
+  "common": {
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "loading": "Loading...",
+    "dismiss": "Dismiss",
+    "cancel": "Cancel",
+    "successTitle": "Saved",
+    "validation": {
+      "required": "This field is required.",
+      "invalidEmail": "Enter a valid email address.",
+      "minLength": "Enter at least {{min}} characters.",
+      "maxLength": "Enter at most {{max}} characters.",
+      "passwordMismatch": "Passwords do not match.",
+      "portRange": "Enter a port between 1 and 65535."
+    }
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "http": {
+      "offline": "You appear to be offline. Check your connection and try again.",
+      "badRequest": "Please review the highlighted fields and try again.",
+      "unauthorized": "Your credentials are invalid or your session expired.",
+      "paymentRequired": "Your current Free plan limit has been reached.",
+      "forbidden": "You do not have permission to perform this action.",
+      "notFound": "The requested resource could not be found.",
+      "conflict": "This action conflicts with the current state.",
+      "serverError": "A server error occurred. Try again in a moment.",
+      "unknown": "An unexpected error occurred. Try again."
+    },
+    "codes": {
+      "INVALID_CREDENTIALS": "Invalid email address or password.",
+      "ACCOUNT_INACTIVE": "Your account is not active yet. Check your activation link.",
+      "SETUP_ALREADY_INITIALIZED": "This instance is already initialized. Sign in to continue.",
+      "PLAN_LIMIT_EXCEEDED": "Your Free plan limit has been reached. Upgrade your license in Settings.",
+      "TOKEN_INVALID": "This activation token is invalid.",
+      "TOKEN_EXPIRED": "This activation token has expired. Ask an administrator for a new invite.",
+      "ACCOUNT_ALREADY_ACTIVE": "This account is already active. You can sign in directly.",
+      "DUPLICATE_EMAIL": "A user with this email address already exists.",
+      "DUPLICATE_GROUP_CODE": "A group with this code already exists.",
+      "DUPLICATE_GROUP_MEMBER": "This user is already a member of the selected group.",
+      "DUPLICATE_EXTERNAL_PROCESS_KEY": "A process with this external key already exists in this project.",
+      "INVALID_ACL_RULE": "Each access rule must specify a group, a user, or both.",
+      "VALIDATION_ERROR": "Please fix the validation errors below.",
+      "FORBIDDEN": "You do not have permission to access this resource.",
+      "UNAUTHORIZED": "Sign in to access this resource.",
+      "LICENSE_INVALID": "The license key is invalid or corrupted.",
+      "LICENSE_EXPIRED": "Your license has expired. Renew your license in Settings to create new processes.",
+      "INSTANCE_MISMATCH": "This license key is bound to a different Instance ID."
     }
   },
   "onboarding": {
@@ -25,6 +86,75 @@
     "de": "Deutsch",
     "pl": "Polski"
   },
+  "setup": {
+    "heading": "Initialize your h2l instance",
+    "description": "Create the first administrator account, choose the default language and color palette, and optionally configure SMTP delivery.",
+    "loadingStatus": "Checking instance setup status...",
+    "emptyTitle": "Instance ready for initial setup",
+    "emptyDescription": "No administrator account exists yet. Complete the fields below to secure and launch this self-hosted instance.",
+    "alreadyInitializedTitle": "Instance already configured",
+    "alreadyInitializedMessage": "Setup has already been completed. Sign in with your administrator account.",
+    "adminEmail": "Administrator email",
+    "adminPassword": "Administrator password",
+    "passwordHint": "Use 12 to 128 characters.",
+    "defaultLanguage": "Default instance language",
+    "selectedPalette": "Color palette",
+    "preview": {
+      "title": "Live theme preview",
+      "description": "Preview your chosen palette across Light, Dark, and High Contrast modes.",
+      "modeLabel": "Preview display mode",
+      "sampleHeading": "Approval task preview",
+      "sampleBody": "Check contrast and readability before saving.",
+      "sampleButton": "Confirm action"
+    },
+    "smtp": {
+      "toggle": "Configure outgoing SMTP email (optional)",
+      "sectionTitle": "SMTP mail server",
+      "description": "Credentials are encrypted at rest with AES-GCM. Leave unchecked to copy user activation links manually.",
+      "host": "SMTP host",
+      "port": "Port",
+      "useSsl": "Use SSL / TLS",
+      "username": "Username (optional)",
+      "password": "Password (optional)",
+      "fromAddress": "From email address",
+      "fromName": "From display name (optional)"
+    },
+    "submit": "Complete setup",
+    "submitting": "Initializing instance...",
+    "successTitle": "Instance initialized",
+    "successDescription": "Your administrator account is ready. Redirecting to sign in..."
+  },
+  "auth": {
+    "login": {
+      "heading": "Sign in to h2l",
+      "description": "Enter your email and password to access your workflow tasks.",
+      "languageLabel": "Interface language",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "sessionExpiredTitle": "Session expired",
+      "sessionExpiredMessage": "Your session expired and local offline drafts were cleared for security. Sign in again.",
+      "activateLinkPrompt": "Received an invitation link or token?",
+      "activateLinkCta": "Activate your account"
+    },
+    "activate": {
+      "heading": "Activate your account",
+      "description": "Set your password to activate your invited h2l account.",
+      "emptyTokenTitle": "Activation token needed",
+      "emptyTokenDescription": "No token was found in the link. Paste the activation token from your invitation below.",
+      "tokenLabel": "Activation token",
+      "tokenPlaceholder": "Paste your one-time activation token",
+      "passwordLabel": "New password",
+      "passwordHint": "Choose a password between 12 and 128 characters.",
+      "confirmPasswordLabel": "Confirm password",
+      "submit": "Activate account",
+      "submitting": "Activating...",
+      "successTitle": "Account activated",
+      "successDescription": "Your password is set. You can now sign in with your email and new password.",
+      "goToLoginCta": "Go to sign in"
+    }
+  },
   "tasks": {
     "heading": "Your workflow tasks",
     "description": "Complete human steps from your connected workflow engines, online or offline.",
@@ -35,6 +165,7 @@
   "settings": {
     "heading": "Preferences",
     "description": "Personalize your language, display mode, and color palette. Changes apply immediately without reloading.",
+    "preferencesSaved": "Your preferences have been saved.",
     "language": {
       "title": "Language",
       "description": "Independent for your current session and user profile.",
@@ -71,5 +202,158 @@
     "syncing": "Syncing drafts...",
     "queued": "Pending drafts: {{count}}",
     "statusLabel": "Connection status"
+  },
+  "adminUsers": {
+    "heading": "Users & Groups",
+    "description": "Invite team members, organize them into groups, and manage access to workflow forms.",
+    "loading": "Loading users and groups...",
+    "users": {
+      "title": "Users",
+      "emptyTitle": "No users yet",
+      "emptyDescription": "Invite your first team member to start assigning workflow tasks.",
+      "externalIdPrefix": "External ID",
+      "statusActive": "Active",
+      "statusInvited": "Invited"
+    },
+    "invite": {
+      "openButton": "Invite User",
+      "dialogTitle": "Invite a user",
+      "emailLabel": "Email address",
+      "externalIdLabel": "External ID (optional)",
+      "roleLabel": "System role",
+      "groupsLabel": "Assign to groups (optional)",
+      "submitButton": "Send Invite",
+      "successSmtp": "Invitation sent via SMTP.",
+      "successManualLink": "User invited. Copy the one-time activation link below.",
+      "manualLinkRegion": "One-time activation link",
+      "manualLinkTitle": "One-time activation link",
+      "manualLinkDescription": "SMTP is not configured. Share this one-time link with {{email}} to activate their account:",
+      "copyLinkButton": "Copy activation link",
+      "linkCopied": "Copied"
+    },
+    "groups": {
+      "title": "Groups",
+      "createButton": "Create Group",
+      "dialogTitle": "Create a group",
+      "nameLabel": "Group name",
+      "codeLabel": "Group code",
+      "submitButton": "Create Group",
+      "createSuccess": "Group created.",
+      "emptyTitle": "No groups yet",
+      "emptyDescription": "Create a group to organize users for form access control and task queues.",
+      "memberCount": "{{count}} members",
+      "membersTitle": "Members of {{name}}",
+      "addMemberLabel": "Add member",
+      "selectUserPlaceholder": "Select a user...",
+      "addMemberButton": "Add Member",
+      "removeMemberButton": "Remove",
+      "noMembersTitle": "No members in this group",
+      "noMembersDescription": "Select a user above to add them to this group.",
+      "memberAddedSuccess": "Member added to group.",
+      "memberRemovedSuccess": "Member removed from group."
+    }
+  },
+  "adminProjects": {
+    "heading": "Projects, Processes & Access Control",
+    "description": "Organize workflow processes into projects, define draft forms, and configure flexible ACL rules.",
+    "loading": "Loading projects...",
+    "projects": {
+      "title": "Projects",
+      "createButton": "Create Project",
+      "dialogTitle": "Create a project",
+      "nameLabel": "Project name",
+      "descriptionLabel": "Description (optional)",
+      "submitButton": "Create Project",
+      "createSuccess": "Project created.",
+      "emptyTitle": "No projects yet",
+      "emptyDescription": "Create a project to group your workflow processes."
+    },
+    "processes": {
+      "title": "Workflow Processes",
+      "createButton": "New Process",
+      "dialogTitle": "Create a workflow process",
+      "nameLabel": "Process name",
+      "externalKeyLabel": "External process key",
+      "statusLabel": "Status",
+      "submitButton": "Create Process",
+      "createSuccess": "Workflow process created.",
+      "selectProjectTitle": "Select a project",
+      "selectProjectDescription": "Choose a project on the left to view or create workflow processes.",
+      "emptyTitle": "No processes yet",
+      "emptyDescription": "Create your first workflow process inside this project.",
+      "status": {
+        "Active": "Active",
+        "Draft": "Draft",
+        "Archived": "Archived"
+      }
+    },
+    "forms": {
+      "title": "Draft Forms",
+      "createButton": "New Draft Form",
+      "dialogTitle": "Create a draft form",
+      "nameLabel": "Form name",
+      "stepKeyLabel": "Step key",
+      "submitButton": "Create Form",
+      "createSuccess": "Draft form created.",
+      "selectProcessTitle": "Select a process",
+      "selectProcessDescription": "Choose a workflow process to view or create its forms.",
+      "emptyTitle": "No forms yet",
+      "emptyDescription": "Add a draft form step to this workflow process."
+    },
+    "acl": {
+      "title": "Access Control (ACL) — {{name}}",
+      "description": "Grant access to a whole group, narrow to specific members of a group, or assign direct users.",
+      "scopeLabel": "Access scope",
+      "groupLabel": "Group",
+      "userLabel": "User",
+      "selectGroupPlaceholder": "Select a group...",
+      "selectUserPlaceholder": "Select a user...",
+      "addRuleButton": "Add Rule",
+      "removeRuleButton": "Remove",
+      "saveButton": "Save Access Rules",
+      "saveSuccess": "Access rules saved.",
+      "emptyTitle": "No access rules configured",
+      "emptyDescription": "Add at least one group or user rule above, then save.",
+      "scopes": {
+        "WholeGroup": "Whole group",
+        "GroupUserSubset": "Specific member in group",
+        "DirectUser": "Direct user"
+      }
+    }
+  },
+  "licensing": {
+    "title": "License & Plan Status",
+    "description": "View your self-hosted Instance ID, current plan limits, and activate an offline Ed25519 license key.",
+    "loading": "Loading license status...",
+    "instanceIdLabel": "Instance ID",
+    "copyInstanceId": "Copy Instance ID",
+    "instanceIdCopied": "Copied",
+    "unlimited": "Unlimited",
+    "keyLabel": "License Key (Ed25519)",
+    "keyPlaceholder": "Paste your signed Ed25519 license key here",
+    "activateButton": "Activate License",
+    "activatingButton": "Activating...",
+    "activateSuccess": "License activated successfully.",
+    "upgradeCta": "Manage license in Settings",
+    "gracePeriodTitle": "Grace period active",
+    "gracePeriodMessage": "Your license is in a 14-day grace period (ends {{date}}). Existing tasks continue normally; renew your license to avoid creation limits.",
+    "expiredTitle": "License expired",
+    "expiredMessage": "Creating new active processes and connectors is paused. Existing tasks and GDPR export/deletion continue to work.",
+    "plans": {
+      "Free": "Free",
+      "Pro": "Pro",
+      "Enterprise": "Enterprise"
+    },
+    "statuses": {
+      "Active": "Active",
+      "GracePeriod": "Grace Period",
+      "Expired": "Expired"
+    },
+    "usage": {
+      "activeProcesses": "Active processes",
+      "activeConnectors": "Active connectors",
+      "adminUsers": "Admin users",
+      "endUsers": "End users"
+    }
   }
 }

@@ -6,10 +6,71 @@
     "nav": {
       "label": "Nawigacja główna",
       "tasks": "Zadania",
-      "settings": "Ustawienia"
+      "users": "Użytkownicy i grupy",
+      "projects": "Projekty i procesy",
+      "settings": "Ustawienia",
+      "login": "Zaloguj się",
+      "setup": "Konfiguracja",
+      "logout": "Wyloguj się",
+      "signedInAs": "Zalogowano jako {{email}}"
+    },
+    "roles": {
+      "Admin": "Administrator",
+      "ProcessDesigner": "Projektant procesów",
+      "EndUser": "Użytkownik"
     },
     "footer": {
-      "version": "Fundament PWA — Etap 0"
+      "version": "Fundament PWA — Etap 1"
+    }
+  },
+  "common": {
+    "showPassword": "Pokaż hasło",
+    "hidePassword": "Ukryj hasło",
+    "loading": "Ładowanie...",
+    "dismiss": "Zamknij",
+    "cancel": "Anuluj",
+    "successTitle": "Zapisano",
+    "validation": {
+      "required": "To pole jest wymagane.",
+      "invalidEmail": "Wpisz poprawny adres e-mail.",
+      "minLength": "Wpisz co najmniej {{min}} znaków.",
+      "maxLength": "Wpisz maksymalnie {{max}} znaków.",
+      "passwordMismatch": "Hasła nie są identyczne.",
+      "portRange": "Wpisz numer portu od 1 do 65535."
+    }
+  },
+  "errors": {
+    "title": "Wystąpił problem",
+    "http": {
+      "offline": "Wygląda na to, że jesteś offline. Sprawdź połączenie i spróbuj ponownie.",
+      "badRequest": "Sprawdź wyróżnione pola i spróbuj ponownie.",
+      "unauthorized": "Dane logowania są nieprawidłowe lub Twoja sesja wygasła.",
+      "paymentRequired": "Osiągnięto limit bieżącego planu Free.",
+      "forbidden": "Nie masz uprawnień do wykonania tej operacji.",
+      "notFound": "Nie znaleziono żądanego zasobu.",
+      "conflict": "Ta operacja koliduje z aktualnym stanem systemu.",
+      "serverError": "Wystąpił błąd serwera. Spróbuj ponownie za chwilę.",
+      "unknown": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie."
+    },
+    "codes": {
+      "INVALID_CREDENTIALS": "Nieprawidłowy adres e-mail lub hasło.",
+      "ACCOUNT_INACTIVE": "Twoje konto nie jest jeszcze aktywne. Użyj linku aktywacyjnego.",
+      "SETUP_ALREADY_INITIALIZED": "Ta instancja jest już skonfigurowana. Zaloguj się, aby kontynuować.",
+      "PLAN_LIMIT_EXCEEDED": "Osiągnięto limit planu Free. Aktywuj licencję w Ustawieniach.",
+      "TOKEN_INVALID": "Ten token aktywacyjny jest nieprawidłowy.",
+      "TOKEN_EXPIRED": "Ten token aktywacyjny wygasł. Poproś administratora o nowe zaproszenie.",
+      "ACCOUNT_ALREADY_ACTIVE": "To konto jest już aktywne. Możesz zalogować się bezpośrednio.",
+      "DUPLICATE_EMAIL": "Użytkownik z tym adresem e-mail już istnieje.",
+      "DUPLICATE_GROUP_CODE": "Grupa o tym kodzie już istnieje.",
+      "DUPLICATE_GROUP_MEMBER": "Ten użytkownik należy już do wybranej grupy.",
+      "DUPLICATE_EXTERNAL_PROCESS_KEY": "Proces o tym zewnętrznym kluczu już istnieje w tym projekcie.",
+      "INVALID_ACL_RULE": "Każda reguła dostępu musi wskazywać grupę, użytkownika lub oba elementy.",
+      "VALIDATION_ERROR": "Popraw błędy walidacji poniżej.",
+      "FORBIDDEN": "Nie masz uprawnień do tego zasobu.",
+      "UNAUTHORIZED": "Zaloguj się, aby uzyskać dostęp do tego zasobu.",
+      "LICENSE_INVALID": "Klucz licencyjny jest nieprawidłowy lub uszkodzony.",
+      "LICENSE_EXPIRED": "Twoja licencja wygasła. Odnów licencję w Ustawieniach, aby tworzyć nowe procesy.",
+      "INSTANCE_MISMATCH": "Ten klucz licencyjny jest przypisany do innego identyfikatora instancji."
     }
   },
   "onboarding": {
@@ -25,6 +86,75 @@
     "de": "Deutsch",
     "pl": "Polski"
   },
+  "setup": {
+    "heading": "Skonfiguruj swoją instancję h2l",
+    "description": "Utwórz pierwsze konto administratora, wybierz domyślny język oraz paletę kolorów i opcjonalnie skonfiguruj wysyłkę SMTP.",
+    "loadingStatus": "Sprawdzanie statusu konfiguracji instancji...",
+    "emptyTitle": "Instancja gotowa do pierwszej konfiguracji",
+    "emptyDescription": "Nie utworzono jeszcze konta administratora. Wypełnij poniższe pola, aby zabezpieczyć i uruchomić tę instancję self-hosted.",
+    "alreadyInitializedTitle": "Instancja już skonfigurowana",
+    "alreadyInitializedMessage": "Konfiguracja została już zakończona. Zaloguj się na konto administratora.",
+    "adminEmail": "E-mail administratora",
+    "adminPassword": "Hasło administratora",
+    "passwordHint": "Użyj od 12 do 128 znaków.",
+    "defaultLanguage": "Domyślny język instancji",
+    "selectedPalette": "Paleta kolorów",
+    "preview": {
+      "title": "Podgląd motywu na żywo",
+      "description": "Sprawdź wybraną paletę w trybie jasnym, ciemnym i wysokiego kontrastu.",
+      "modeLabel": "Tryb podglądu",
+      "sampleHeading": "Podgląd zadania akceptacji",
+      "sampleBody": "Sprawdź kontrast i czytelność przed zapisaniem.",
+      "sampleButton": "Zatwierdź akcję"
+    },
+    "smtp": {
+      "toggle": "Skonfiguruj serwer SMTP dla e-maili (opcjonalnie)",
+      "sectionTitle": "Serwer poczty SMTP",
+      "description": "Dane uwierzytelniające są szyfrowane algorytmem AES-GCM. Pozostaw odznaczone, aby kopiować linki aktywacyjne ręcznie.",
+      "host": "Host SMTP",
+      "port": "Port",
+      "useSsl": "Użyj SSL / TLS",
+      "username": "Nazwa użytkownika (opcjonalnie)",
+      "password": "Hasło (opcjonalnie)",
+      "fromAddress": "Adres e-mail nadawcy",
+      "fromName": "Nazwa nadawcy (opcjonalnie)"
+    },
+    "submit": "Zakończ konfigurację",
+    "submitting": "Inicjalizacja instancji...",
+    "successTitle": "Instancja skonfigurowana",
+    "successDescription": "Twoje konto administratora jest gotowe. Przekierowanie do logowania..."
+  },
+  "auth": {
+    "login": {
+      "heading": "Zaloguj się do h2l",
+      "description": "Wpisz swój adres e-mail i hasło, aby uzyskać dostęp do zadań workflow.",
+      "languageLabel": "Język interfejsu",
+      "email": "Adres e-mail",
+      "password": "Hasło",
+      "submit": "Zaloguj się",
+      "submitting": "Logowanie...",
+      "sessionExpiredTitle": "Sesja wygasła",
+      "sessionExpiredMessage": "Twoja sesja wygasła, a lokalne wersje robocze zostały wyczyszczone ze względów bezpieczeństwa. Zaloguj się ponownie.",
+      "activateLinkPrompt": "Masz link lub token zaproszenia?",
+      "activateLinkCta": "Aktywuj swoje konto"
+    },
+    "activate": {
+      "heading": "Aktywuj swoje konto",
+      "description": "Ustaw hasło, aby aktywować zaproszone konto w h2l.",
+      "emptyTokenTitle": "Wymagany token aktywacyjny",
+      "emptyTokenDescription": "W adresie nie znaleziono tokenu. Wklej poniżej token aktywacyjny ze swojego zaproszenia.",
+      "tokenLabel": "Token aktywacyjny",
+      "tokenPlaceholder": "Wklej jednorazowy token aktywacyjny",
+      "passwordLabel": "Nowe hasło",
+      "passwordHint": "Wybierz hasło o długości od 12 do 128 znaków.",
+      "confirmPasswordLabel": "Powtórz hasło",
+      "submit": "Aktywuj konto",
+      "submitting": "Aktywowanie...",
+      "successTitle": "Konto aktywowane",
+      "successDescription": "Twoje hasło zostało ustawione. Możesz teraz zalogować się swoim adresem e-mail i nowym hasłem.",
+      "goToLoginCta": "Przejdź do logowania"
+    }
+  },
   "tasks": {
     "heading": "Twoje zadania workflow",
     "description": "Wypełniaj kroki ludzkie z podłączonych silników workflow — online lub offline.",
@@ -35,6 +165,7 @@
   "settings": {
     "heading": "Ustawienia",
     "description": "Dopasuj swój język, tryb wyświetlania oraz paletę kolorów. Zmiany działają natychmiast bez przeładowania strony.",
+    "preferencesSaved": "Twoje preferencje zostały zapisane.",
     "language": {
       "title": "Język",
       "description": "Niezależny dla Twojej bieżącej sesji i profilu użytkownika.",
@@ -71,5 +202,158 @@
     "syncing": "Synchronizowanie wersji roboczych...",
     "queued": "Oczekujące wersje robocze: {{count}}",
     "statusLabel": "Status połączenia"
+  },
+  "adminUsers": {
+    "heading": "Użytkownicy i grupy",
+    "description": "Zapraszaj członków zespołu, organizuj ich w grupy i zarządzaj dostępem do formularzy workflow.",
+    "loading": "Ładowanie użytkowników i grup...",
+    "users": {
+      "title": "Użytkownicy",
+      "emptyTitle": "Brak użytkowników",
+      "emptyDescription": "Zaproś pierwszego członka zespołu, aby przypisywać zadania workflow.",
+      "externalIdPrefix": "Zewnętrzne ID",
+      "statusActive": "Aktywny",
+      "statusInvited": "Zaproszony"
+    },
+    "invite": {
+      "openButton": "Zaproś użytkownika",
+      "dialogTitle": "Zaproś użytkownika",
+      "emailLabel": "Adres e-mail",
+      "externalIdLabel": "Zewnętrzne ID (opcjonalnie)",
+      "roleLabel": "Rola systemowa",
+      "groupsLabel": "Przypisz do grup (opcjonalnie)",
+      "submitButton": "Wyślij zaproszenie",
+      "successSmtp": "Zaproszenie zostało wysłane przez SMTP.",
+      "successManualLink": "Użytkownik został zaproszony. Skopiuj jednorazowy link aktywacyjny poniżej.",
+      "manualLinkRegion": "Jednorazowy link aktywacyjny",
+      "manualLinkTitle": "Jednorazowy link aktywacyjny",
+      "manualLinkDescription": "SMTP nie jest skonfigurowane. Przekaż ten jednorazowy link użytkownikowi {{email}}, aby aktywował konto:",
+      "copyLinkButton": "Kopiuj link aktywacyjny",
+      "linkCopied": "Skopiowano"
+    },
+    "groups": {
+      "title": "Grupy",
+      "createButton": "Utwórz grupę",
+      "dialogTitle": "Utwórz grupę",
+      "nameLabel": "Nazwa grupy",
+      "codeLabel": "Kod grupy",
+      "submitButton": "Utwórz grupę",
+      "createSuccess": "Grupa została utworzona.",
+      "emptyTitle": "Brak grup",
+      "emptyDescription": "Utwórz grupę, aby organizować użytkowników do kontroli dostępu i kolejek zadań.",
+      "memberCount": "{{count}} członków",
+      "membersTitle": "Członkowie grupy {{name}}",
+      "addMemberLabel": "Dodaj członka",
+      "selectUserPlaceholder": "Wybierz użytkownika...",
+      "addMemberButton": "Dodaj członka",
+      "removeMemberButton": "Usuń",
+      "noMembersTitle": "Brak członków w tej grupie",
+      "noMembersDescription": "Wybierz użytkownika powyżej, aby dodać go do tej grupy.",
+      "memberAddedSuccess": "Członek został dodany do grupy.",
+      "memberRemovedSuccess": "Członek został usunięty z grupy."
+    }
+  },
+  "adminProjects": {
+    "heading": "Projekty, procesy i kontrola dostępu",
+    "description": "Grupuj procesy workflow w projekty, twórz wersje robocze formularzy i konfiguruj elastyczne reguły ACL.",
+    "loading": "Ładowanie projektów...",
+    "projects": {
+      "title": "Projekty",
+      "createButton": "Utwórz projekt",
+      "dialogTitle": "Utwórz projekt",
+      "nameLabel": "Nazwa projektu",
+      "descriptionLabel": "Opis (opcjonalnie)",
+      "submitButton": "Utwórz projekt",
+      "createSuccess": "Projekt został utworzony.",
+      "emptyTitle": "Brak projektów",
+      "emptyDescription": "Utwórz projekt, aby zgrupować swoje procesy workflow."
+    },
+    "processes": {
+      "title": "Procesy workflow",
+      "createButton": "Nowy proces",
+      "dialogTitle": "Utwórz proces workflow",
+      "nameLabel": "Nazwa procesu",
+      "externalKeyLabel": "Zewnętrzny klucz procesu",
+      "statusLabel": "Status",
+      "submitButton": "Utwórz proces",
+      "createSuccess": "Proces workflow został utworzony.",
+      "selectProjectTitle": "Wybierz projekt",
+      "selectProjectDescription": "Wybierz projekt po lewej stronie, aby wyświetlić lub utworzyć procesy workflow.",
+      "emptyTitle": "Brak procesów",
+      "emptyDescription": "Utwórz pierwszy proces workflow w tym projekcie.",
+      "status": {
+        "Active": "Aktywny",
+        "Draft": "Szkic",
+        "Archived": "Zarchiwizowany"
+      }
+    },
+    "forms": {
+      "title": "Wersje robocze formularzy",
+      "createButton": "Nowy formularz",
+      "dialogTitle": "Utwórz wersję roboczą formularza",
+      "nameLabel": "Nazwa formularza",
+      "stepKeyLabel": "Klucz kroku",
+      "submitButton": "Utwórz formularz",
+      "createSuccess": "Wersja robocza formularza została utworzona.",
+      "selectProcessTitle": "Wybierz proces",
+      "selectProcessDescription": "Wybierz proces workflow, aby wyświetlić lub utworzyć jego formularze.",
+      "emptyTitle": "Brak formularzy",
+      "emptyDescription": "Dodaj krok z wersją roboczą formularza do tego procesu workflow."
+    },
+    "acl": {
+      "title": "Kontrola dostępu (ACL) — {{name}}",
+      "description": "Przyznaj dostęp całej grupie, zawęź go do wybranych członków grupy lub wskaż konkretnych użytkowników.",
+      "scopeLabel": "Zakres dostępu",
+      "groupLabel": "Grupa",
+      "userLabel": "Użytkownik",
+      "selectGroupPlaceholder": "Wybierz grupę...",
+      "selectUserPlaceholder": "Wybierz użytkownika...",
+      "addRuleButton": "Dodaj regułę",
+      "removeRuleButton": "Usuń",
+      "saveButton": "Zapisz reguły dostępu",
+      "saveSuccess": "Reguły dostępu zostały zapisane.",
+      "emptyTitle": "Brak skonfigurowanych reguł dostępu",
+      "emptyDescription": "Dodaj powyżej co najmniej jedną regułę dla grupy lub użytkownika, a następnie zapisz.",
+      "scopes": {
+        "WholeGroup": "Cała grupa",
+        "GroupUserSubset": "Wybrana osoba z grupy",
+        "DirectUser": "Konkretny użytkownik"
+      }
+    }
+  },
+  "licensing": {
+    "title": "Status licencji i planu",
+    "description": "Sprawdź identyfikator instancji self-hosted, limity bieżącego planu oraz aktywuj klucz licencyjny Ed25519 offline.",
+    "loading": "Ładowanie statusu licencji...",
+    "instanceIdLabel": "Identyfikator instancji (Instance ID)",
+    "copyInstanceId": "Kopiuj Instance ID",
+    "instanceIdCopied": "Skopiowano",
+    "unlimited": "Bez limitu",
+    "keyLabel": "Klucz licencji (Ed25519)",
+    "keyPlaceholder": "Wklej tutaj podpisany klucz licencji Ed25519",
+    "activateButton": "Aktywuj licencję",
+    "activatingButton": "Aktywowanie...",
+    "activateSuccess": "Licencja została pomyślnie aktywowana.",
+    "upgradeCta": "Zarządzaj licencją w Ustawieniach",
+    "gracePeriodTitle": "Trwa okres karencji",
+    "gracePeriodMessage": "Twoja licencja znajduje się w 14-dniowym okresie karencji (kończy się {{date}}). Otwarte zadania działają bez przeszkód; odnów licencję, aby uniknąć blokady tworzenia nowych procesów.",
+    "expiredTitle": "Licencja wygasła",
+    "expiredMessage": "Tworzenie nowych aktywnych procesów i konektorów jest wstrzymane. Otwarte zadania oraz eksport i usuwanie danych RODO działają bez ograniczeń.",
+    "plans": {
+      "Free": "Free",
+      "Pro": "Pro",
+      "Enterprise": "Enterprise"
+    },
+    "statuses": {
+      "Active": "Aktywna",
+      "GracePeriod": "Okres karencji",
+      "Expired": "Wygasła"
+    },
+    "usage": {
+      "activeProcesses": "Aktywne procesy",
+      "activeConnectors": "Aktywne konektory",
+      "adminUsers": "Administratorzy",
+      "endUsers": "Użytkownicy końcowi"
+    }
   }
 }

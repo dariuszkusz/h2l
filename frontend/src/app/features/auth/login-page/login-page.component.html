@@ -1,0 +1,163 @@
+<section class="mx-auto max-w-md space-y-6">
+  <header class="space-y-1">
+    <h1
+      class="text-2xl font-semibold tracking-tight text-[var(--h2l-fg)]"
+      data-testid="login-heading"
+    >
+      {{ 'auth.login.heading' | translate }}
+    </h1>
+    <p class="text-sm text-[var(--h2l-fg-muted)]">
+      {{ 'auth.login.description' | translate }}
+    </p>
+  </header>
+
+  <div
+    role="group"
+    [attr.aria-label]="'auth.login.languageLabel' | translate"
+    class="flex flex-wrap gap-2"
+  >
+    @for (lang of languages; track lang) {
+      <button
+        type="button"
+        hlmBtn
+        [variant]="currentLanguage() === lang ? 'primary' : 'outline'"
+        [attr.aria-pressed]="currentLanguage() === lang"
+        [attr.data-testid]="'login-lang-' + lang"
+        (click)="changeLanguage(lang)"
+      >
+        {{ 'languages.' + lang | translate }}
+      </button>
+    }
+  </div>
+
+  @if (alreadyInitializedRedirect()) {
+    <app-ui-state-banner
+      kind="info"
+      testId="login-already-initialized-banner"
+      [title]="'setup.alreadyInitializedTitle' | translate"
+      [message]="'setup.alreadyInitializedMessage' | translate"
+    />
+  }
+
+  @if (sessionExpiredNotice()) {
+    <app-ui-state-banner
+      kind="info"
+      testId="login-session-expired-banner"
+      [title]="'auth.login.sessionExpiredTitle' | translate"
+      [message]="'auth.login.sessionExpiredMessage' | translate"
+    />
+  }
+
+  @if (loading()) {
+    <app-ui-state-banner
+      kind="loading"
+      testId="login-loading-banner"
+      [message]="'auth.login.submitting' | translate"
+    />
+  }
+
+  @if (authError(); as apiError) {
+    <app-ui-state-banner
+      kind="error"
+      testId="login-error-banner"
+      [title]="'errors.title' | translate"
+      [message]="apiError.messageKey | translate: apiError.messageParams"
+      [detail]="apiError.detail"
+      [fieldErrors]="apiError.fieldErrors"
+    />
+  }
+
+  @if (isAuthenticated()) {
+    <app-ui-state-banner
+      kind="success"
+      testId="login-success-banner"
+      [message]="'common.loading' | translate"
+    />
+  }
+
+  <form
+    hlmCard
+    [formGroup]="loginForm"
+    (ngSubmit)="onSubmit()"
+    novalidate
+    class="space-y-5"
+    data-testid="login-form"
+  >
+    <div class="space-y-2">
+      <label hlmLabel for="login-email">{{ 'auth.login.email' | translate }}</label>
+      <input
+        id="login-email"
+        type="email"
+        autocomplete="email"
+        hlmInput
+        formControlName="email"
+        [hasError]="isControlInvalid('email')"
+        [attr.aria-invalid]="isControlInvalid('email') ? 'true' : null"
+        [attr.aria-describedby]="isControlInvalid('email') ? 'login-email-error' : null"
+        data-testid="login-email"
+      />
+      @if (isControlInvalid('email')) {
+        <p id="login-email-error" class="text-xs text-[var(--h2l-danger-fg)]">
+          {{ getEmailErrorKey() | translate }}
+        </p>
+      }
+    </div>
+
+    <div class="space-y-2">
+      <label hlmLabel for="login-password">{{ 'auth.login.password' | translate }}</label>
+      <div class="flex gap-2">
+        <input
+          id="login-password"
+          [type]="showPassword() ? 'text' : 'password'"
+          autocomplete="current-password"
+          hlmInput
+          formControlName="password"
+          [hasError]="isControlInvalid('password')"
+          [attr.aria-invalid]="isControlInvalid('password') ? 'true' : null"
+          [attr.aria-describedby]="isControlInvalid('password') ? 'login-password-error' : null"
+          data-testid="login-password"
+        />
+        <button
+          type="button"
+          hlmBtn
+          variant="outline"
+          class="shrink-0"
+          [attr.aria-pressed]="showPassword()"
+          [attr.aria-label]="
+            (showPassword() ? 'common.hidePassword' : 'common.showPassword') | translate
+          "
+          data-testid="login-toggle-password"
+          (click)="togglePassword()"
+        >
+          {{ (showPassword() ? 'common.hidePassword' : 'common.showPassword') | translate }}
+        </button>
+      </div>
+      @if (isControlInvalid('password')) {
+        <p id="login-password-error" class="text-xs text-[var(--h2l-danger-fg)]">
+          {{ 'common.validation.required' | translate }}
+        </p>
+      }
+    </div>
+
+    <button
+      type="submit"
+      hlmBtn
+      variant="primary"
+      class="w-full"
+      [disabled]="loading()"
+      data-testid="login-submit"
+    >
+      {{ (loading() ? 'auth.login.submitting' : 'auth.login.submit') | translate }}
+    </button>
+  </form>
+
+  <app-ui-state-banner
+    kind="empty"
+    testId="login-activate-hint"
+    [message]="'auth.login.activateLinkPrompt' | translate"
+  >
+    <a routerLink="/activate" hlmBtn variant="outline" data-testid="login-activate-link">
+      {{ 'auth.login.activateLinkCta' | translate }}
+    </a>
+  </app-ui-state-banner>
+</section>

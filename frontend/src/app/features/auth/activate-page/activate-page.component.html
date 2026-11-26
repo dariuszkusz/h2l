@@ -1,0 +1,184 @@
+<section class="mx-auto max-w-md space-y-6">
+  <header class="space-y-1">
+    <h1
+      class="text-2xl font-semibold tracking-tight text-[var(--h2l-fg)]"
+      data-testid="activate-heading"
+    >
+      {{ 'auth.activate.heading' | translate }}
+    </h1>
+    <p class="text-sm text-[var(--h2l-fg-muted)]">
+      {{ 'auth.activate.description' | translate }}
+    </p>
+  </header>
+
+  @if (activationStatus() === 'loading') {
+    <app-ui-state-banner
+      kind="loading"
+      testId="activate-loading-banner"
+      [message]="'auth.activate.submitting' | translate"
+    />
+  }
+
+  @if (activationError(); as apiError) {
+    <app-ui-state-banner
+      kind="error"
+      testId="activate-error-banner"
+      [title]="'errors.title' | translate"
+      [message]="apiError.messageKey | translate: apiError.messageParams"
+      [detail]="apiError.detail"
+      [fieldErrors]="apiError.fieldErrors"
+    />
+  }
+
+  @if (activationStatus() === 'success') {
+    <app-ui-state-banner
+      kind="success"
+      testId="activate-success-banner"
+      [title]="'auth.activate.successTitle' | translate"
+      [message]="'auth.activate.successDescription' | translate"
+    >
+      <div class="pt-2">
+        <a routerLink="/login" hlmBtn variant="primary" data-testid="activate-login-cta">
+          {{ 'auth.activate.goToLoginCta' | translate }}
+        </a>
+      </div>
+    </app-ui-state-banner>
+  } @else {
+    @if (!hasTokenValue()) {
+      <app-ui-state-banner
+        kind="empty"
+        testId="activate-empty-token-banner"
+        [title]="'auth.activate.emptyTokenTitle' | translate"
+        [message]="'auth.activate.emptyTokenDescription' | translate"
+      />
+    }
+
+    <form
+      hlmCard
+      [formGroup]="activateForm"
+      (ngSubmit)="onSubmit()"
+      novalidate
+      class="space-y-5"
+      data-testid="activate-form"
+    >
+      <div class="space-y-2">
+        <label hlmLabel for="activate-token">{{ 'auth.activate.tokenLabel' | translate }}</label>
+        <input
+          id="activate-token"
+          type="text"
+          autocomplete="off"
+          hlmInput
+          formControlName="token"
+          [placeholder]="'auth.activate.tokenPlaceholder' | translate"
+          [hasError]="isControlInvalid('token')"
+          [attr.aria-invalid]="isControlInvalid('token') ? 'true' : null"
+          [attr.aria-describedby]="isControlInvalid('token') ? 'activate-token-error' : null"
+          data-testid="activate-token"
+        />
+        @if (isControlInvalid('token')) {
+          <p id="activate-token-error" class="text-xs text-[var(--h2l-danger-fg)]">
+            {{ 'common.validation.required' | translate }}
+          </p>
+        }
+      </div>
+
+      <div class="space-y-2">
+        <label hlmLabel for="activate-password">{{ 'auth.activate.passwordLabel' | translate }}</label>
+        <div class="flex gap-2">
+          <input
+            id="activate-password"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="new-password"
+            hlmInput
+            formControlName="password"
+            [hasError]="isControlInvalid('password')"
+            [attr.aria-invalid]="isControlInvalid('password') ? 'true' : null"
+            [attr.aria-describedby]="
+              isControlInvalid('password')
+                ? 'activate-password-hint activate-password-error'
+                : 'activate-password-hint'
+            "
+            data-testid="activate-password"
+          />
+          <button
+            type="button"
+            hlmBtn
+            variant="outline"
+            class="shrink-0"
+            [attr.aria-pressed]="showPassword()"
+            [attr.aria-label]="
+              (showPassword() ? 'common.hidePassword' : 'common.showPassword') | translate
+            "
+            data-testid="activate-toggle-password"
+            (click)="togglePassword()"
+          >
+            {{ (showPassword() ? 'common.hidePassword' : 'common.showPassword') | translate }}
+          </button>
+        </div>
+        <p id="activate-password-hint" class="text-xs text-[var(--h2l-fg-muted)]">
+          {{ 'auth.activate.passwordHint' | translate }}
+        </p>
+        @if (isControlInvalid('password')) {
+          <p id="activate-password-error" class="text-xs text-[var(--h2l-danger-fg)]">
+            {{ getPasswordErrorKey() | translate: { min: 12, max: 128 } }}
+          </p>
+        }
+      </div>
+
+      <div class="space-y-2">
+        <label hlmLabel for="activate-confirm-password">
+          {{ 'auth.activate.confirmPasswordLabel' | translate }}
+        </label>
+        <div class="flex gap-2">
+          <input
+            id="activate-confirm-password"
+            [type]="showConfirmPassword() ? 'text' : 'password'"
+            autocomplete="new-password"
+            hlmInput
+            formControlName="confirmPassword"
+            [hasError]="isConfirmPasswordInvalid()"
+            [attr.aria-invalid]="isConfirmPasswordInvalid() ? 'true' : null"
+            [attr.aria-describedby]="
+              isConfirmPasswordInvalid() ? 'activate-confirm-error' : null
+            "
+            data-testid="activate-confirm-password"
+          />
+          <button
+            type="button"
+            hlmBtn
+            variant="outline"
+            class="shrink-0"
+            [attr.aria-pressed]="showConfirmPassword()"
+            [attr.aria-label]="
+              (showConfirmPassword() ? 'common.hidePassword' : 'common.showPassword') | translate
+            "
+            data-testid="activate-toggle-confirm-password"
+            (click)="toggleConfirmPassword()"
+          >
+            {{ (showConfirmPassword() ? 'common.hidePassword' : 'common.showPassword') | translate }}
+          </button>
+        </div>
+        @if (isConfirmPasswordInvalid()) {
+          <p id="activate-confirm-error" class="text-xs text-[var(--h2l-danger-fg)]">
+            {{ getConfirmPasswordErrorKey() | translate }}
+          </p>
+        }
+      </div>
+
+      <button
+        type="submit"
+        hlmBtn
+        variant="primary"
+        class="w-full"
+        [disabled]="activationStatus() === 'loading'"
+        data-testid="activate-submit"
+      >
+        {{
+          (activationStatus() === 'loading'
+            ? 'auth.activate.submitting'
+            : 'auth.activate.submit') | translate
+        }}
+      </button>
+    </form>
+  }
+</section>

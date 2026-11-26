@@ -1,0 +1,508 @@
+<section class="space-y-6">
+  <header class="flex flex-wrap items-start justify-between gap-4">
+    <div class="space-y-1">
+      <h1
+        class="text-2xl font-semibold tracking-tight text-[var(--h2l-fg)]"
+        data-testid="admin-users-heading"
+      >
+        {{ 'adminUsers.heading' | translate }}
+      </h1>
+      <p class="text-sm text-[var(--h2l-fg-muted)]">
+        {{ 'adminUsers.description' | translate }}
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-3">
+      <button
+        type="button"
+        hlmBtn
+        variant="primary"
+        data-testid="open-invite-user-btn"
+        (click)="openInviteModal()"
+      >
+        {{ 'adminUsers.invite.openButton' | translate }}
+      </button>
+      <button
+        type="button"
+        hlmBtn
+        variant="outline"
+        data-testid="open-create-group-btn"
+        (click)="openCreateGroupModal()"
+      >
+        {{ 'adminUsers.groups.createButton' | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (error(); as apiError) {
+    <div class="space-y-2">
+      <app-ui-state-banner
+        kind="error"
+        testId="admin-users-error"
+        [title]="'errors.title' | translate"
+        [message]="apiError.messageKey | translate: apiError.messageParams"
+        [detail]="apiError.detail"
+        [fieldErrors]="apiError.fieldErrors"
+      />
+      @if (apiError.status === 402) {
+        <div>
+          <a
+            routerLink="/settings"
+            hlmBtn
+            variant="outline"
+            data-testid="admin-users-upgrade-link"
+          >
+            {{ 'licensing.upgradeCta' | translate }}
+          </a>
+        </div>
+      }
+    </div>
+  }
+
+  @if (successKey(); as key) {
+    <app-ui-state-banner
+      kind="success"
+      testId="admin-users-success"
+      [title]="'common.successTitle' | translate"
+      [message]="key | translate"
+    />
+  }
+
+  @if (lastInvitedUser(); as invited) {
+    @if (invited.deliveryMethod === 'manual_link' && invited.activationLink) {
+      <div
+        hlmCard
+        role="region"
+        [attr.aria-label]="'adminUsers.invite.manualLinkRegion' | translate"
+        data-testid="manual-activation-link-card"
+        class="space-y-3 border-[var(--h2l-primary)]"
+      >
+        <div class="space-y-1">
+          <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+            {{ 'adminUsers.invite.manualLinkTitle' | translate }}
+          </h2>
+          <p class="text-sm text-[var(--h2l-fg-muted)]">
+            {{ 'adminUsers.invite.manualLinkDescription' | translate: { email: invited.email } }}
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <code
+            data-testid="manual-activation-link-value"
+            class="flex-1 break-all rounded-md border border-[var(--h2l-border-subtle)] bg-[var(--h2l-surface-elevated)] px-3 py-2 text-xs text-[var(--h2l-fg)]"
+          >
+            {{ invited.activationLink }}
+          </code>
+          <button
+            type="button"
+            hlmBtn
+            variant="primary"
+            data-testid="copy-activation-link-btn"
+            (click)="onCopyActivationLink(invited.activationLink)"
+          >
+            {{
+              (copiedLink()
+                ? 'adminUsers.invite.linkCopied'
+                : 'adminUsers.invite.copyLinkButton') | translate
+            }}
+          </button>
+        </div>
+      </div>
+    }
+  }
+
+  @if (loading()) {
+    <app-ui-state-banner
+      kind="loading"
+      testId="admin-users-loading"
+      [message]="'adminUsers.loading' | translate"
+    />
+  } @else {
+    <div class="grid gap-6 lg:grid-cols-2">
+      <!-- Users list -->
+      <div hlmCard class="space-y-4">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+            {{ 'adminUsers.users.title' | translate }}
+          </h2>
+          <span hlmBadge variant="neutral">{{ users().length }}</span>
+        </div>
+
+        @if (users().length === 0) {
+          <app-ui-state-banner
+            kind="empty"
+            testId="admin-users-empty"
+            [title]="'adminUsers.users.emptyTitle' | translate"
+            [message]="'adminUsers.users.emptyDescription' | translate"
+          />
+        } @else {
+          <ul class="divide-y divide-[var(--h2l-border-subtle)]" data-testid="users-list">
+            @for (user of users(); track user.id) {
+              <li class="flex flex-wrap items-center justify-between gap-2 py-3">
+                <div class="min-w-0 space-y-0.5">
+                  <p class="truncate text-sm font-medium text-[var(--h2l-fg)]">
+                    {{ user.email }}
+                  </p>
+                  @if (user.externalId) {
+                    <p class="text-xs text-[var(--h2l-fg-muted)]">
+                      {{ 'adminUsers.users.externalIdPrefix' | translate }}: {{ user.externalId }}
+                    </p>
+                  }
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span hlmBadge variant="info">
+                    {{ 'app.roles.' + user.systemRole | translate }}
+                  </span>
+                  <span hlmBadge [variant]="user.isActive ? 'success' : 'warning'">
+                    {{
+                      (user.isActive
+                        ? 'adminUsers.users.statusActive'
+                        : 'adminUsers.users.statusInvited') | translate
+                    }}
+                  </span>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <!-- Groups & Members -->
+      <div hlmCard class="space-y-4">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+            {{ 'adminUsers.groups.title' | translate }}
+          </h2>
+          <span hlmBadge variant="neutral">{{ groups().length }}</span>
+        </div>
+
+        @if (groups().length === 0) {
+          <div class="space-y-3">
+            <app-ui-state-banner
+              kind="empty"
+              testId="admin-groups-empty"
+              [title]="'adminUsers.groups.emptyTitle' | translate"
+              [message]="'adminUsers.groups.emptyDescription' | translate"
+            />
+            <button
+              type="button"
+              hlmBtn
+              variant="outline"
+              data-testid="empty-create-group-btn"
+              (click)="openCreateGroupModal()"
+            >
+              {{ 'adminUsers.groups.createButton' | translate }}
+            </button>
+          </div>
+        } @else {
+          <ul class="space-y-2" data-testid="groups-list">
+            @for (group of groups(); track group.id) {
+              <li>
+                <button
+                  type="button"
+                  hlmBtn
+                  [variant]="selectedGroupId() === group.id ? 'primary' : 'outline'"
+                  class="w-full justify-between"
+                  [attr.aria-pressed]="selectedGroupId() === group.id"
+                  [attr.data-testid]="'group-item-' + group.code"
+                  (click)="onSelectGroup(group.id)"
+                >
+                  <span>{{ group.name }} ({{ group.code }})</span>
+                  <span class="text-xs opacity-80">
+                    {{ 'adminUsers.groups.memberCount' | translate: { count: group.memberCount } }}
+                  </span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+
+        @if (selectedGroup(); as activeGroup) {
+          <div
+            class="space-y-4 border-t border-[var(--h2l-border-subtle)] pt-4"
+            data-testid="group-members-section"
+          >
+            <h3 class="text-sm font-semibold text-[var(--h2l-fg)]">
+              {{ 'adminUsers.groups.membersTitle' | translate: { name: activeGroup.name } }}
+            </h3>
+
+            <div class="flex flex-wrap items-end gap-3">
+              <div class="min-w-48 flex-1 space-y-1">
+                <label hlmLabel for="add-group-member-select">
+                  {{ 'adminUsers.groups.addMemberLabel' | translate }}
+                </label>
+                <select
+                  id="add-group-member-select"
+                  hlmInput
+                  data-testid="add-group-member-select"
+                  [value]="memberToAddId()"
+                  (change)="onMemberSelectChange($event)"
+                >
+                  <option value="">
+                    {{ 'adminUsers.groups.selectUserPlaceholder' | translate }}
+                  </option>
+                  @for (candidate of availableUsersForGroup(); track candidate.id) {
+                    <option [value]="candidate.id">{{ candidate.email }}</option>
+                  }
+                </select>
+              </div>
+              <button
+                type="button"
+                hlmBtn
+                variant="primary"
+                data-testid="add-group-member-btn"
+                [disabled]="!memberToAddId() || saving()"
+                (click)="onAddGroupMember()"
+              >
+                {{ 'adminUsers.groups.addMemberButton' | translate }}
+              </button>
+            </div>
+
+            @if (loadingMembers()) {
+              <app-ui-state-banner
+                kind="loading"
+                testId="group-members-loading"
+                [message]="'common.loading' | translate"
+              />
+            } @else if (groupMembers().length === 0) {
+              <app-ui-state-banner
+                kind="empty"
+                testId="group-members-empty"
+                [title]="'adminUsers.groups.noMembersTitle' | translate"
+                [message]="'adminUsers.groups.noMembersDescription' | translate"
+              />
+            } @else {
+              <ul class="divide-y divide-[var(--h2l-border-subtle)]" data-testid="group-members-list">
+                @for (member of groupMembers(); track member.userId) {
+                  <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+                    <span class="text-sm text-[var(--h2l-fg)]">{{ member.email }}</span>
+                    <button
+                      type="button"
+                      hlmBtn
+                      variant="outline"
+                      [attr.data-testid]="'remove-member-' + member.userId"
+                      [disabled]="saving()"
+                      (click)="onRemoveGroupMember(member.userId)"
+                    >
+                      {{ 'adminUsers.groups.removeMemberButton' | translate }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</section>
+
+<!-- Invite User Dialog -->
+@if (inviteModalOpen()) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+    (keydown)="onDialogKeydown($event, 'invite')"
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="invite-user-dialog-title"
+      data-testid="invite-user-dialog"
+      hlmCard
+      class="w-full max-w-lg space-y-4 bg-[var(--h2l-bg)]"
+    >
+      <div class="flex items-center justify-between gap-2">
+        <h2 id="invite-user-dialog-title" class="text-lg font-semibold text-[var(--h2l-fg)]">
+          {{ 'adminUsers.invite.dialogTitle' | translate }}
+        </h2>
+        <button
+          type="button"
+          hlmBtn
+          variant="ghost"
+          data-testid="close-invite-dialog-btn"
+          (click)="closeInviteModal()"
+        >
+          {{ 'common.cancel' | translate }}
+        </button>
+      </div>
+
+      <form [formGroup]="inviteForm" (ngSubmit)="onInviteSubmit()" novalidate class="space-y-4">
+        <div class="space-y-1">
+          <label hlmLabel for="invite-email">
+            {{ 'adminUsers.invite.emailLabel' | translate }}
+          </label>
+          <input
+            id="invite-email"
+            type="email"
+            hlmInput
+            formControlName="email"
+            data-testid="invite-email-input"
+            [attr.aria-invalid]="inviteForm.controls.email.touched && inviteForm.controls.email.invalid"
+          />
+          @if (inviteForm.controls.email.touched && inviteForm.controls.email.invalid) {
+            <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+              {{ 'common.validation.invalidEmail' | translate }}
+            </p>
+          }
+        </div>
+
+        <div class="space-y-1">
+          <label hlmLabel for="invite-external-id">
+            {{ 'adminUsers.invite.externalIdLabel' | translate }}
+          </label>
+          <input
+            id="invite-external-id"
+            type="text"
+            hlmInput
+            formControlName="externalId"
+            data-testid="invite-external-id-input"
+          />
+        </div>
+
+        <div class="space-y-1">
+          <label hlmLabel for="invite-role">
+            {{ 'adminUsers.invite.roleLabel' | translate }}
+          </label>
+          <select
+            id="invite-role"
+            hlmInput
+            formControlName="systemRole"
+            data-testid="invite-role-select"
+          >
+            @for (role of roles; track role) {
+              <option [value]="role">{{ 'app.roles.' + role | translate }}</option>
+            }
+          </select>
+        </div>
+
+        @if (groups().length > 0) {
+          <fieldset class="space-y-2">
+            <legend class="text-sm font-medium text-[var(--h2l-fg)]">
+              {{ 'adminUsers.invite.groupsLabel' | translate }}
+            </legend>
+            <div class="space-y-2">
+              @for (group of groups(); track group.id) {
+                <label class="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-[var(--h2l-fg)]">
+                  <input
+                    type="checkbox"
+                    [checked]="selectedInviteGroupIds().includes(group.id)"
+                    (change)="toggleInviteGroup(group.id)"
+                    class="h-4 w-4 accent-[var(--h2l-primary)]"
+                  />
+                  <span>{{ group.name }}</span>
+                </label>
+              }
+            </div>
+          </fieldset>
+        }
+
+        <div class="flex flex-wrap justify-end gap-3 pt-2">
+          <button
+            type="button"
+            hlmBtn
+            variant="outline"
+            (click)="closeInviteModal()"
+          >
+            {{ 'common.cancel' | translate }}
+          </button>
+          <button
+            type="submit"
+            hlmBtn
+            variant="primary"
+            data-testid="submit-invite-user-btn"
+            [disabled]="saving()"
+          >
+            {{ 'adminUsers.invite.submitButton' | translate }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Create Group Dialog -->
+@if (createGroupModalOpen()) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+    (keydown)="onDialogKeydown($event, 'group')"
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-group-dialog-title"
+      data-testid="create-group-dialog"
+      hlmCard
+      class="w-full max-w-md space-y-4 bg-[var(--h2l-bg)]"
+    >
+      <div class="flex items-center justify-between gap-2">
+        <h2 id="create-group-dialog-title" class="text-lg font-semibold text-[var(--h2l-fg)]">
+          {{ 'adminUsers.groups.dialogTitle' | translate }}
+        </h2>
+        <button
+          type="button"
+          hlmBtn
+          variant="ghost"
+          data-testid="close-group-dialog-btn"
+          (click)="closeCreateGroupModal()"
+        >
+          {{ 'common.cancel' | translate }}
+        </button>
+      </div>
+
+      <form [formGroup]="groupForm" (ngSubmit)="onCreateGroupSubmit()" novalidate class="space-y-4">
+        <div class="space-y-1">
+          <label hlmLabel for="group-name">
+            {{ 'adminUsers.groups.nameLabel' | translate }}
+          </label>
+          <input
+            id="group-name"
+            type="text"
+            hlmInput
+            formControlName="name"
+            data-testid="group-name-input"
+            [attr.aria-invalid]="groupForm.controls.name.touched && groupForm.controls.name.invalid"
+          />
+          @if (groupForm.controls.name.touched && groupForm.controls.name.invalid) {
+            <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+              {{ 'common.validation.required' | translate }}
+            </p>
+          }
+        </div>
+
+        <div class="space-y-1">
+          <label hlmLabel for="group-code">
+            {{ 'adminUsers.groups.codeLabel' | translate }}
+          </label>
+          <input
+            id="group-code"
+            type="text"
+            hlmInput
+            formControlName="code"
+            data-testid="group-code-input"
+            [attr.aria-invalid]="groupForm.controls.code.touched && groupForm.controls.code.invalid"
+          />
+          @if (groupForm.controls.code.touched && groupForm.controls.code.invalid) {
+            <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+              {{ 'common.validation.required' | translate }}
+            </p>
+          }
+        </div>
+
+        <div class="flex flex-wrap justify-end gap-3 pt-2">
+          <button type="button" hlmBtn variant="outline" (click)="closeCreateGroupModal()">
+            {{ 'common.cancel' | translate }}
+          </button>
+          <button
+            type="submit"
+            hlmBtn
+            variant="primary"
+            data-testid="submit-create-group-btn"
+            [disabled]="saving()"
+          >
+            {{ 'adminUsers.groups.submitButton' | translate }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

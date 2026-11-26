@@ -27,6 +27,10 @@
   --h2l-status-offline-fg: #78350f;
   --h2l-danger-bg: #fee2e2;
   --h2l-danger-fg: #7f1d1d;
+  --h2l-info-bg: #e0f2fe;
+  --h2l-info-fg: #0c4a6e;
+  --h2l-warning-bg: #fef3c7;
+  --h2l-warning-fg: #78350f;
 }
 
 [data-theme="light"][data-palette="ocean"] {
@@ -61,6 +65,10 @@
   --h2l-status-offline-fg: #fef3c7;
   --h2l-danger-bg: #7f1d1d;
   --h2l-danger-fg: #fee2e2;
+  --h2l-info-bg: #0c4a6e;
+  --h2l-info-fg: #e0f2fe;
+  --h2l-warning-bg: #78350f;
+  --h2l-warning-fg: #fef3c7;
 }
 
 [data-theme="dark"][data-palette="ocean"] {
@@ -95,6 +103,10 @@
   --h2l-status-offline-fg: #fde047;
   --h2l-danger-bg: #000000;
   --h2l-danger-fg: #ff6b6b;
+  --h2l-info-bg: #000000;
+  --h2l-info-fg: #00e5ff;
+  --h2l-warning-bg: #000000;
+  --h2l-warning-fg: #fde047;
 }
 
 [data-theme="high-contrast"][data-palette="ocean"] {

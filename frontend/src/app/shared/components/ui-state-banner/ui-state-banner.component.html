@@ -1,0 +1,133 @@
+@switch (kind()) {
+  @case ('loading') {
+    <div
+      role="status"
+      aria-live="polite"
+      [attr.data-testid]="testId()"
+      class="space-y-3 rounded-xl border border-[var(--h2l-border-subtle)] bg-[var(--h2l-surface)] p-5"
+    >
+      <div class="h-4 w-1/3 animate-pulse rounded bg-[var(--h2l-surface-elevated)]"></div>
+      <div class="h-3 w-2/3 animate-pulse rounded bg-[var(--h2l-surface-elevated)]"></div>
+      <div class="h-3 w-1/2 animate-pulse rounded bg-[var(--h2l-surface-elevated)]"></div>
+      @if (message()) {
+        <p class="text-xs text-[var(--h2l-fg-muted)]">{{ message() }}</p>
+      }
+    </div>
+  }
+  @case ('empty') {
+    <div
+      [attr.data-testid]="testId()"
+      class="flex flex-col items-start gap-3 rounded-xl border border-[var(--h2l-border-subtle)] bg-[var(--h2l-surface)] p-6"
+    >
+      @if (title()) {
+        <h2 class="text-base font-semibold text-[var(--h2l-fg)]">{{ title() }}</h2>
+      }
+      @if (message()) {
+        <p class="text-sm text-[var(--h2l-fg-muted)]">{{ message() }}</p>
+      }
+      <ng-content />
+    </div>
+  }
+  @case ('error') {
+    <div
+      role="alert"
+      aria-live="assertive"
+      [attr.data-testid]="testId()"
+      class="flex items-start gap-3 rounded-xl border border-[var(--h2l-danger-fg)] bg-[var(--h2l-danger-bg)] p-4 text-[var(--h2l-danger-fg)]"
+    >
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        class="mt-0.5 h-5 w-5 shrink-0"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+          clip-rule="evenodd"
+        />
+      </svg>
+      <div class="min-w-0 flex-1 space-y-1">
+        @if (title()) {
+          <p class="text-sm font-semibold">{{ title() }}</p>
+        }
+        @if (message()) {
+          <p class="text-sm">{{ message() }}</p>
+        }
+        @if (detail()) {
+          <p class="text-xs opacity-90">{{ detail() }}</p>
+        }
+        @if (fieldErrorEntries().length > 0) {
+          <ul class="mt-2 list-disc space-y-1 pl-5 text-xs">
+            @for (entry of fieldErrorEntries(); track entry.field) {
+              <li>
+                <span class="font-semibold">{{ entry.field }}:</span>
+                {{ entry.messages.join(' ') }}
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+  @case ('success') {
+    <div
+      role="status"
+      aria-live="polite"
+      [attr.data-testid]="testId()"
+      class="flex items-start gap-3 rounded-xl border border-[var(--h2l-border)] bg-[var(--h2l-status-online-bg)] p-4 text-[var(--h2l-status-online-fg)]"
+    >
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        class="mt-0.5 h-5 w-5 shrink-0"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+          clip-rule="evenodd"
+        />
+      </svg>
+      <div class="min-w-0 flex-1 space-y-1">
+        @if (title()) {
+          <p class="text-sm font-semibold">{{ title() }}</p>
+        }
+        @if (message()) {
+          <p class="text-sm">{{ message() }}</p>
+        }
+        <ng-content />
+      </div>
+    </div>
+  }
+  @case ('info') {
+    <div
+      role="status"
+      aria-live="polite"
+      [attr.data-testid]="testId()"
+      class="flex items-start gap-3 rounded-xl border border-[var(--h2l-border)] bg-[var(--h2l-info-bg)] p-4 text-[var(--h2l-info-fg)]"
+    >
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        class="mt-0.5 h-5 w-5 shrink-0"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+          clip-rule="evenodd"
+        />
+      </svg>
+      <div class="min-w-0 flex-1 space-y-1">
+        @if (title()) {
+          <p class="text-sm font-semibold">{{ title() }}</p>
+        }
+        @if (message()) {
+          <p class="text-sm">{{ message() }}</p>
+        }
+        <ng-content />
+      </div>
+    </div>
+  }
+}

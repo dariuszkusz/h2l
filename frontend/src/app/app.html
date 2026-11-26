@@ -7,7 +7,7 @@
     <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
       <div class="flex items-center gap-3">
         <a
-          routerLink="/tasks"
+          [routerLink]="isAuthenticated() ? '/tasks' : isSetupInitialized() === false ? '/setup' : '/login'"
           class="inline-flex min-h-11 items-center gap-2 text-lg font-bold tracking-tight text-[var(--h2l-fg)]"
         >
           <span>{{ 'app.title' | translate }}</span>
@@ -18,26 +18,93 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
-        <nav [attr.aria-label]="'app.nav.label' | translate" class="flex items-center gap-2">
-          <a
-            routerLink="/tasks"
-            routerLinkActive="h2l-nav-link-active"
-            ariaCurrentWhenActive="page"
-            data-testid="nav-tasks"
-            class="h2l-nav-link inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium"
-          >
-            {{ 'app.nav.tasks' | translate }}
-          </a>
-          <a
-            routerLink="/settings"
-            routerLinkActive="h2l-nav-link-active"
-            ariaCurrentWhenActive="page"
-            data-testid="nav-settings"
-            class="h2l-nav-link inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium"
-          >
-            {{ 'app.nav.settings' | translate }}
-          </a>
+        <nav [attr.aria-label]="'app.nav.label' | translate" class="flex flex-wrap items-center gap-2">
+          @if (isAuthenticated()) {
+            <a
+              routerLink="/tasks"
+              routerLinkActive="h2l-nav-link-active"
+              ariaCurrentWhenActive="page"
+              data-testid="nav-tasks"
+              class="h2l-nav-link inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium"
+            >
+              {{ 'app.nav.tasks' | translate }}
+            </a>
+            @if (isAdmin()) {
+              <a
+                routerLink="/admin/users"
+                routerLinkActive="h2l-nav-link-active"
+                ariaCurrentWhenActive="page"
+                data-testid="nav-admin-users"
+                class="h2l-nav-link inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium"
+              >
+                {{ 'app.nav.users' | translate }}
+              </a>
+            }
+            @if (canManageProjects()) {
+              <a
+                routerLink="/admin/projects"
+                routerLinkActive="h2l-nav-link-active"
+                ariaCurrentWhenActive="page"
+                data-testid="nav-admin-projects"
+                class="h2l-nav-link inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium"
+              >
+                {{ 'app.nav.projects' | translate }}
+              </a>
+            }
+            <a
+              routerLink="/settings"
+              routerLinkActive="h2l-nav-link-active"
+              ariaCurrentWhenActive="page"
+              data-testid="nav-settings"
+              class="h2l-nav-link inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium"
+            >
+              {{ 'app.nav.settings' | translate }}
+            </a>
+          } @else if (isSetupInitialized() === false) {
+            <a
+              routerLink="/setup"
+              routerLinkActive="h2l-nav-link-active"
+              ariaCurrentWhenActive="page"
+              data-testid="nav-setup"
+              class="h2l-nav-link inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium"
+            >
+              {{ 'app.nav.setup' | translate }}
+            </a>
+          } @else {
+            <a
+              routerLink="/login"
+              routerLinkActive="h2l-nav-link-active"
+              ariaCurrentWhenActive="page"
+              data-testid="nav-login"
+              class="h2l-nav-link inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium"
+            >
+              {{ 'app.nav.login' | translate }}
+            </a>
+          }
         </nav>
+
+        @if (currentUser(); as user) {
+          <div class="flex flex-wrap items-center gap-2">
+            <span
+              hlmBadge
+              variant="neutral"
+              data-testid="nav-user-badge"
+              [attr.aria-label]="'app.nav.signedInAs' | translate: { email: user.email }"
+            >
+              <span>{{ user.email }}</span>
+              <span class="opacity-75">· {{ 'app.roles.' + user.systemRole | translate }}</span>
+            </span>
+            <button
+              type="button"
+              hlmBtn
+              variant="outline"
+              data-testid="nav-logout"
+              (click)="onLogout()"
+            >
+              {{ 'app.nav.logout' | translate }}
+            </button>
+          </div>
+        }
 
         <app-connectivity-banner
           [isOnline]="isOnline()"
@@ -49,6 +116,29 @@
   </header>
 
   <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+    @if (forbiddenError(); as forbidden) {
+      <div class="mb-6 space-y-2">
+        <app-ui-state-banner
+          kind="error"
+          testId="app-forbidden-banner"
+          [title]="'errors.title' | translate"
+          [message]="forbidden.messageKey | translate: forbidden.messageParams"
+          [detail]="forbidden.detail"
+        />
+        <div class="flex justify-end">
+          <button
+            type="button"
+            hlmBtn
+            variant="ghost"
+            data-testid="app-dismiss-forbidden"
+            (click)="onDismissForbidden()"
+          >
+            {{ 'common.dismiss' | translate }}
+          </button>
+        </div>
+      </div>
+    }
+
     <router-outlet />
   </main>
 

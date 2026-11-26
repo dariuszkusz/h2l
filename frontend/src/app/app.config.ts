@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import {
   ApplicationConfig,
   isDevMode,
@@ -11,25 +11,50 @@ import { provideEffects } from '@ngrx/effects';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { routes } from './app.routes';
+import { jwtInterceptor } from './core/auth/interceptors/jwt.interceptor';
+import { AuthEffects } from './core/auth/store/auth.effects';
+import { authReducer } from './core/auth/store/auth.reducer';
 import { ConnectivityEffects } from './core/connectivity/store/connectivity.effects';
 import { connectivityReducer } from './core/connectivity/store/connectivity.reducer';
 import { I18nEffects } from './core/i18n/store/i18n.effects';
 import { i18nReducer } from './core/i18n/store/i18n.reducer';
+import { LicensingEffects } from './core/licensing/store/licensing.effects';
+import { licensingReducer } from './core/licensing/store/licensing.reducer';
+import { SetupEffects } from './core/setup/store/setup.effects';
+import { setupReducer } from './core/setup/store/setup.reducer';
 import { ThemeEffects } from './core/theme/store/theme.effects';
 import { themeReducer } from './core/theme/store/theme.reducer';
+import { AdminProjectsEffects } from './features/admin-projects/store/admin-projects.effects';
+import { adminProjectsReducer } from './features/admin-projects/store/admin-projects.reducer';
+import { AdminUsersEffects } from './features/admin-users/store/admin-users.effects';
+import { adminUsersReducer } from './features/admin-users/store/admin-users.reducer';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([jwtInterceptor])),
     provideStore({
       i18n: i18nReducer,
       theme: themeReducer,
       connectivity: connectivityReducer,
+      auth: authReducer,
+      setup: setupReducer,
+      licensing: licensingReducer,
+      adminUsers: adminUsersReducer,
+      adminProjects: adminProjectsReducer,
     }),
-    provideEffects([I18nEffects, ThemeEffects, ConnectivityEffects]),
+    provideEffects([
+      I18nEffects,
+      ThemeEffects,
+      ConnectivityEffects,
+      AuthEffects,
+      SetupEffects,
+      LicensingEffects,
+      AdminUsersEffects,
+      AdminProjectsEffects,
+    ]),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: !isDevMode(),

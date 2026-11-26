@@ -1,0 +1,652 @@
+<section class="space-y-6">
+  <header class="flex flex-wrap items-start justify-between gap-4">
+    <div class="space-y-1">
+      <h1
+        class="text-2xl font-semibold tracking-tight text-[var(--h2l-fg)]"
+        data-testid="admin-projects-heading"
+      >
+        {{ 'adminProjects.heading' | translate }}
+      </h1>
+      <p class="text-sm text-[var(--h2l-fg-muted)]">
+        {{ 'adminProjects.description' | translate }}
+      </p>
+    </div>
+
+    @if (isAdmin()) {
+      <button
+        type="button"
+        hlmBtn
+        variant="primary"
+        data-testid="open-create-project-btn"
+        (click)="openProjectModal()"
+      >
+        {{ 'adminProjects.projects.createButton' | translate }}
+      </button>
+    }
+  </header>
+
+  @if (error(); as apiError) {
+    <div class="space-y-2">
+      <app-ui-state-banner
+        kind="error"
+        testId="admin-projects-error"
+        [title]="'errors.title' | translate"
+        [message]="apiError.messageKey | translate: apiError.messageParams"
+        [detail]="apiError.detail"
+        [fieldErrors]="apiError.fieldErrors"
+      />
+      @if (apiError.status === 402) {
+        <div>
+          <a
+            routerLink="/settings"
+            hlmBtn
+            variant="outline"
+            data-testid="admin-projects-upgrade-link"
+          >
+            {{ 'licensing.upgradeCta' | translate }}
+          </a>
+        </div>
+      }
+    </div>
+  }
+
+  @if (successKey(); as key) {
+    <app-ui-state-banner
+      kind="success"
+      testId="admin-projects-success"
+      [title]="'common.successTitle' | translate"
+      [message]="key | translate"
+    />
+  }
+
+  @if (loadingProjects()) {
+    <app-ui-state-banner
+      kind="loading"
+      testId="admin-projects-loading"
+      [message]="'adminProjects.loading' | translate"
+    />
+  } @else {
+    <div class="grid gap-6 lg:grid-cols-3">
+      <!-- Column 1: Projects -->
+      <div hlmCard class="space-y-4">
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+            {{ 'adminProjects.projects.title' | translate }}
+          </h2>
+          <span hlmBadge variant="neutral">{{ projects().length }}</span>
+        </div>
+
+        @if (projects().length === 0) {
+          <div class="space-y-3">
+            <app-ui-state-banner
+              kind="empty"
+              testId="admin-projects-empty"
+              [title]="'adminProjects.projects.emptyTitle' | translate"
+              [message]="'adminProjects.projects.emptyDescription' | translate"
+            />
+            @if (isAdmin()) {
+              <button
+                type="button"
+                hlmBtn
+                variant="outline"
+                data-testid="empty-create-project-btn"
+                (click)="openProjectModal()"
+              >
+                {{ 'adminProjects.projects.createButton' | translate }}
+              </button>
+            }
+          </div>
+        } @else {
+          <ul class="space-y-2" data-testid="projects-list">
+            @for (project of projects(); track project.id) {
+              <li>
+                <button
+                  type="button"
+                  hlmBtn
+                  [variant]="selectedProjectId() === project.id ? 'primary' : 'outline'"
+                  class="w-full justify-start text-left"
+                  [attr.aria-pressed]="selectedProjectId() === project.id"
+                  [attr.data-testid]="'project-item-' + project.id"
+                  (click)="onSelectProject(project.id)"
+                >
+                  <span class="truncate">{{ project.name }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <!-- Column 2: Processes -->
+      <div hlmCard class="space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+            {{ 'adminProjects.processes.title' | translate }}
+          </h2>
+          @if (selectedProject()) {
+            <button
+              type="button"
+              hlmBtn
+              variant="outline"
+              data-testid="open-create-process-btn"
+              (click)="openProcessModal()"
+            >
+              {{ 'adminProjects.processes.createButton' | translate }}
+            </button>
+          }
+        </div>
+
+        @if (!selectedProject()) {
+          <app-ui-state-banner
+            kind="empty"
+            testId="processes-select-project-empty"
+            [title]="'adminProjects.processes.selectProjectTitle' | translate"
+            [message]="'adminProjects.processes.selectProjectDescription' | translate"
+          />
+        } @else if (loadingProcesses()) {
+          <app-ui-state-banner
+            kind="loading"
+            testId="processes-loading"
+            [message]="'common.loading' | translate"
+          />
+        } @else if (processes().length === 0) {
+          <app-ui-state-banner
+            kind="empty"
+            testId="processes-empty"
+            [title]="'adminProjects.processes.emptyTitle' | translate"
+            [message]="'adminProjects.processes.emptyDescription' | translate"
+          />
+        } @else {
+          <ul class="space-y-2" data-testid="processes-list">
+            @for (process of processes(); track process.id) {
+              <li>
+                <button
+                  type="button"
+                  hlmBtn
+                  [variant]="selectedProcessId() === process.id ? 'primary' : 'outline'"
+                  class="w-full justify-between text-left"
+                  [attr.aria-pressed]="selectedProcessId() === process.id"
+                  [attr.data-testid]="'process-item-' + process.externalProcessKey"
+                  (click)="onSelectProcess(process.id)"
+                >
+                  <span class="truncate">{{ process.name }}</span>
+                  <span class="text-xs opacity-80">
+                    {{ 'adminProjects.processes.status.' + process.status | translate }}
+                  </span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <!-- Column 3: Draft Forms -->
+      <div hlmCard class="space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+            {{ 'adminProjects.forms.title' | translate }}
+          </h2>
+          @if (selectedProcess()) {
+            <button
+              type="button"
+              hlmBtn
+              variant="outline"
+              data-testid="open-create-form-btn"
+              (click)="openFormModal()"
+            >
+              {{ 'adminProjects.forms.createButton' | translate }}
+            </button>
+          }
+        </div>
+
+        @if (!selectedProcess()) {
+          <app-ui-state-banner
+            kind="empty"
+            testId="forms-select-process-empty"
+            [title]="'adminProjects.forms.selectProcessTitle' | translate"
+            [message]="'adminProjects.forms.selectProcessDescription' | translate"
+          />
+        } @else if (loadingForms()) {
+          <app-ui-state-banner
+            kind="loading"
+            testId="forms-loading"
+            [message]="'common.loading' | translate"
+          />
+        } @else if (forms().length === 0) {
+          <app-ui-state-banner
+            kind="empty"
+            testId="forms-empty"
+            [title]="'adminProjects.forms.emptyTitle' | translate"
+            [message]="'adminProjects.forms.emptyDescription' | translate"
+          />
+        } @else {
+          <ul class="space-y-2" data-testid="forms-list">
+            @for (form of forms(); track form.id) {
+              <li>
+                <button
+                  type="button"
+                  hlmBtn
+                  [variant]="selectedFormId() === form.id ? 'primary' : 'outline'"
+                  class="w-full justify-between text-left"
+                  [attr.aria-pressed]="selectedFormId() === form.id"
+                  [attr.data-testid]="'form-item-' + form.stepKey"
+                  (click)="onSelectForm(form.id)"
+                >
+                  <span class="truncate">{{ form.name }}</span>
+                  <span class="text-xs opacity-80">{{ form.stepKey }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+
+    <!-- Flexible ACL Panel -->
+    @if (selectedForm(); as activeForm) {
+      <div hlmCard class="space-y-5" data-testid="acl-panel">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div class="space-y-1">
+            <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+              {{ 'adminProjects.acl.title' | translate: { name: activeForm.name } }}
+            </h2>
+            <p class="text-sm text-[var(--h2l-fg-muted)]">
+              {{ 'adminProjects.acl.description' | translate }}
+            </p>
+          </div>
+          <button
+            type="button"
+            hlmBtn
+            variant="primary"
+            data-testid="save-acl-btn"
+            [disabled]="saving()"
+            (click)="onSaveAclRules()"
+          >
+            {{ 'adminProjects.acl.saveButton' | translate }}
+          </button>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-4 sm:items-end">
+          <div class="space-y-1">
+            <label hlmLabel for="acl-scope-select">
+              {{ 'adminProjects.acl.scopeLabel' | translate }}
+            </label>
+            <select
+              id="acl-scope-select"
+              hlmInput
+              data-testid="acl-scope-select"
+              [value]="aclMode()"
+              (change)="onAclModeChange($event)"
+            >
+              @for (scope of aclScopes; track scope) {
+                <option [value]="scope">
+                  {{ 'adminProjects.acl.scopes.' + scope | translate }}
+                </option>
+              }
+            </select>
+          </div>
+
+          @if (aclMode() === 'WholeGroup' || aclMode() === 'GroupUserSubset') {
+            <div class="space-y-1">
+              <label hlmLabel for="acl-group-select">
+                {{ 'adminProjects.acl.groupLabel' | translate }}
+              </label>
+              <select
+                id="acl-group-select"
+                hlmInput
+                data-testid="acl-group-select"
+                [value]="aclGroupId()"
+                (change)="onAclGroupChange($event)"
+              >
+                <option value="">{{ 'adminProjects.acl.selectGroupPlaceholder' | translate }}</option>
+                @for (group of groups(); track group.id) {
+                  <option [value]="group.id">{{ group.name }} ({{ group.code }})</option>
+                }
+              </select>
+            </div>
+          }
+
+          @if (aclMode() === 'GroupUserSubset' || aclMode() === 'DirectUser') {
+            <div class="space-y-1">
+              <label hlmLabel for="acl-user-select">
+                {{ 'adminProjects.acl.userLabel' | translate }}
+              </label>
+              <select
+                id="acl-user-select"
+                hlmInput
+                data-testid="acl-user-select"
+                [value]="aclUserId()"
+                (change)="onAclUserChange($event)"
+              >
+                <option value="">{{ 'adminProjects.acl.selectUserPlaceholder' | translate }}</option>
+                @for (
+                  user of aclMode() === 'GroupUserSubset' ? usersInSelectedAclGroup() : users();
+                  track user.id
+                ) {
+                  <option [value]="user.id">{{ user.email }}</option>
+                }
+              </select>
+            </div>
+          }
+
+          <div>
+            <button
+              type="button"
+              hlmBtn
+              variant="outline"
+              class="w-full"
+              data-testid="add-acl-rule-btn"
+              [disabled]="!canAddRule()"
+              (click)="onAddAclRule()"
+            >
+              {{ 'adminProjects.acl.addRuleButton' | translate }}
+            </button>
+          </div>
+        </div>
+
+        @if (loadingAccessRules()) {
+          <app-ui-state-banner
+            kind="loading"
+            testId="acl-loading"
+            [message]="'common.loading' | translate"
+          />
+        } @else if (draftRules().length === 0) {
+          <app-ui-state-banner
+            kind="empty"
+            testId="acl-empty"
+            [title]="'adminProjects.acl.emptyTitle' | translate"
+            [message]="'adminProjects.acl.emptyDescription' | translate"
+          />
+        } @else {
+          <ul class="divide-y divide-[var(--h2l-border-subtle)]" data-testid="acl-rules-list">
+            @for (rule of draftRules(); track $index) {
+              <li class="flex flex-wrap items-center justify-between gap-2 py-3">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span hlmBadge variant="info">
+                    {{ 'adminProjects.acl.scopes.' + rule.accessScope | translate }}
+                  </span>
+                  @if (rule.groupId) {
+                    <span class="text-sm text-[var(--h2l-fg)]">
+                      {{ resolveGroupLabel(rule.groupId) }}
+                    </span>
+                  }
+                  @if (rule.userId) {
+                    <span class="text-sm font-medium text-[var(--h2l-fg)]">
+                      {{ resolveUserLabel(rule.userId) }}
+                    </span>
+                  }
+                </div>
+                <button
+                  type="button"
+                  hlmBtn
+                  variant="outline"
+                  [attr.data-testid]="'remove-acl-rule-' + $index"
+                  (click)="onRemoveAclRule($index)"
+                >
+                  {{ 'adminProjects.acl.removeRuleButton' | translate }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+  }
+</section>
+
+<!-- Create Project Dialog -->
+@if (projectModalOpen()) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+    (keydown)="onDialogKeydown($event, 'project')"
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-project-dialog-title"
+      data-testid="create-project-dialog"
+      hlmCard
+      class="w-full max-w-md space-y-4 bg-[var(--h2l-bg)]"
+    >
+      <div class="flex items-center justify-between gap-2">
+        <h2 id="create-project-dialog-title" class="text-lg font-semibold text-[var(--h2l-fg)]">
+          {{ 'adminProjects.projects.dialogTitle' | translate }}
+        </h2>
+        <button type="button" hlmBtn variant="ghost" (click)="closeProjectModal()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </div>
+
+      <form
+        [formGroup]="projectForm"
+        (ngSubmit)="onCreateProjectSubmit()"
+        novalidate
+        class="space-y-4"
+      >
+        <div class="space-y-1">
+          <label hlmLabel for="project-name">
+            {{ 'adminProjects.projects.nameLabel' | translate }}
+          </label>
+          <input
+            id="project-name"
+            type="text"
+            hlmInput
+            formControlName="name"
+            data-testid="project-name-input"
+            [attr.aria-invalid]="projectForm.controls.name.touched && projectForm.controls.name.invalid"
+          />
+          @if (projectForm.controls.name.touched && projectForm.controls.name.invalid) {
+            <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+              {{ 'common.validation.required' | translate }}
+            </p>
+          }
+        </div>
+
+        <div class="space-y-1">
+          <label hlmLabel for="project-description">
+            {{ 'adminProjects.projects.descriptionLabel' | translate }}
+          </label>
+          <input
+            id="project-description"
+            type="text"
+            hlmInput
+            formControlName="description"
+            data-testid="project-description-input"
+          />
+        </div>
+
+        <div class="flex flex-wrap justify-end gap-3 pt-2">
+          <button type="button" hlmBtn variant="outline" (click)="closeProjectModal()">
+            {{ 'common.cancel' | translate }}
+          </button>
+          <button
+            type="submit"
+            hlmBtn
+            variant="primary"
+            data-testid="submit-create-project-btn"
+            [disabled]="saving()"
+          >
+            {{ 'adminProjects.projects.submitButton' | translate }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Create Process Dialog -->
+@if (processModalOpen()) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+    (keydown)="onDialogKeydown($event, 'process')"
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-process-dialog-title"
+      data-testid="create-process-dialog"
+      hlmCard
+      class="w-full max-w-md space-y-4 bg-[var(--h2l-bg)]"
+    >
+      <div class="flex items-center justify-between gap-2">
+        <h2 id="create-process-dialog-title" class="text-lg font-semibold text-[var(--h2l-fg)]">
+          {{ 'adminProjects.processes.dialogTitle' | translate }}
+        </h2>
+        <button type="button" hlmBtn variant="ghost" (click)="closeProcessModal()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </div>
+
+      <form
+        [formGroup]="processForm"
+        (ngSubmit)="onCreateProcessSubmit()"
+        novalidate
+        class="space-y-4"
+      >
+        <div class="space-y-1">
+          <label hlmLabel for="process-name">
+            {{ 'adminProjects.processes.nameLabel' | translate }}
+          </label>
+          <input
+            id="process-name"
+            type="text"
+            hlmInput
+            formControlName="name"
+            data-testid="process-name-input"
+            [attr.aria-invalid]="processForm.controls.name.touched && processForm.controls.name.invalid"
+          />
+        </div>
+
+        <div class="space-y-1">
+          <label hlmLabel for="process-external-key">
+            {{ 'adminProjects.processes.externalKeyLabel' | translate }}
+          </label>
+          <input
+            id="process-external-key"
+            type="text"
+            hlmInput
+            formControlName="externalProcessKey"
+            data-testid="process-external-key-input"
+            [attr.aria-invalid]="
+              processForm.controls.externalProcessKey.touched &&
+              processForm.controls.externalProcessKey.invalid
+            "
+          />
+        </div>
+
+        <div class="space-y-1">
+          <label hlmLabel for="process-status">
+            {{ 'adminProjects.processes.statusLabel' | translate }}
+          </label>
+          <select
+            id="process-status"
+            hlmInput
+            formControlName="status"
+            data-testid="process-status-select"
+          >
+            @for (status of processStatuses; track status) {
+              <option [value]="status">
+                {{ 'adminProjects.processes.status.' + status | translate }}
+              </option>
+            }
+          </select>
+        </div>
+
+        <div class="flex flex-wrap justify-end gap-3 pt-2">
+          <button type="button" hlmBtn variant="outline" (click)="closeProcessModal()">
+            {{ 'common.cancel' | translate }}
+          </button>
+          <button
+            type="submit"
+            hlmBtn
+            variant="primary"
+            data-testid="submit-create-process-btn"
+            [disabled]="saving()"
+          >
+            {{ 'adminProjects.processes.submitButton' | translate }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Create Draft Form Dialog -->
+@if (formModalOpen()) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+    (keydown)="onDialogKeydown($event, 'form')"
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-form-dialog-title"
+      data-testid="create-form-dialog"
+      hlmCard
+      class="w-full max-w-md space-y-4 bg-[var(--h2l-bg)]"
+    >
+      <div class="flex items-center justify-between gap-2">
+        <h2 id="create-form-dialog-title" class="text-lg font-semibold text-[var(--h2l-fg)]">
+          {{ 'adminProjects.forms.dialogTitle' | translate }}
+        </h2>
+        <button type="button" hlmBtn variant="ghost" (click)="closeFormModal()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </div>
+
+      <form
+        [formGroup]="draftFormForm"
+        (ngSubmit)="onCreateFormSubmit()"
+        novalidate
+        class="space-y-4"
+      >
+        <div class="space-y-1">
+          <label hlmLabel for="draft-form-name">
+            {{ 'adminProjects.forms.nameLabel' | translate }}
+          </label>
+          <input
+            id="draft-form-name"
+            type="text"
+            hlmInput
+            formControlName="name"
+            data-testid="draft-form-name-input"
+            [attr.aria-invalid]="
+              draftFormForm.controls.name.touched && draftFormForm.controls.name.invalid
+            "
+          />
+        </div>
+
+        <div class="space-y-1">
+          <label hlmLabel for="draft-form-step-key">
+            {{ 'adminProjects.forms.stepKeyLabel' | translate }}
+          </label>
+          <input
+            id="draft-form-step-key"
+            type="text"
+            hlmInput
+            formControlName="stepKey"
+            data-testid="draft-form-step-key-input"
+            [attr.aria-invalid]="
+              draftFormForm.controls.stepKey.touched && draftFormForm.controls.stepKey.invalid
+            "
+          />
+        </div>
+
+        <div class="flex flex-wrap justify-end gap-3 pt-2">
+          <button type="button" hlmBtn variant="outline" (click)="closeFormModal()">
+            {{ 'common.cancel' | translate }}
+          </button>
+          <button
+            type="submit"
+            hlmBtn
+            variant="primary"
+            data-testid="submit-create-form-btn"
+            [disabled]="saving()"
+          >
+            {{ 'adminProjects.forms.submitButton' | translate }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

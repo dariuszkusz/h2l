@@ -1,0 +1,404 @@
+<section class="mx-auto max-w-2xl space-y-6">
+  <header class="space-y-1">
+    <h1
+      class="text-2xl font-semibold tracking-tight text-[var(--h2l-fg)]"
+      data-testid="setup-heading"
+    >
+      {{ 'setup.heading' | translate }}
+    </h1>
+    <p class="text-sm text-[var(--h2l-fg-muted)]">
+      {{ 'setup.description' | translate }}
+    </p>
+  </header>
+
+  @if (loadingStatus()) {
+    <app-ui-state-banner
+      kind="loading"
+      testId="setup-loading-status"
+      [message]="'setup.loadingStatus' | translate"
+    />
+  }
+
+  @if (initializedSuccess()) {
+    <app-ui-state-banner
+      kind="success"
+      testId="setup-success-banner"
+      [title]="'setup.successTitle' | translate"
+      [message]="'setup.successDescription' | translate"
+    />
+  }
+
+  @if (setupError(); as apiError) {
+    <app-ui-state-banner
+      kind="error"
+      testId="setup-error-banner"
+      [title]="'errors.title' | translate"
+      [message]="apiError.messageKey | translate: apiError.messageParams"
+      [detail]="apiError.detail"
+      [fieldErrors]="apiError.fieldErrors"
+    />
+  }
+
+  @if (!loadingStatus() && !initializedSuccess()) {
+    <app-ui-state-banner
+      kind="empty"
+      testId="setup-initial-state-banner"
+      [title]="'setup.emptyTitle' | translate"
+      [message]="'setup.emptyDescription' | translate"
+    />
+
+    <form
+      hlmCard
+      [formGroup]="setupForm"
+      (ngSubmit)="onSubmit()"
+      novalidate
+      class="space-y-6"
+      data-testid="setup-form"
+    >
+      <div class="space-y-2">
+        <label hlmLabel for="setup-admin-email">
+          {{ 'setup.adminEmail' | translate }}
+        </label>
+        <input
+          id="setup-admin-email"
+          type="email"
+          autocomplete="email"
+          hlmInput
+          formControlName="adminEmail"
+          [hasError]="isControlInvalid('adminEmail')"
+          [attr.aria-invalid]="isControlInvalid('adminEmail') ? 'true' : null"
+          [attr.aria-describedby]="isControlInvalid('adminEmail') ? 'setup-admin-email-error' : null"
+          data-testid="setup-admin-email"
+        />
+        @if (isControlInvalid('adminEmail')) {
+          <p id="setup-admin-email-error" class="text-xs text-[var(--h2l-danger-fg)]">
+            {{ getEmailErrorKey() | translate: { max: 320 } }}
+          </p>
+        }
+      </div>
+
+      <div class="space-y-2">
+        <label hlmLabel for="setup-admin-password">
+          {{ 'setup.adminPassword' | translate }}
+        </label>
+        <div class="flex gap-2">
+          <input
+            id="setup-admin-password"
+            [type]="showAdminPassword() ? 'text' : 'password'"
+            autocomplete="new-password"
+            hlmInput
+            formControlName="adminPassword"
+            [hasError]="isControlInvalid('adminPassword')"
+            [attr.aria-invalid]="isControlInvalid('adminPassword') ? 'true' : null"
+            [attr.aria-describedby]="
+              isControlInvalid('adminPassword')
+                ? 'setup-admin-password-hint setup-admin-password-error'
+                : 'setup-admin-password-hint'
+            "
+            data-testid="setup-admin-password"
+          />
+          <button
+            type="button"
+            hlmBtn
+            variant="outline"
+            class="shrink-0"
+            [attr.aria-pressed]="showAdminPassword()"
+            [attr.aria-label]="
+              (showAdminPassword() ? 'common.hidePassword' : 'common.showPassword') | translate
+            "
+            data-testid="setup-toggle-password"
+            (click)="toggleAdminPassword()"
+          >
+            {{ (showAdminPassword() ? 'common.hidePassword' : 'common.showPassword') | translate }}
+          </button>
+        </div>
+        <p id="setup-admin-password-hint" class="text-xs text-[var(--h2l-fg-muted)]">
+          {{ 'setup.passwordHint' | translate }}
+        </p>
+        @if (isControlInvalid('adminPassword')) {
+          <p id="setup-admin-password-error" class="text-xs text-[var(--h2l-danger-fg)]">
+            {{ getPasswordErrorKey() | translate: { min: 12, max: 128 } }}
+          </p>
+        }
+      </div>
+
+      <div class="space-y-2">
+        <span id="setup-lang-label" class="block text-sm font-medium text-[var(--h2l-fg)]">
+          {{ 'setup.defaultLanguage' | translate }}
+        </span>
+        <div role="group" aria-labelledby="setup-lang-label" class="flex flex-wrap gap-2">
+          @for (lang of languages; track lang) {
+            <button
+              type="button"
+              hlmBtn
+              [variant]="setupForm.controls.defaultLanguage.value === lang ? 'primary' : 'outline'"
+              [attr.aria-pressed]="setupForm.controls.defaultLanguage.value === lang"
+              [attr.data-testid]="'setup-lang-' + lang"
+              (click)="selectLanguage(lang)"
+            >
+              {{ 'languages.' + lang | translate }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="space-y-2">
+          <span id="setup-palette-label" class="block text-sm font-medium text-[var(--h2l-fg)]">
+            {{ 'setup.selectedPalette' | translate }}
+          </span>
+          <div role="group" aria-labelledby="setup-palette-label" class="flex flex-wrap gap-2">
+            @for (palette of palettes; track palette.value) {
+              <button
+                type="button"
+                hlmBtn
+                [variant]="
+                  setupForm.controls.selectedPalette.value === palette.value ? 'primary' : 'outline'
+                "
+                [attr.aria-pressed]="setupForm.controls.selectedPalette.value === palette.value"
+                [attr.data-testid]="'setup-palette-' + palette.value"
+                (click)="selectPalette(palette.value)"
+              >
+                {{ palette.labelKey | translate }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div
+          class="space-y-3 rounded-xl border border-[var(--h2l-border)] bg-[var(--h2l-bg)] p-4"
+          data-testid="setup-theme-preview"
+        >
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-semibold text-[var(--h2l-fg)]">
+                {{ 'setup.preview.title' | translate }}
+              </h2>
+              <p class="text-xs text-[var(--h2l-fg-muted)]">
+                {{ 'setup.preview.description' | translate }}
+              </p>
+            </div>
+            <div
+              role="group"
+              [attr.aria-label]="'setup.preview.modeLabel' | translate"
+              class="flex flex-wrap gap-2"
+            >
+              @for (mode of themeModes; track mode.value) {
+                <button
+                  type="button"
+                  hlmBtn
+                  [variant]="currentThemeMode() === mode.value ? 'primary' : 'outline'"
+                  [attr.aria-pressed]="currentThemeMode() === mode.value"
+                  [attr.data-testid]="'setup-preview-mode-' + mode.value"
+                  (click)="selectPreviewMode(mode.value)"
+                >
+                  {{ mode.labelKey | translate }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div
+            class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--h2l-border-subtle)] bg-[var(--h2l-surface)] p-4"
+          >
+            <div class="space-y-1">
+              <p class="text-sm font-semibold text-[var(--h2l-fg)]">
+                {{ 'setup.preview.sampleHeading' | translate }}
+              </p>
+              <p class="text-xs text-[var(--h2l-fg-muted)]">
+                {{ 'setup.preview.sampleBody' | translate }}
+              </p>
+            </div>
+            <span hlmBtn variant="primary" class="pointer-events-none">
+              {{ 'setup.preview.sampleButton' | translate }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-4 border-t border-[var(--h2l-border-subtle)] pt-4">
+        <label class="inline-flex min-h-11 cursor-pointer items-center gap-3">
+          <input
+            type="checkbox"
+            formControlName="enableSmtp"
+            class="h-5 w-5 accent-[var(--h2l-primary)]"
+            data-testid="setup-smtp-toggle"
+          />
+          <span class="text-sm font-medium text-[var(--h2l-fg)]">
+            {{ 'setup.smtp.toggle' | translate }}
+          </span>
+        </label>
+
+        @if (setupForm.controls.enableSmtp.value) {
+          <fieldset
+            formGroupName="smtp"
+            class="space-y-4 rounded-xl border border-[var(--h2l-border-subtle)] bg-[var(--h2l-bg)] p-4"
+            data-testid="setup-smtp-section"
+          >
+            <legend class="px-1 text-sm font-semibold text-[var(--h2l-fg)]">
+              {{ 'setup.smtp.sectionTitle' | translate }}
+            </legend>
+            <p class="text-xs text-[var(--h2l-fg-muted)]">
+              {{ 'setup.smtp.description' | translate }}
+            </p>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div class="space-y-2 sm:col-span-2">
+                <label hlmLabel for="setup-smtp-host">{{ 'setup.smtp.host' | translate }}</label>
+                <input
+                  id="setup-smtp-host"
+                  type="text"
+                  hlmInput
+                  formControlName="host"
+                  [hasError]="isSmtpControlInvalid('host')"
+                  [attr.aria-invalid]="isSmtpControlInvalid('host') ? 'true' : null"
+                  [attr.aria-describedby]="
+                    isSmtpControlInvalid('host') ? 'setup-smtp-host-error' : null
+                  "
+                  data-testid="setup-smtp-host"
+                />
+                @if (isSmtpControlInvalid('host')) {
+                  <p id="setup-smtp-host-error" class="text-xs text-[var(--h2l-danger-fg)]">
+                    {{ 'common.validation.required' | translate }}
+                  </p>
+                }
+              </div>
+
+              <div class="space-y-2">
+                <label hlmLabel for="setup-smtp-port">{{ 'setup.smtp.port' | translate }}</label>
+                <input
+                  id="setup-smtp-port"
+                  type="number"
+                  min="1"
+                  max="65535"
+                  hlmInput
+                  formControlName="port"
+                  [hasError]="isSmtpControlInvalid('port')"
+                  [attr.aria-invalid]="isSmtpControlInvalid('port') ? 'true' : null"
+                  [attr.aria-describedby]="
+                    isSmtpControlInvalid('port') ? 'setup-smtp-port-error' : null
+                  "
+                  data-testid="setup-smtp-port"
+                />
+                @if (isSmtpControlInvalid('port')) {
+                  <p id="setup-smtp-port-error" class="text-xs text-[var(--h2l-danger-fg)]">
+                    {{ 'common.validation.portRange' | translate }}
+                  </p>
+                }
+              </div>
+            </div>
+
+            <label class="inline-flex min-h-11 cursor-pointer items-center gap-3">
+              <input
+                type="checkbox"
+                formControlName="useSsl"
+                class="h-5 w-5 accent-[var(--h2l-primary)]"
+                data-testid="setup-smtp-ssl"
+              />
+              <span class="text-sm font-medium text-[var(--h2l-fg)]">
+                {{ 'setup.smtp.useSsl' | translate }}
+              </span>
+            </label>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div class="space-y-2">
+                <label hlmLabel for="setup-smtp-from-address">
+                  {{ 'setup.smtp.fromAddress' | translate }}
+                </label>
+                <input
+                  id="setup-smtp-from-address"
+                  type="email"
+                  hlmInput
+                  formControlName="fromAddress"
+                  [hasError]="isSmtpControlInvalid('fromAddress')"
+                  [attr.aria-invalid]="isSmtpControlInvalid('fromAddress') ? 'true' : null"
+                  [attr.aria-describedby]="
+                    isSmtpControlInvalid('fromAddress') ? 'setup-smtp-from-error' : null
+                  "
+                  data-testid="setup-smtp-from-address"
+                />
+                @if (isSmtpControlInvalid('fromAddress')) {
+                  <p id="setup-smtp-from-error" class="text-xs text-[var(--h2l-danger-fg)]">
+                    {{ getSmtpFromErrorKey() | translate }}
+                  </p>
+                }
+              </div>
+
+              <div class="space-y-2">
+                <label hlmLabel for="setup-smtp-from-name">
+                  {{ 'setup.smtp.fromName' | translate }}
+                </label>
+                <input
+                  id="setup-smtp-from-name"
+                  type="text"
+                  hlmInput
+                  formControlName="fromName"
+                  data-testid="setup-smtp-from-name"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div class="space-y-2">
+                <label hlmLabel for="setup-smtp-username">
+                  {{ 'setup.smtp.username' | translate }}
+                </label>
+                <input
+                  id="setup-smtp-username"
+                  type="text"
+                  hlmInput
+                  formControlName="username"
+                  data-testid="setup-smtp-username"
+                />
+              </div>
+
+              <div class="space-y-2">
+                <label hlmLabel for="setup-smtp-password">
+                  {{ 'setup.smtp.password' | translate }}
+                </label>
+                <div class="flex gap-2">
+                  <input
+                    id="setup-smtp-password"
+                    [type]="showSmtpPassword() ? 'text' : 'password'"
+                    autocomplete="off"
+                    hlmInput
+                    formControlName="password"
+                    data-testid="setup-smtp-password"
+                  />
+                  <button
+                    type="button"
+                    hlmBtn
+                    variant="outline"
+                    class="shrink-0"
+                    [attr.aria-pressed]="showSmtpPassword()"
+                    [attr.aria-label]="
+                      (showSmtpPassword() ? 'common.hidePassword' : 'common.showPassword') | translate
+                    "
+                    data-testid="setup-toggle-smtp-password"
+                    (click)="toggleSmtpPassword()"
+                  >
+                    {{
+                      (showSmtpPassword() ? 'common.hidePassword' : 'common.showPassword') | translate
+                    }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        }
+      </div>
+
+      <div class="flex justify-end">
+        <button
+          type="submit"
+          hlmBtn
+          variant="primary"
+          [disabled]="submitting()"
+          data-testid="setup-submit"
+        >
+          {{ (submitting() ? 'setup.submitting' : 'setup.submit') | translate }}
+        </button>
+      </div>
+    </form>
+  }
+</section>

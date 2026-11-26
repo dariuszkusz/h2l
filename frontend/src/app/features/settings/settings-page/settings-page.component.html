@@ -1,0 +1,368 @@
+<section class="space-y-6">
+  <header class="space-y-1">
+    <h1 class="text-2xl font-semibold tracking-tight text-[var(--h2l-fg)]" data-testid="settings-heading">
+      {{ 'settings.heading' | translate }}
+    </h1>
+    <p class="text-sm text-[var(--h2l-fg-muted)]">
+      {{ 'settings.description' | translate }}
+    </p>
+  </header>
+
+  @if (preferencesError(); as prefError) {
+    <app-ui-state-banner
+      kind="error"
+      testId="settings-preferences-error"
+      [title]="'errors.title' | translate"
+      [message]="prefError.messageKey | translate: prefError.messageParams"
+      [detail]="prefError.detail"
+    />
+  }
+
+  @if (preferencesSaved()) {
+    <app-ui-state-banner
+      kind="success"
+      testId="settings-preferences-saved"
+      [title]="'common.successTitle' | translate"
+      [message]="'settings.preferencesSaved' | translate"
+    />
+  }
+
+  <div hlmCard class="space-y-4">
+    <div>
+      <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+        {{ 'settings.language.title' | translate }}
+      </h2>
+      <p class="text-sm text-[var(--h2l-fg-muted)]">
+        {{ 'settings.language.description' | translate }}
+      </p>
+    </div>
+
+    <div
+      role="group"
+      [attr.aria-label]="'settings.language.label' | translate"
+      class="flex flex-wrap gap-3"
+    >
+      @for (lang of languages; track lang) {
+        <button
+          type="button"
+          hlmBtn
+          [variant]="currentLanguage() === lang ? 'primary' : 'outline'"
+          [attr.aria-pressed]="currentLanguage() === lang"
+          [attr.data-testid]="'settings-lang-' + lang"
+          (click)="onLanguageChange(lang)"
+        >
+          {{ 'languages.' + lang | translate }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div hlmCard class="space-y-4">
+    <div>
+      <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+        {{ 'settings.theme.title' | translate }}
+      </h2>
+      <p class="text-sm text-[var(--h2l-fg-muted)]">
+        {{ 'settings.theme.description' | translate }}
+      </p>
+    </div>
+
+    <div
+      role="group"
+      [attr.aria-label]="'settings.theme.groupLabel' | translate"
+      class="flex flex-wrap gap-3"
+    >
+      @for (mode of themeModes; track mode.value) {
+        <button
+          type="button"
+          hlmBtn
+          [variant]="themeMode() === mode.value ? 'primary' : 'outline'"
+          [attr.aria-pressed]="themeMode() === mode.value"
+          [attr.data-testid]="'theme-mode-' + mode.value"
+          (click)="onThemeModeChange(mode.value)"
+        >
+          {{ mode.labelKey | translate }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div hlmCard class="space-y-4">
+    <div>
+      <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+        {{ 'settings.palette.title' | translate }}
+      </h2>
+      <p class="text-sm text-[var(--h2l-fg-muted)]">
+        {{ 'settings.palette.description' | translate }}
+      </p>
+    </div>
+
+    <div
+      role="group"
+      [attr.aria-label]="'settings.palette.groupLabel' | translate"
+      class="flex flex-wrap gap-3"
+    >
+      @for (palette of palettes; track palette.value) {
+        <button
+          type="button"
+          hlmBtn
+          [variant]="colorPalette() === palette.value ? 'primary' : 'outline'"
+          [attr.aria-pressed]="colorPalette() === palette.value"
+          [attr.data-testid]="'palette-' + palette.value"
+          (click)="onPaletteChange(palette.value)"
+        >
+          {{ palette.labelKey | translate }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- License Status & Offline Ed25519 Activation (Admin) -->
+  @if (isAdmin()) {
+    <div hlmCard class="space-y-5" data-testid="licensing-section">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="space-y-1">
+          <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+            {{ 'licensing.title' | translate }}
+          </h2>
+          <p class="text-sm text-[var(--h2l-fg-muted)]">
+            {{ 'licensing.description' | translate }}
+          </p>
+        </div>
+
+        @if (licensingStatus(); as lic) {
+          <div class="flex flex-wrap items-center gap-2">
+            <span hlmBadge variant="info" data-testid="license-plan-badge">
+              {{ 'licensing.plans.' + lic.plan | translate }}
+            </span>
+            <span
+              hlmBadge
+              [variant]="
+                lic.status === 'Active'
+                  ? 'success'
+                  : lic.status === 'GracePeriod'
+                    ? 'warning'
+                    : 'danger'
+              "
+              data-testid="license-status-badge"
+            >
+              {{ 'licensing.statuses.' + lic.status | translate }}
+            </span>
+          </div>
+        }
+      </div>
+
+      @if (licensingLoading()) {
+        <app-ui-state-banner
+          kind="loading"
+          testId="licensing-loading"
+          [message]="'licensing.loading' | translate"
+        />
+      }
+
+      @if (licensingError(); as licErr) {
+        <app-ui-state-banner
+          kind="error"
+          testId="licensing-error"
+          [title]="'errors.title' | translate"
+          [message]="licErr.messageKey | translate: licErr.messageParams"
+          [detail]="licErr.detail"
+          [fieldErrors]="licErr.fieldErrors"
+        />
+      }
+
+      @if (licensingActivationSuccess()) {
+        <app-ui-state-banner
+          kind="success"
+          testId="licensing-activation-success"
+          [title]="'common.successTitle' | translate"
+          [message]="'licensing.activateSuccess' | translate"
+        />
+      }
+
+      @if (licensingStatus(); as lic) {
+        @if (isInGracePeriod()) {
+          <app-ui-state-banner
+            kind="info"
+            testId="licensing-grace-period-banner"
+            [title]="'licensing.gracePeriodTitle' | translate"
+            [message]="
+              'licensing.gracePeriodMessage'
+                | translate: { date: lic.gracePeriodEndsAt ?? '' }
+            "
+          />
+        }
+
+        @if (isLicenseExpired()) {
+          <app-ui-state-banner
+            kind="error"
+            testId="licensing-expired-banner"
+            [title]="'licensing.expiredTitle' | translate"
+            [message]="'licensing.expiredMessage' | translate"
+          />
+        }
+
+        <!-- Instance ID -->
+        <div class="space-y-1.5">
+          <p class="text-xs font-medium uppercase tracking-wide text-[var(--h2l-fg-muted)]">
+            {{ 'licensing.instanceIdLabel' | translate }}
+          </p>
+          <div class="flex flex-wrap items-center gap-3">
+            <code
+              data-testid="licensing-instance-id"
+              class="rounded-md border border-[var(--h2l-border-subtle)] bg-[var(--h2l-surface-elevated)] px-3 py-2 text-xs text-[var(--h2l-fg)]"
+            >
+              {{ lic.instanceId }}
+            </code>
+            <button
+              type="button"
+              hlmBtn
+              variant="outline"
+              data-testid="copy-instance-id-btn"
+              (click)="onCopyInstanceId(lic.instanceId)"
+            >
+              {{
+                (copiedInstanceId()
+                  ? 'licensing.instanceIdCopied'
+                  : 'licensing.copyInstanceId') | translate
+              }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Usage vs Limits -->
+        <dl class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="licensing-usage-grid">
+          <div class="rounded-lg border border-[var(--h2l-border-subtle)] p-3">
+            <dt class="text-xs text-[var(--h2l-fg-muted)]">
+              {{ 'licensing.usage.activeProcesses' | translate }}
+            </dt>
+            <dd class="mt-1 text-base font-semibold text-[var(--h2l-fg)]">
+              {{ lic.usage.activeProcesses }} /
+              {{
+                lic.limits.maxActiveProcesses === null
+                  ? ('licensing.unlimited' | translate)
+                  : lic.limits.maxActiveProcesses
+              }}
+            </dd>
+          </div>
+
+          <div class="rounded-lg border border-[var(--h2l-border-subtle)] p-3">
+            <dt class="text-xs text-[var(--h2l-fg-muted)]">
+              {{ 'licensing.usage.activeConnectors' | translate }}
+            </dt>
+            <dd class="mt-1 text-base font-semibold text-[var(--h2l-fg)]">
+              {{ lic.usage.activeConnectors }} /
+              {{
+                lic.limits.maxActiveConnectors === null
+                  ? ('licensing.unlimited' | translate)
+                  : lic.limits.maxActiveConnectors
+              }}
+            </dd>
+          </div>
+
+          <div class="rounded-lg border border-[var(--h2l-border-subtle)] p-3">
+            <dt class="text-xs text-[var(--h2l-fg-muted)]">
+              {{ 'licensing.usage.adminUsers' | translate }}
+            </dt>
+            <dd class="mt-1 text-base font-semibold text-[var(--h2l-fg)]">
+              {{ lic.usage.adminUsers }} /
+              {{
+                lic.limits.maxAdminUsers === null
+                  ? ('licensing.unlimited' | translate)
+                  : lic.limits.maxAdminUsers
+              }}
+            </dd>
+          </div>
+
+          <div class="rounded-lg border border-[var(--h2l-border-subtle)] p-3">
+            <dt class="text-xs text-[var(--h2l-fg-muted)]">
+              {{ 'licensing.usage.endUsers' | translate }}
+            </dt>
+            <dd class="mt-1 text-base font-semibold text-[var(--h2l-fg)]">
+              {{ lic.usage.endUsers }} /
+              {{
+                lic.limits.maxEndUsers === null
+                  ? ('licensing.unlimited' | translate)
+                  : lic.limits.maxEndUsers
+              }}
+            </dd>
+          </div>
+        </dl>
+      }
+
+      <!-- Offline Ed25519 License Key Activation -->
+      <form
+        [formGroup]="licenseForm"
+        (ngSubmit)="onActivateLicenseSubmit()"
+        novalidate
+        class="space-y-3 border-t border-[var(--h2l-border-subtle)] pt-4"
+      >
+        <div class="space-y-1">
+          <label hlmLabel for="license-key-input">
+            {{ 'licensing.keyLabel' | translate }}
+          </label>
+          <textarea
+            id="license-key-input"
+            rows="3"
+            hlmInput
+            formControlName="licenseKey"
+            data-testid="license-key-input"
+            [placeholder]="'licensing.keyPlaceholder' | translate"
+            [attr.aria-invalid]="
+              licenseForm.controls.licenseKey.touched && licenseForm.controls.licenseKey.invalid
+            "
+          ></textarea>
+          @if (licenseForm.controls.licenseKey.touched && licenseForm.controls.licenseKey.invalid) {
+            <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+              {{ 'common.validation.required' | translate }}
+            </p>
+          }
+        </div>
+
+        <button
+          type="submit"
+          hlmBtn
+          variant="primary"
+          data-testid="activate-license-btn"
+          [disabled]="licensingActivating()"
+        >
+          {{
+            (licensingActivating()
+              ? 'licensing.activatingButton'
+              : 'licensing.activateButton') | translate
+          }}
+        </button>
+      </form>
+    </div>
+  }
+
+  <div hlmCard class="space-y-4">
+    <div>
+      <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+        {{ 'settings.session.title' | translate }}
+      </h2>
+      <p class="text-sm text-[var(--h2l-fg-muted)]">
+        {{ 'settings.session.description' | translate }}
+      </p>
+    </div>
+
+    <div
+      role="group"
+      [attr.aria-label]="'settings.session.label' | translate"
+      class="flex flex-wrap gap-3"
+    >
+      @for (profile of sessionProfiles; track profile.id) {
+        <button
+          type="button"
+          hlmBtn
+          [variant]="activeSessionProfileId() === profile.id ? 'primary' : 'outline'"
+          [attr.aria-pressed]="activeSessionProfileId() === profile.id"
+          [attr.data-testid]="'session-profile-' + profile.id"
+          (click)="onSessionProfileSwitch(profile.id)"
+        >
+          {{ profile.labelKey | translate }}
+        </button>
+      }
+    </div>
+  </div>
+</section>
