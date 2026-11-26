@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using H2l.Application;
 using H2l.Application.Common;
 using H2l.Infrastructure;
@@ -5,6 +6,7 @@ using H2l.Infrastructure.Persistence;
 using H2l.WebApi.Configuration;
 using H2l.WebApi.Hubs;
 using H2l.WebApi.Middleware;
+using H2l.WebApi.Security;
 using JasperFx.CodeGeneration.Model;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
@@ -39,6 +41,8 @@ public class Program
 
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(builder.Configuration);
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<ICurrentUserContext, HttpCurrentUserContext>();
         builder.Services.AddScoped<IRealtimeTaskNotifier, SignalRTaskNotifier>();
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -46,7 +50,11 @@ public class Program
         builder.Services.AddSingleton<IConfigureOptions<JwtBearerOptions>, JwtBearerOptionsSetup>();
         builder.Services.AddAuthorization();
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
         builder.Services.AddSignalR();
         builder.Services.AddOpenApi();
         builder.Services.AddProblemDetails();
@@ -62,6 +70,7 @@ public class Program
         });
 
         app.UseAuthentication();
+        app.UseMiddleware<TenantResolutionMiddleware>();
         app.UseAuthorization();
 
         app.MapOpenApi();

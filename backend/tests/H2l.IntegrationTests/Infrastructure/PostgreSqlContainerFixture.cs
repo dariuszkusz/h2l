@@ -35,8 +35,12 @@ public sealed class PostgreSqlContainerFixture : IAsyncLifetime
                         ["DB_CONNECTION_STRING"] = ConnectionString,
                         ["DB_AUTO_MIGRATE"] = "true",
                         ["JWT_ISSUER"] = "h2l-test",
-                        ["JWT_AUDIENCE"] = "h2l-test-clients",
-                        ["JWT_SIGNING_KEY"] = "integration-test-signing-key-with-at-least-32-chars"
+                        ["JWT_AUDIENCE"] = "h2l-pwa",
+                        ["JWT_SIGNING_KEY"] = "integration-test-signing-key-with-at-least-32-chars",
+                        ["JWT_ACCESS_TOKEN_MINUTES"] = "15",
+                        ["JWT_REFRESH_TOKEN_DAYS"] = "7",
+                        ["ENCRYPTION_KEY_ID"] = "v1",
+                        ["ENCRYPTION_AES_GCM_KEY"] = "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="
                     });
                 });
             });

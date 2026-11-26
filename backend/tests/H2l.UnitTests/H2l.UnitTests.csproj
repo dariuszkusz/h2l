@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\H2l.Application\H2l.Application.csproj" />
     <ProjectReference Include="..\..\src\H2l.Domain\H2l.Domain.csproj" />
+    <ProjectReference Include="..\..\src\H2l.Infrastructure\H2l.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

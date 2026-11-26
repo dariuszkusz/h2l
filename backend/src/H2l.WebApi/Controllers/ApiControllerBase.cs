@@ -26,6 +26,18 @@ public abstract class ApiControllerBase : ControllerBase
         return ToProblemResult(result.Error);
     }
 
+    protected IActionResult ToCreatedResult<T>(Result<T> result, string? location = null)
+    {
+        if (result.IsSuccess)
+        {
+            return location is null
+                ? StatusCode(StatusCodes.Status201Created, result.Value)
+                : Created(location, result.Value);
+        }
+
+        return ToProblemResult(result.Error);
+    }
+
     protected ObjectResult ToProblemResult(Error error)
     {
         var (statusCode, title, type) = error.Type switch
