@@ -8,6 +8,7 @@ import {
 import {
   byAlert,
   byButton,
+  byHeading,
   byLiveRegion,
   fillByLabel,
 } from '../support/a11y-queries';
@@ -53,7 +54,7 @@ describe('Tier 4 — T4-05: 14-Day Grace Period -> Expired Soft Degradation -> R
     cy.wait('@listProjects');
     cy.contains('HR').click();
     cy.wait('@listProcesses');
-    byButton(/Utwórz proces|New Process|Create Process/i).first().click();
+    byButton(/Nowy proces|Utwórz proces|New Process|Create Process/i).first().click();
     fillByLabel(/Nazwa procesu|Process.*Name/i, 'Grace Valid Proc');
     fillByLabel(/Klucz procesu|External.*Key/i, 'grace-valid-proc');
     byButton(/Zapisz|Utwórz|Save|Create/i).last().click();
@@ -63,7 +64,7 @@ describe('Tier 4 — T4-05: 14-Day Grace Period -> Expired Soft Degradation -> R
     cy.then(() => {
       state.licenseStatus = 'Expired';
     });
-    byButton(/Utwórz proces|New Process|Create Process/i).first().click();
+    byButton(/Nowy proces|Utwórz proces|New Process|Create Process/i).first().click();
     fillByLabel(/Nazwa procesu|Process.*Name/i, 'Expired Blocked Proc');
     fillByLabel(/Klucz procesu|External.*Key/i, 'expired-blocked-proc');
     byButton(/Zapisz|Utwórz|Save|Create/i).last().click();
@@ -80,6 +81,7 @@ describe('Tier 4 — T4-05: 14-Day Grace Period -> Expired Soft Degradation -> R
     loginViaUi(DEFAULT_END_USER_CREDENTIALS.email, DEFAULT_END_USER_CREDENTIALS.password);
     cy.visit(ROUTES.settings);
     cy.wait('@getMe');
+    byHeading().should('be.visible');
     assertNoHorizontalOverflow();
     injectAndCheckA11y({ route: ROUTES.settings, theme: 'light', language: 'pl' });
 

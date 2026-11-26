@@ -66,16 +66,18 @@ describe('Tier 1 — F2: Instance Onboarding Wizard & Re-Init Lock (US-01.2)', (
     byButton(/Deutsch/i).first().click();
     fillByLabel(/Admin.*E-?Mail/i, 'ops@acme.de');
     fillByLabel(/Passwort|Password/i, 'GermanAdminPass!12');
-    byButton(/Ocean/i).first().click();
+    byButton(/Ocean|Ozean/i).first().click();
 
     byLabel(/SMTP/i).first().focus().type(' ');
     fillByLabel(/Host/i, 'smtp.acme.de');
     fillByLabel(/Port/i, '587');
     fillByLabel(/From.*Address|Absender.*E-?Mail/i, 'noreply@acme.de');
     fillByLabel(/Username|Benutzername/i, 'mailer@acme.de');
-    fillByLabel(/SMTP.*Password|SMTP.*Passwort/i, 'SmtpSecret!99');
+    fillByLabel(/Passwort \(optional\)|Password \(optional\)|SMTP.*Password|SMTP.*Passwort/i, 'SmtpSecret!99');
 
-    byLabel(/SMTP.*Password|SMTP.*Passwort/i).first().should('have.attr', 'type', 'password');
+    byLabel(/Passwort \(optional\)|Password \(optional\)|SMTP.*Password|SMTP.*Passwort/i)
+      .first()
+      .should('have.attr', 'type', 'password');
     injectAndCheckA11y({ route: ROUTES.setup, theme: 'light', palette: 'ocean', language: 'de' });
 
     byButton(/Einrichten|Abschließen|Initialize|Complete/i).first().click();
@@ -153,7 +155,7 @@ describe('Tier 1 — F2: Instance Onboarding Wizard & Re-Init Lock (US-01.2)', (
     activateFocusedWithKeyboard('Enter');
     assertHtmlAttributes({ lang: 'pl' });
 
-    assertElementKeyboardFocusable(byButton(/Forest/i));
+    assertElementKeyboardFocusable(byButton(/Forest|Leśn|Wald/i));
     activateFocusedWithKeyboard('Enter');
     assertHtmlAttributes({ palette: 'forest' });
 

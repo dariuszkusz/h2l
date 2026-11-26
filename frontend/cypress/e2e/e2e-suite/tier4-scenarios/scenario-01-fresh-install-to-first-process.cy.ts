@@ -37,7 +37,7 @@ describe('Tier 4 — T4-01: Fresh Self-Hosted Install to First Project & Process
 
     fillByLabel(/Admin.*E-?Mail|E-mail/i, 'sysadmin@firma.pl');
     fillByLabel(/Hasło|Password/i, 'BezpieczneHaslo!12');
-    byButton(/Forest/i).first().click();
+    byButton(/Forest|Leśn|Wald/i).first().click();
     assertHtmlAttributes({ lang: 'pl', palette: 'forest', theme: 'light' });
 
     byButton(/Zakończ|Utwórz|Zainicjuj|Initialize|Complete/i).first().click();
@@ -73,7 +73,7 @@ describe('Tier 4 — T4-01: Fresh Self-Hosted Install to First Project & Process
 
     cy.contains('HR').click();
     cy.wait('@listProcesses');
-    byButton(/Utwórz proces|New Process|Create Process/i).first().click();
+    byButton(/Nowy proces|Utwórz proces|New Process|Create Process/i).first().click();
     fillByLabel(/Nazwa procesu|Process.*Name/i, 'Software Purchase');
     fillByLabel(/Klucz procesu|External.*Key/i, 'software-purchase');
     byButton(/Zapisz|Utwórz|Save|Create/i).last().click();
@@ -83,7 +83,7 @@ describe('Tier 4 — T4-01: Fresh Self-Hosted Install to First Project & Process
     cy.wait('@listForms');
 
     ['Wniosek', 'Akceptacja'].forEach((formName, idx) => {
-      byButton(/Utwórz formularz|New Form|Create Form/i).first().click();
+      byButton(/Nowy formularz|Utwórz formularz|New Draft Form|New Form|Create Form/i).first().click();
       fillByLabel(/Nazwa formularza|Form.*Name/i, formName);
       fillByLabel(/Klucz kroku|Step.*Key/i, `step-${idx + 1}`);
       byButton(/Zapisz|Utwórz|Save|Create/i).last().click();

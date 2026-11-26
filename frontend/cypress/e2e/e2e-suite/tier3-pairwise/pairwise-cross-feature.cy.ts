@@ -38,7 +38,7 @@ describe('Tier 3 — Pairwise Cross-Feature Combinations (F1–F7)', () => {
 
     fillByLabel(/Admin.*E-?Mail/i, 'admin@kmu.de');
     fillByLabel(/Passwort|Password/i, 'SicheresPasswort!12');
-    byButton(/Ocean/i).first().click();
+    byButton(/Ocean|Ozean/i).first().click();
     byLabel(/SMTP/i).first().focus().type(' ');
     fillByLabel(/Host/i, 'mail.kmu.de');
     fillByLabel(/Port/i, '587');
@@ -200,24 +200,23 @@ describe('Tier 3 — Pairwise Cross-Feature Combinations (F1–F7)', () => {
     cy.contains('Software Purchase').click();
     cy.wait('@listForms');
 
-    byButton(/Access|ACL|Permissions|Uprawnienia|Zugriffsrechte/i).first().click();
+    cy.get('[data-testid^="form-item-"]').first().click();
     cy.wait('@getFormAccessRules');
 
-    byButton(/Add.*Rule|Dodaj regułę|Regel hinzufügen/i).first().click();
     byLabel(/Scope|Zakres|Bereich/i).last().select('WholeGroup');
     byLabel(/Group|Grupa|Gruppe/i).last().select(MOCK_IDS.groupHrId);
-
     byButton(/Add.*Rule|Dodaj regułę|Regel hinzufügen/i).first().click();
+
     byLabel(/Scope|Zakres|Bereich/i).last().select('GroupUserSubset');
     byLabel(/Group|Grupa|Gruppe/i).last().select(MOCK_IDS.groupHrId);
-    cy.wait('@listGroupMembers');
     byLabel(/User|Użytkownik|Benutzer/i).last().select(MOCK_IDS.endUserId);
-
     byButton(/Add.*Rule|Dodaj regułę|Regel hinzufügen/i).first().click();
+
     byLabel(/Scope|Zakres|Bereich/i).last().select('DirectUser');
     byLabel(/User|Użytkownik|Benutzer/i).last().select(MOCK_IDS.designerId);
+    byButton(/Add.*Rule|Dodaj regułę|Regel hinzufügen/i).first().click();
 
-    byButton(/Save.*ACL|Save.*Rules|Save|Zapisz|Speichern/i).last().click();
+    byButton(/Save.*ACL|Save.*Rules|Save.*Access|Save|Zapisz|Speichern/i).first().click();
     cy.wait('@updateFormAccessRules').its('response.statusCode').should('eq', 204);
   });
 
@@ -334,8 +333,9 @@ describe('Tier 3 — Pairwise Cross-Feature Combinations (F1–F7)', () => {
     });
 
     cy.visit(ROUTES.adminProjects);
-    cy.wait('@listProjects').its('response.statusCode').should('eq', 401);
+    cy.wait('@getMe').its('response.statusCode').should('eq', 401);
     cy.wait('@refreshToken').its('response.statusCode').should('eq', 200);
+    cy.wait('@getMe').its('response.statusCode').should('eq', 200);
     cy.wait('@listProjects').its('response.statusCode').should('eq', 200);
     cy.contains('HR').should('be.visible');
 

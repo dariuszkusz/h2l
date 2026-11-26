@@ -48,7 +48,7 @@ describe('Tier 2 — F4 Boundaries: Invalid Credentials, Token Expiry, RBAC Guar
     });
 
     cy.visit(ROUTES.adminUsers);
-    cy.wait('@listUsers').its('response.statusCode').should('eq', 401);
+    cy.wait('@getMe').its('response.statusCode').should('eq', 401);
     cy.wait('@refreshToken').its('response.statusCode').should('eq', 401);
 
     cy.url().should('include', ROUTES.login);

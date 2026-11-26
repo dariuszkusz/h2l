@@ -81,6 +81,8 @@ describe('Tier 4 — T4-02: Air-Gapped Invite (manual_link), Activation & Mobile
     cy.visit(ROUTES.settings);
     cy.wait('@getMe');
 
+    byButton(/Deutsch/i).first().click();
+    cy.wait('@updatePreferences').its('request.body').should('deep.include', { preferredLanguage: 'de' });
     byButton(/Dunkel|Dark/i).first().click();
     cy.wait('@updatePreferences').its('request.body').should('deep.include', { preferredTheme: 'dark' });
 

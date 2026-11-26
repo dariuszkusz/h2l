@@ -49,6 +49,17 @@ export function resetBrowserState(): void {
   clearIndexedDb();
 }
 
+// Seed default language before app bootstrap so the global first-run modal
+// (covered separately by i18n-and-theme.cy.ts) does not block inline setup/login pickers.
+Cypress.on('window:before:load', (win) => {
+  if (!win.localStorage.getItem('h2l.lang.default')) {
+    win.localStorage.setItem('h2l.lang.default', 'en');
+  }
+  if (!win.localStorage.getItem('h2l.theme.mode')) {
+    win.localStorage.setItem('h2l.theme.mode', 'light');
+  }
+});
+
 export function visitWithReloadGuard(path: string): void {
   cy.visit(path);
   cy.window().then((win) => {

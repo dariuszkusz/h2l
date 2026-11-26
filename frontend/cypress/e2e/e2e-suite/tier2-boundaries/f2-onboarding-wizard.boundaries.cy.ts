@@ -5,6 +5,7 @@ import {
   byAlert,
   byButton,
   byLabel,
+  byLiveRegion,
   fillByLabel,
 } from '../support/a11y-queries';
 import { resetBrowserState, ROUTES, setViewport } from '../support/test-harness';
@@ -32,7 +33,8 @@ describe('Tier 2 — F2 Boundaries: Onboarding Validation, SMTP Ranges & Re-Init
     byButton(/Complete|Initialize|Finish|Create|Zakończ|Einrichten/i).first().click();
     cy.wait('@initializeSetup').its('response.statusCode').should('eq', 409);
 
-    byAlert().should('be.visible');
+    cy.url().should('include', ROUTES.login);
+    byLiveRegion().should('be.visible');
   });
 
   it('T2-F2-02: rejects adminPassword shorter than 12 characters (11 chars) with accessible inline error', () => {

@@ -58,6 +58,7 @@ describe('Tier 2 — F1 Boundaries: i18n Overflow, Zoom, Isolation, Fallback & T
     loginViaUi(DEFAULT_ADMIN_CREDENTIALS.email, DEFAULT_ADMIN_CREDENTIALS.password);
     cy.visit(ROUTES.settings);
     cy.wait('@getMe');
+    byHeading().should('be.visible');
 
     cy.document().then((doc) => {
       doc.documentElement.style.fontSize = '32px';

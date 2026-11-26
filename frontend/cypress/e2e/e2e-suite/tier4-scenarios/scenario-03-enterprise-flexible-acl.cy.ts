@@ -106,49 +106,48 @@ describe('Tier 4 — T4-03: Enterprise Department ACL Workflow (WholeGroup + Sub
     cy.contains('Software Purchase').click();
     cy.wait('@listForms');
 
-    byButton(/New Form|Create Form/i).first().click();
+    byButton(/New Draft Form|New Form|Create Form/i).first().click();
     fillByLabel(/Form.*Name/i, 'Request');
     fillByLabel(/Step.*Key/i, 'request');
     byButton(/Save|Create/i).last().click();
     cy.wait('@createForm');
 
-    byButton(/New Form|Create Form/i).first().click();
+    byButton(/New Draft Form|New Form|Create Form/i).first().click();
     fillByLabel(/Form.*Name/i, 'Approval');
     fillByLabel(/Step.*Key/i, 'approval');
     byButton(/Save|Create/i).last().click();
     cy.wait('@createForm');
 
     // Step 1 ACL: WholeGroup(HR)
-    byButton(/Access|ACL|Permissions/i).first().click();
+    cy.get('[data-testid^="form-item-"]').first().click();
     cy.wait('@getFormAccessRules');
-    byButton(/Add.*Rule/i).first().click();
     byLabel(/Scope/i).last().select('WholeGroup');
     cy.then(() => {
       byLabel(/Group/i).last().select(hrGroupId);
     });
-    byButton(/Save.*ACL|Save.*Rules|Save/i).last().click();
+    byButton(/Add.*Rule/i).first().click();
+    byButton(/Save.*ACL|Save.*Rules|Save.*Access|Save/i).first().click();
     cy.wait('@updateFormAccessRules').its('response.statusCode').should('eq', 204);
 
     // Step 2 ACL: GroupUserSubset(Sales, salesSoft) + DirectUser(cfo)
-    byButton(/Access|ACL|Permissions/i).last().click();
+    cy.get('[data-testid^="form-item-"]').last().click();
     cy.wait('@getFormAccessRules');
-    byButton(/Add.*Rule/i).first().click();
     byLabel(/Scope/i).last().select('GroupUserSubset');
     cy.then(() => {
       byLabel(/Group/i).last().select(salesGroupId);
     });
-    cy.wait('@listGroupMembers');
     cy.then(() => {
       byLabel(/User/i).last().select(salesSoftId);
     });
-
     byButton(/Add.*Rule/i).first().click();
+
     byLabel(/Scope/i).last().select('DirectUser');
     cy.then(() => {
       byLabel(/User/i).last().select(cfoId);
     });
+    byButton(/Add.*Rule/i).first().click();
 
-    byButton(/Save.*ACL|Save.*Rules|Save/i).last().click();
+    byButton(/Save.*ACL|Save.*Rules|Save.*Access|Save/i).first().click();
     cy.wait('@updateFormAccessRules').then((interception) => {
       expect(interception.request.body.rules).to.deep.equal([
         { groupId: salesGroupId, userId: salesSoftId },

@@ -36,7 +36,7 @@ describe('Tier 4 — T4-04: Free Plan Limit Hit -> Ed25519 Key Mistake -> Succes
     cy.wait('@listProjects');
     cy.contains('HR').click();
     cy.wait('@listProcesses');
-    byButton(/Utwórz proces|New Process|Create Process/i).first().click();
+    byButton(/Nowy proces|Utwórz proces|New Process|Create Process/i).first().click();
     fillByLabel(/Nazwa procesu|Process.*Name/i, 'Second Process');
     fillByLabel(/Klucz procesu|External.*Key/i, 'second-process');
     byButton(/Zapisz|Utwórz|Save|Create/i).last().click();
@@ -74,7 +74,7 @@ describe('Tier 4 — T4-04: Free Plan Limit Hit -> Ed25519 Key Mistake -> Succes
     cy.wait('@listProjects');
     cy.contains('HR').click();
     cy.wait('@listProcesses');
-    byButton(/Utwórz proces|New Process|Create Process/i).first().click();
+    byButton(/Nowy proces|Utwórz proces|New Process|Create Process/i).first().click();
     fillByLabel(/Nazwa procesu|Process.*Name/i, 'Second Process');
     fillByLabel(/Klucz procesu|External.*Key/i, 'second-process');
     byButton(/Zapisz|Utwórz|Save|Create/i).last().click();

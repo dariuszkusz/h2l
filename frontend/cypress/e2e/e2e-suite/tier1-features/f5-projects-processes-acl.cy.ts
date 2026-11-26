@@ -160,13 +160,13 @@ describe('Tier 1 — F5: Groups, Projects, Workflow Processes, Draft Forms & Fle
     cy.contains('Software Purchase').click();
     cy.wait('@listForms').its('response.body').should('deep.equal', []);
 
-    byButton(/New Form|Create Form|Add Form|Utwórz formularz|Formular erstellen/i).first().click();
+    byButton(/New Draft Form|New Form|Create Form|Add Form|Nowy formularz|Utwórz formularz|Neues Formular|Formular erstellen/i).first().click();
     fillByLabel(/Form.*Name|Nazwa formularza|Formularname/i, 'Request Step');
     fillByLabel(/Step.*Key|Klucz kroku|Schrittschlüssel/i, 'step-1');
     byButton(/Save|Create|Utwórz|Erstellen/i).last().click();
     cy.wait('@createForm').its('response.body.status').should('eq', 'Draft');
 
-    byButton(/New Form|Create Form|Add Form|Utwórz formularz|Formular erstellen/i).first().click();
+    byButton(/New Draft Form|New Form|Create Form|Add Form|Nowy formularz|Utwórz formularz|Neues Formular|Formular erstellen/i).first().click();
     fillByLabel(/Form.*Name|Nazwa formularza|Formularname/i, 'Approval Step');
     fillByLabel(/Step.*Key|Klucz kroku|Schrittschlüssel/i, 'step-2');
     byButton(/Save|Create|Utwórz|Erstellen/i).last().click();
@@ -202,27 +202,26 @@ describe('Tier 1 — F5: Groups, Projects, Workflow Processes, Draft Forms & Fle
     cy.contains('Software Purchase').click();
     cy.wait('@listForms');
 
-    byButton(/Access|ACL|Permissions|Uprawnienia|Zugriffsrechte/i).first().click();
+    cy.get('[data-testid^="form-item-"]').first().click();
     cy.wait('@getFormAccessRules');
 
     // Add WholeGroup (HR)
-    byButton(/Add.*Rule|Dodaj regułę|Regel hinzufügen/i).first().click();
     byLabel(/Scope|Zakres|Bereich/i).last().select('WholeGroup');
     byLabel(/Group|Grupa|Gruppe/i).last().select(MOCK_IDS.groupHrId);
+    byButton(/Add.*Rule|Dodaj regułę|Regel hinzufügen/i).first().click();
 
     // Add GroupUserSubset (Sales -> designer)
-    byButton(/Add.*Rule|Dodaj regułę|Regel hinzufügen/i).first().click();
     byLabel(/Scope|Zakres|Bereich/i).last().select('GroupUserSubset');
     byLabel(/Group|Grupa|Gruppe/i).last().select(salesGroupId);
-    cy.wait('@listGroupMembers');
     byLabel(/User|Użytkownik|Benutzer/i).last().select(MOCK_IDS.designerId);
+    byButton(/Add.*Rule|Dodaj regułę|Regel hinzufügen/i).first().click();
 
     // Add DirectUser (EndUser)
-    byButton(/Add.*Rule|Dodaj regułę|Regel hinzufügen/i).first().click();
     byLabel(/Scope|Zakres|Bereich/i).last().select('DirectUser');
     byLabel(/User|Użytkownik|Benutzer/i).last().select(MOCK_IDS.endUserId);
+    byButton(/Add.*Rule|Dodaj regułę|Regel hinzufügen/i).first().click();
 
-    byButton(/Save.*ACL|Save.*Rules|Save|Zapisz|Speichern/i).last().click();
+    byButton(/Save.*ACL|Save.*Rules|Save.*Access|Save|Zapisz|Speichern/i).first().click();
 
     cy.wait('@updateFormAccessRules').then((interception) => {
       expect(interception.request.body.rules).to.deep.equal([

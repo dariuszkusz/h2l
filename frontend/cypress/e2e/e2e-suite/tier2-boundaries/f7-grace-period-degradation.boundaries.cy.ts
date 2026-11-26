@@ -85,7 +85,7 @@ describe('Tier 2 — F7 Boundaries: Day-14 Grace Boundary & Expired Soft Degrada
     cy.contains('Software Purchase').click();
     cy.wait('@listForms');
 
-    byButton(/New Form|Create Form|Add Form|Utwórz formularz|Formular erstellen/i).first().click();
+    byButton(/New Draft Form|New Form|Create Form|Add Form|Nowy formularz|Utwórz formularz|Neues Formular|Formular erstellen/i).first().click();
     fillByLabel(/Form.*Name|Nazwa formularza|Formularname/i, 'Expired Safe Draft');
     fillByLabel(/Step.*Key|Klucz kroku|Schrittschlüssel/i, 'expired-safe-draft');
     byButton(/Save|Create|Utwórz|Erstellen/i).last().click();
