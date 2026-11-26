@@ -1,0 +1,816 @@
+<section class="space-y-6" data-testid="admin-connectors-page">
+  <div class="sr-only" aria-live="polite" aria-atomic="true" data-testid="connectors-live-region">
+    {{ liveAnnouncement() }}
+  </div>
+
+  <header class="flex flex-wrap items-start justify-between gap-4">
+    <div class="space-y-1">
+      <h1
+        class="text-2xl font-semibold tracking-tight text-[var(--h2l-fg)]"
+        data-testid="admin-connectors-heading"
+      >
+        {{ 'connectors.heading' | translate }}
+      </h1>
+      <p class="text-sm text-[var(--h2l-fg-muted)]">
+        {{ 'connectors.description' | translate }}
+      </p>
+    </div>
+
+    <button
+      type="button"
+      hlmBtn
+      variant="primary"
+      data-testid="open-create-connector-btn"
+      (click)="openCreateModal()"
+    >
+      {{ 'connectors.actions.create' | translate }}
+    </button>
+  </header>
+
+  @if (error(); as apiError) {
+    <div class="space-y-2">
+      <app-ui-state-banner
+        kind="error"
+        testId="connectors-error-banner"
+        [title]="'errors.title' | translate"
+        [message]="apiError.messageKey | translate: apiError.messageParams"
+        [detail]="apiError.detail"
+        [fieldErrors]="apiError.fieldErrors"
+      />
+      @if (apiError.status === 402) {
+        <div>
+          <a
+            routerLink="/settings"
+            hlmBtn
+            variant="outline"
+            data-testid="connectors-upgrade-link"
+          >
+            {{ 'licensing.upgradeCta' | translate }}
+          </a>
+        </div>
+      }
+    </div>
+  }
+
+  @if (successKey(); as key) {
+    <app-ui-state-banner
+      kind="success"
+      testId="connectors-success-banner"
+      [title]="'common.successTitle' | translate"
+      [message]="key | translate"
+    />
+  }
+
+  <div
+    role="tablist"
+    [attr.aria-label]="'connectors.tabs.ariaLabel' | translate"
+    class="flex flex-wrap gap-2 border-b border-[var(--h2l-border-subtle)] pb-3"
+  >
+    <button
+      type="button"
+      role="tab"
+      hlmBtn
+      [variant]="activeTab() === 'connectors' ? 'primary' : 'outline'"
+      [attr.aria-selected]="activeTab() === 'connectors'"
+      data-testid="connectors-tab-list"
+      (click)="setActiveTab('connectors')"
+    >
+      {{ 'connectors.tabs.connectors' | translate }} ({{ connectors().length }})
+    </button>
+    <button
+      type="button"
+      role="tab"
+      hlmBtn
+      [variant]="activeTab() === 'dead-letters' ? 'primary' : 'outline'"
+      [attr.aria-selected]="activeTab() === 'dead-letters'"
+      data-testid="connectors-tab-dead-letters"
+      (click)="setActiveTab('dead-letters')"
+    >
+      {{ 'connectors.tabs.deadLetters' | translate }} ({{ deadLetters().length }})
+    </button>
+    <button
+      type="button"
+      role="tab"
+      hlmBtn
+      [variant]="activeTab() === 'needs-assignment' ? 'primary' : 'outline'"
+      [attr.aria-selected]="activeTab() === 'needs-assignment'"
+      data-testid="connectors-tab-needs-assignment"
+      (click)="setActiveTab('needs-assignment')"
+    >
+      {{ 'connectors.tabs.needsAssignment' | translate }} ({{ needsAssignmentTasks().length }})
+    </button>
+  </div>
+
+  <!-- Tab 1: Connectors -->
+  @if (activeTab() === 'connectors') {
+    <div class="space-y-4" data-testid="connectors-panel">
+      @if (loadingConnectors()) {
+        <app-ui-state-banner
+          kind="loading"
+          testId="connectors-loading"
+          [message]="'connectors.loading' | translate"
+        />
+      } @else if (connectors().length === 0) {
+        <div class="space-y-3">
+          <app-ui-state-banner
+            kind="empty"
+            testId="connectors-empty"
+            [title]="'connectors.emptyTitle' | translate"
+            [message]="'connectors.emptyDescription' | translate"
+          />
+          <button
+            type="button"
+            hlmBtn
+            variant="outline"
+            data-testid="empty-create-connector-btn"
+            (click)="openCreateModal()"
+          >
+            {{ 'connectors.actions.create' | translate }}
+          </button>
+        </div>
+      } @else {
+        <ul class="space-y-4" data-testid="connectors-list">
+          @for (connector of connectors(); track connector.id) {
+            <li hlmCard class="space-y-3" [attr.data-testid]="'connector-card-' + connector.id">
+              <div class="flex flex-wrap items-start justify-between gap-4">
+                <div class="space-y-1.5">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h2 class="text-base font-semibold text-[var(--h2l-fg)]">
+                      {{ connector.name }}
+                    </h2>
+                    <span hlmBadge variant="info" [attr.data-testid]="'connector-type-' + connector.id">
+                      {{ 'connectors.types.' + connector.connectorType | translate }}
+                    </span>
+                    <span
+                      hlmBadge
+                      [variant]="connector.isActive ? 'success' : 'neutral'"
+                      [attr.data-testid]="'connector-status-' + connector.id"
+                    >
+                      {{
+                        connector.isActive
+                          ? ('connectors.status.active' | translate)
+                          : ('connectors.status.inactive' | translate)
+                      }}
+                    </span>
+                  </div>
+
+                  <p class="break-all text-sm text-[var(--h2l-fg-muted)]">
+                    {{ connector.baseUrl }}
+                  </p>
+
+                  @if (connector.callbackUrl) {
+                    <p class="break-all text-xs text-[var(--h2l-fg-muted)]">
+                      {{ 'connectors.fields.callbackUrl' | translate }}: {{ connector.callbackUrl }}
+                    </p>
+                  }
+
+                  <div class="flex flex-wrap items-center gap-2 pt-1">
+                    <span hlmBadge variant="neutral">
+                      {{ 'connectors.authTypes.' + connector.authType | translate }}
+                    </span>
+                    <span
+                      hlmBadge
+                      [variant]="connector.hasCredentials ? 'success' : 'neutral'"
+                      [attr.data-testid]="'connector-credentials-' + connector.id"
+                    >
+                      {{
+                        connector.hasCredentials
+                          ? ('connectors.badges.credentialsConfigured' | translate)
+                          : ('connectors.badges.noCredentials' | translate)
+                      }}
+                    </span>
+                    @if (connector.hasCustomCaCertificate) {
+                      <span
+                        hlmBadge
+                        variant="info"
+                        [attr.data-testid]="'connector-custom-ca-' + connector.id"
+                      >
+                        {{ 'connectors.badges.customCaConfigured' | translate }}
+                      </span>
+                    }
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    hlmBtn
+                    variant="outline"
+                    [disabled]="testingConnectorId() === connector.id"
+                    [attr.data-testid]="'test-connector-btn-' + connector.id"
+                    (click)="onTestConnector(connector.id)"
+                  >
+                    {{
+                      testingConnectorId() === connector.id
+                        ? ('connectors.actions.testing' | translate)
+                        : ('connectors.actions.testConnection' | translate)
+                    }}
+                  </button>
+                  <button
+                    type="button"
+                    hlmBtn
+                    variant="outline"
+                    [attr.data-testid]="'edit-connector-btn-' + connector.id"
+                    (click)="openEditModal(connector)"
+                  >
+                    {{ 'connectors.actions.edit' | translate }}
+                  </button>
+                  <button
+                    type="button"
+                    hlmBtn
+                    variant="outline"
+                    [attr.data-testid]="'delete-connector-btn-' + connector.id"
+                    (click)="openDeleteModal(connector)"
+                  >
+                    {{ 'connectors.actions.delete' | translate }}
+                  </button>
+                </div>
+              </div>
+
+              @if (testResults()[connector.id]; as testResult) {
+                <div
+                  class="rounded-lg border p-3 text-sm"
+                  role="status"
+                  aria-live="polite"
+                  [class.border-[var(--h2l-success-border)]]="testResult.isReachable"
+                  [class.bg-[var(--h2l-success-bg)]]="testResult.isReachable"
+                  [class.text-[var(--h2l-success-fg)]]="testResult.isReachable"
+                  [class.border-[var(--h2l-danger-border)]]="!testResult.isReachable"
+                  [class.bg-[var(--h2l-danger-bg)]]="!testResult.isReachable"
+                  [class.text-[var(--h2l-danger-fg)]]="!testResult.isReachable"
+                  [attr.data-testid]="'connector-test-result-' + connector.id"
+                >
+                  @if (testResult.isReachable) {
+                    <p class="font-medium">
+                      {{
+                        'connectors.testResult.reachable'
+                          | translate
+                            : {
+                                engine: testResult.detectedEngine || connector.connectorType,
+                                version: testResult.detectedVersion || '-',
+                                latencyMs: testResult.latencyMs,
+                              }
+                      }}
+                    </p>
+                  } @else {
+                    <p class="font-medium">
+                      {{
+                        'connectors.testResult.unreachable'
+                          | translate: { latencyMs: testResult.latencyMs }
+                      }}
+                    </p>
+                    @if (testResult.errorMessage) {
+                      <p class="mt-1 text-xs">{{ testResult.errorMessage }}</p>
+                    }
+                  }
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  }
+
+  <!-- Tab 2: Dead-Letter Queue -->
+  @if (activeTab() === 'dead-letters') {
+    <div class="space-y-4" data-testid="dead-letters-panel">
+      @if (loadingDeadLetters()) {
+        <app-ui-state-banner
+          kind="loading"
+          testId="dead-letters-loading"
+          [message]="'connectors.deadLetters.loading' | translate"
+        />
+      } @else if (deadLetters().length === 0) {
+        <app-ui-state-banner
+          kind="empty"
+          testId="dead-letters-empty"
+          [title]="'connectors.deadLetters.emptyTitle' | translate"
+          [message]="'connectors.deadLetters.emptyDescription' | translate"
+        />
+      } @else {
+        <ul class="space-y-3" data-testid="dead-letters-list">
+          @for (item of deadLetters(); track item.id) {
+            <li hlmCard class="flex flex-wrap items-start justify-between gap-4" [attr.data-testid]="'dead-letter-item-' + item.id">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-semibold text-[var(--h2l-fg)]">{{ item.connectorName }}</span>
+                  <span hlmBadge variant="neutral">{{ item.messageType }}</span>
+                  <span hlmBadge variant="warning">
+                    {{ 'connectors.deadLetters.retries' | translate: { count: item.retryCount } }}
+                  </span>
+                </div>
+                <p class="text-xs text-[var(--h2l-fg-muted)]">
+                  {{ 'connectors.deadLetters.taskIdLabel' | translate }}:
+                  <code class="font-mono">{{ item.humanTaskId }}</code>
+                  · {{ formatDateTime(item.createdAt) }}
+                </p>
+                <p class="text-sm text-[var(--h2l-danger-fg)]" [attr.data-testid]="'dead-letter-reason-' + item.id">
+                  {{ item.deadLetterReason }}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                hlmBtn
+                variant="primary"
+                [disabled]="retryingOutboxId() === item.id"
+                [attr.data-testid]="'retry-dead-letter-btn-' + item.id"
+                (click)="onRetryDeadLetter(item.id)"
+              >
+                {{
+                  retryingOutboxId() === item.id
+                    ? ('connectors.deadLetters.retrying' | translate)
+                    : ('connectors.deadLetters.retryButton' | translate)
+                }}
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  }
+
+  <!-- Tab 3: NeedsAssignment Tasks -->
+  @if (activeTab() === 'needs-assignment') {
+    <div class="space-y-4" data-testid="needs-assignment-panel">
+      @if (loadingNeedsAssignment()) {
+        <app-ui-state-banner
+          kind="loading"
+          testId="needs-assignment-loading"
+          [message]="'connectors.needsAssignment.loading' | translate"
+        />
+      } @else if (needsAssignmentTasks().length === 0) {
+        <app-ui-state-banner
+          kind="empty"
+          testId="needs-assignment-empty"
+          [title]="'connectors.needsAssignment.emptyTitle' | translate"
+          [message]="'connectors.needsAssignment.emptyDescription' | translate"
+        />
+      } @else {
+        <ul class="space-y-3" data-testid="needs-assignment-list">
+          @for (task of needsAssignmentTasks(); track task.id) {
+            <li hlmCard class="flex flex-wrap items-end justify-between gap-4" [attr.data-testid]="'needs-assignment-item-' + task.id">
+              <div class="space-y-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-semibold text-[var(--h2l-fg)]">{{ task.formName }}</span>
+                  <span hlmBadge variant="warning">
+                    {{ 'connectors.needsAssignment.statusBadge' | translate }}
+                  </span>
+                </div>
+                <p class="text-xs text-[var(--h2l-fg-muted)]">
+                  {{ task.projectName }} / {{ task.processName }} · v{{ task.formVersionNumber }} ·
+                  {{ formatDateTime(task.createdAt) }}
+                </p>
+              </div>
+
+              <div class="flex flex-wrap items-end gap-2">
+                <div class="space-y-1">
+                  <label hlmLabel [attr.for]="'assign-user-select-' + task.id" class="text-xs">
+                    {{ 'connectors.needsAssignment.userLabel' | translate }}
+                  </label>
+                  <select
+                    [id]="'assign-user-select-' + task.id"
+                    hlmInput
+                    [attr.data-testid]="'assign-user-select-' + task.id"
+                    [value]="selectedAssigneeFor(task.id)"
+                    (change)="onSelectTaskAssignee(task.id, $event)"
+                  >
+                    <option value="">
+                      {{ 'connectors.needsAssignment.userPlaceholder' | translate }}
+                    </option>
+                    @for (user of activeUsers(); track user.id) {
+                      <option [value]="user.id">{{ user.email }}</option>
+                    }
+                  </select>
+                </div>
+
+                <button
+                  type="button"
+                  hlmBtn
+                  variant="primary"
+                  [disabled]="!selectedAssigneeFor(task.id) || assigningTaskId() === task.id"
+                  [attr.data-testid]="'assign-task-btn-' + task.id"
+                  (click)="onAssignTask(task.id)"
+                >
+                  {{
+                    assigningTaskId() === task.id
+                      ? ('connectors.needsAssignment.assigning' | translate)
+                      : ('connectors.needsAssignment.assignButton' | translate)
+                  }}
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  }
+</section>
+
+<!-- Create / Edit Connector Modal -->
+@if (connectorModalOpen()) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4"
+    (keydown)="onDialogKeydown($event, 'connector')"
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="connector-dialog-title"
+      data-testid="connector-dialog"
+      hlmCard
+      class="my-8 w-full max-w-xl space-y-4 bg-[var(--h2l-bg)]"
+    >
+      <div class="flex items-center justify-between gap-2">
+        <h2 id="connector-dialog-title" class="text-lg font-semibold text-[var(--h2l-fg)]">
+          {{
+            editingConnector()
+              ? ('connectors.dialog.editTitle' | translate)
+              : ('connectors.dialog.createTitle' | translate)
+          }}
+        </h2>
+        <button
+          type="button"
+          hlmBtn
+          variant="ghost"
+          data-testid="close-connector-dialog-btn"
+          (click)="closeConnectorModal()"
+        >
+          {{ 'common.cancel' | translate }}
+        </button>
+      </div>
+
+      <form
+        [formGroup]="connectorForm"
+        (ngSubmit)="onSubmitConnector()"
+        novalidate
+        class="space-y-4"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="space-y-1">
+            <label hlmLabel for="connector-name">
+              {{ 'connectors.fields.name' | translate }}
+            </label>
+            <input
+              id="connector-name"
+              type="text"
+              hlmInput
+              formControlName="name"
+              data-testid="connector-name-input"
+              [attr.aria-invalid]="
+                connectorForm.controls.name.touched && connectorForm.controls.name.invalid
+              "
+            />
+            @if (connectorForm.controls.name.touched && connectorForm.controls.name.invalid) {
+              <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+                {{ 'common.validation.required' | translate }}
+              </p>
+            }
+          </div>
+
+          <div class="space-y-1">
+            <label hlmLabel for="connector-type">
+              {{ 'connectors.fields.type' | translate }}
+            </label>
+            <select
+              id="connector-type"
+              hlmInput
+              formControlName="connectorType"
+              data-testid="connector-type-select"
+              (change)="onConnectorTypeChange($event)"
+            >
+              @for (type of connectorTypes; track type) {
+                <option [value]="type">
+                  {{ 'connectors.types.' + type | translate }}
+                </option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label hlmLabel for="connector-base-url">
+            {{ 'connectors.fields.baseUrl' | translate }}
+          </label>
+          <input
+            id="connector-base-url"
+            type="url"
+            hlmInput
+            formControlName="baseUrl"
+            data-testid="connector-base-url-input"
+            [placeholder]="'connectors.fields.baseUrlPlaceholder' | translate"
+            [attr.aria-invalid]="
+              connectorForm.controls.baseUrl.touched && connectorForm.controls.baseUrl.invalid
+            "
+          />
+          @if (connectorForm.controls.baseUrl.touched && connectorForm.controls.baseUrl.invalid) {
+            <p class="text-xs text-[var(--h2l-danger-fg)]" role="alert">
+              {{ 'common.validation.required' | translate }}
+            </p>
+          }
+        </div>
+
+        @if (selectedConnectorType() === 'UniversalHttp' || selectedConnectorType() === 'N8n') {
+          <div class="space-y-1">
+            <label hlmLabel for="connector-callback-url">
+              {{ 'connectors.fields.callbackUrl' | translate }}
+            </label>
+            <input
+              id="connector-callback-url"
+              type="url"
+              hlmInput
+              formControlName="callbackUrl"
+              data-testid="connector-callback-url-input"
+              [placeholder]="'connectors.fields.callbackUrlPlaceholder' | translate"
+            />
+          </div>
+        }
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="space-y-1">
+            <label hlmLabel for="connector-auth-type">
+              {{ 'connectors.fields.authType' | translate }}
+            </label>
+            <select
+              id="connector-auth-type"
+              hlmInput
+              formControlName="authType"
+              data-testid="connector-auth-type-select"
+              (change)="onAuthTypeChange($event)"
+            >
+              @for (auth of availableAuthTypes(); track auth) {
+                <option [value]="auth">
+                  {{ 'connectors.authTypes.' + auth | translate }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <div class="flex items-end">
+            <label class="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                formControlName="isActive"
+                data-testid="connector-active-checkbox"
+              />
+              <span>{{ 'connectors.fields.isActive' | translate }}</span>
+            </label>
+          </div>
+        </div>
+
+        @if (editingConnector()?.hasCredentials) {
+          <p class="text-xs text-[var(--h2l-fg-muted)]" data-testid="connector-secrets-preserve-hint">
+            {{ 'connectors.dialog.preserveSecretsHint' | translate }}
+          </p>
+        }
+
+        @if (selectedAuthType() === 'Basic') {
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="space-y-1">
+              <label hlmLabel for="connector-username">
+                {{ 'connectors.fields.username' | translate }}
+              </label>
+              <input
+                id="connector-username"
+                type="text"
+                hlmInput
+                autocomplete="off"
+                formControlName="username"
+                data-testid="connector-username-input"
+              />
+            </div>
+            <div class="space-y-1">
+              <label hlmLabel for="connector-password">
+                {{ 'connectors.fields.password' | translate }}
+              </label>
+              <input
+                id="connector-password"
+                type="password"
+                hlmInput
+                autocomplete="new-password"
+                formControlName="password"
+                data-testid="connector-password-input"
+              />
+            </div>
+          </div>
+        }
+
+        @if (selectedAuthType() === 'Bearer') {
+          <div class="space-y-1">
+            <label hlmLabel for="connector-bearer-token">
+              {{ 'connectors.fields.bearerToken' | translate }}
+            </label>
+            <input
+              id="connector-bearer-token"
+              type="password"
+              hlmInput
+              autocomplete="new-password"
+              formControlName="bearerToken"
+              data-testid="connector-bearer-token-input"
+            />
+          </div>
+        }
+
+        @if (selectedAuthType() === 'ApiKey') {
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="space-y-1">
+              <label hlmLabel for="connector-api-key-header">
+                {{ 'connectors.fields.apiKeyHeaderName' | translate }}
+              </label>
+              <input
+                id="connector-api-key-header"
+                type="text"
+                hlmInput
+                formControlName="apiKeyHeaderName"
+                data-testid="connector-api-key-header-input"
+              />
+            </div>
+            <div class="space-y-1">
+              <label hlmLabel for="connector-api-key">
+                {{ 'connectors.fields.apiKey' | translate }}
+              </label>
+              <input
+                id="connector-api-key"
+                type="password"
+                hlmInput
+                autocomplete="new-password"
+                formControlName="apiKey"
+                data-testid="connector-api-key-input"
+              />
+            </div>
+          </div>
+        }
+
+        @if (selectedAuthType() === 'HmacSha256') {
+          <div class="space-y-1">
+            <label hlmLabel for="connector-hmac-secret">
+              {{ 'connectors.fields.hmacSecret' | translate }}
+            </label>
+            <input
+              id="connector-hmac-secret"
+              type="password"
+              hlmInput
+              autocomplete="new-password"
+              formControlName="hmacSecret"
+              data-testid="connector-hmac-secret-input"
+            />
+          </div>
+        }
+
+        @if (
+          selectedAuthType() === 'OidcClientCredentials' ||
+          selectedAuthType() === 'OAuth2ClientCredentials'
+        ) {
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="space-y-1">
+              <label hlmLabel for="connector-client-id">
+                {{ 'connectors.fields.clientId' | translate }}
+              </label>
+              <input
+                id="connector-client-id"
+                type="text"
+                hlmInput
+                autocomplete="off"
+                formControlName="clientId"
+                data-testid="connector-client-id-input"
+              />
+            </div>
+            <div class="space-y-1">
+              <label hlmLabel for="connector-client-secret">
+                {{ 'connectors.fields.clientSecret' | translate }}
+              </label>
+              <input
+                id="connector-client-secret"
+                type="password"
+                hlmInput
+                autocomplete="new-password"
+                formControlName="clientSecret"
+                data-testid="connector-client-secret-input"
+              />
+            </div>
+            <div class="space-y-1 sm:col-span-2">
+              <label hlmLabel for="connector-token-endpoint">
+                {{ 'connectors.fields.tokenEndpoint' | translate }}
+              </label>
+              <input
+                id="connector-token-endpoint"
+                type="url"
+                hlmInput
+                formControlName="tokenEndpoint"
+                data-testid="connector-token-endpoint-input"
+              />
+            </div>
+            <div class="space-y-1">
+              <label hlmLabel for="connector-audience">
+                {{ 'connectors.fields.audience' | translate }}
+              </label>
+              <input
+                id="connector-audience"
+                type="text"
+                hlmInput
+                formControlName="audience"
+                data-testid="connector-audience-input"
+              />
+            </div>
+            <div class="space-y-1">
+              <label hlmLabel for="connector-scope">
+                {{ 'connectors.fields.scope' | translate }}
+              </label>
+              <input
+                id="connector-scope"
+                type="text"
+                hlmInput
+                formControlName="scope"
+                data-testid="connector-scope-input"
+              />
+            </div>
+          </div>
+        }
+
+        <div class="space-y-2">
+          <label hlmLabel for="connector-custom-ca">
+            {{ 'connectors.fields.customCaPem' | translate }}
+          </label>
+          <textarea
+            id="connector-custom-ca"
+            hlmInput
+            rows="3"
+            formControlName="customCaCertificatePem"
+            data-testid="connector-custom-ca-input"
+            [placeholder]="'connectors.fields.customCaPlaceholder' | translate"
+          ></textarea>
+          @if (editingConnector()?.hasCustomCaCertificate) {
+            <label class="flex min-h-11 cursor-pointer items-center gap-2 text-xs">
+              <input
+                type="checkbox"
+                formControlName="clearCustomCaCertificate"
+                data-testid="connector-clear-ca-checkbox"
+              />
+              <span>{{ 'connectors.fields.clearCustomCa' | translate }}</span>
+            </label>
+          }
+        </div>
+
+        <div class="flex flex-wrap justify-end gap-3 pt-2">
+          <button type="button" hlmBtn variant="outline" (click)="closeConnectorModal()">
+            {{ 'common.cancel' | translate }}
+          </button>
+          <button
+            type="submit"
+            hlmBtn
+            variant="primary"
+            data-testid="submit-connector-btn"
+            [disabled]="saving()"
+          >
+            {{
+              editingConnector()
+                ? ('connectors.dialog.saveButton' | translate)
+                : ('connectors.dialog.createButton' | translate)
+            }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Delete Connector Confirmation Dialog -->
+@if (deletingConnector(); as target) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+    (keydown)="onDialogKeydown($event, 'delete')"
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-connector-dialog-title"
+      data-testid="delete-connector-dialog"
+      hlmCard
+      class="w-full max-w-md space-y-4 bg-[var(--h2l-bg)]"
+    >
+      <h2 id="delete-connector-dialog-title" class="text-lg font-semibold text-[var(--h2l-fg)]">
+        {{ 'connectors.deleteDialog.title' | translate }}
+      </h2>
+      <p class="text-sm text-[var(--h2l-fg-muted)]">
+        {{ 'connectors.deleteDialog.message' | translate: { name: target.name } }}
+      </p>
+      <div class="flex flex-wrap justify-end gap-3 pt-2">
+        <button type="button" hlmBtn variant="outline" (click)="closeDeleteModal()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button
+          id="confirm-delete-connector-btn"
+          type="button"
+          hlmBtn
+          variant="primary"
+          data-testid="confirm-delete-connector-btn"
+          [disabled]="saving()"
+          (click)="onConfirmDelete()"
+        >
+          {{ 'connectors.deleteDialog.confirmButton' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

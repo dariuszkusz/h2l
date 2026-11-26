@@ -7,6 +7,7 @@
       "label": "Main navigation",
       "tasks": "Tasks",
       "users": "Users & Groups",
+      "connectors": "Connectors",
       "projects": "Projects & Processes",
       "settings": "Settings",
       "login": "Sign in",
@@ -78,7 +79,11 @@
       "TASK_ALREADY_COMPLETED": "This task has already been completed.",
       "FORM_SCHEMA_INVALID": "The form schema contains validation errors.",
       "ATTACHMENT_TOO_LARGE": "The uploaded file exceeds the maximum allowed size.",
-      "ATTACHMENT_TYPE_NOT_ALLOWED": "This file type is not allowed for this field."
+      "ATTACHMENT_TYPE_NOT_ALLOWED": "This file type is not allowed for this field.",
+      "CONNECTOR_SSRF_BLOCKED": "This URL is blocked by SSRF security policy.",
+      "CONNECTOR_IN_USE": "This connector is still referenced by active processes.",
+      "DEAD_LETTER_ALREADY_RETRIED": "This dead-letter entry has already been scheduled for retry.",
+      "TASK_ASSIGNEE_NOT_ALLOWED": "The selected user does not have access to this form."
     }
   },
   "onboarding": {
@@ -548,5 +553,130 @@
       "fieldRemoved": "Removed {{label}} from the form.",
       "stepAdded": "Added step {{index}}."
     }
+  },
+  "connectors": {
+    "heading": "Workflow Connectors & Operations",
+    "description": "Connect Camunda 8, n8n, or Universal HTTP engines, retry failed callbacks, and assign unassigned tasks.",
+    "loading": "Loading workflow connectors...",
+    "emptyTitle": "No workflow connectors yet",
+    "emptyDescription": "Add your first Camunda 8, n8n, or Universal HTTP connector to start receiving human tasks.",
+    "tabs": {
+      "ariaLabel": "Connector management sections",
+      "connectors": "Connectors",
+      "deadLetters": "Dead-Letter Queue",
+      "needsAssignment": "Needs Assignment"
+    },
+    "types": {
+      "Camunda8": "Camunda 8",
+      "N8n": "n8n",
+      "UniversalHttp": "Universal HTTP"
+    },
+    "authTypes": {
+      "None": "No authentication",
+      "Basic": "Basic Auth",
+      "Bearer": "Bearer Token",
+      "ApiKey": "API Key",
+      "HmacSha256": "HMAC-SHA256",
+      "OidcClientCredentials": "OIDC Client Credentials (Self-Managed)",
+      "OAuth2ClientCredentials": "OAuth2 Client Credentials (SaaS)"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "badges": {
+      "credentialsConfigured": "Credentials stored",
+      "noCredentials": "No credentials",
+      "customCaConfigured": "Custom CA TLS"
+    },
+    "actions": {
+      "create": "Add connector",
+      "edit": "Edit",
+      "delete": "Delete",
+      "testConnection": "Test connection",
+      "testing": "Testing..."
+    },
+    "testResult": {
+      "reachable": "Connected to {{engine}} ({{version}}) in {{latencyMs}} ms.",
+      "unreachable": "Connection failed after {{latencyMs}} ms."
+    },
+    "fields": {
+      "name": "Connector name",
+      "type": "Engine type",
+      "baseUrl": "Instance base URL",
+      "baseUrlPlaceholder": "https://engine.example.com",
+      "callbackUrl": "Callback URL (optional)",
+      "callbackUrlPlaceholder": "https://workflow.example.com/webhook",
+      "authType": "Authentication method",
+      "isActive": "Connector active",
+      "username": "Username",
+      "password": "Password",
+      "bearerToken": "Bearer token",
+      "apiKeyHeaderName": "API key header name",
+      "apiKey": "API key",
+      "hmacSecret": "HMAC-SHA256 shared secret",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "tokenEndpoint": "Token endpoint URL",
+      "audience": "Audience",
+      "scope": "Scope",
+      "customCaPem": "Custom CA certificate (PEM, optional)",
+      "customCaPlaceholder": "-----BEGIN CERTIFICATE-----",
+      "clearCustomCa": "Remove stored custom CA certificate"
+    },
+    "dialog": {
+      "createTitle": "Add workflow connector",
+      "editTitle": "Edit workflow connector",
+      "preserveSecretsHint": "Leave credential fields empty to keep the existing encrypted secrets.",
+      "createButton": "Create connector",
+      "saveButton": "Save changes"
+    },
+    "deleteDialog": {
+      "title": "Delete connector",
+      "message": "Are you sure you want to delete \"{{name}}\"? Stored credentials will be permanently removed.",
+      "confirmButton": "Delete connector"
+    },
+    "deadLetters": {
+      "loading": "Loading dead-letter queue...",
+      "emptyTitle": "No failed callbacks",
+      "emptyDescription": "All workflow callbacks were delivered successfully.",
+      "taskIdLabel": "Task ID",
+      "retries": "Retries: {{count}}",
+      "retryButton": "Retry delivery",
+      "retrying": "Retrying..."
+    },
+    "needsAssignment": {
+      "loading": "Loading unassigned tasks...",
+      "emptyTitle": "No tasks need assignment",
+      "emptyDescription": "Every incoming workflow task is assigned to an authorized user or group.",
+      "statusBadge": "Needs assignment",
+      "userLabel": "Assign to user",
+      "userPlaceholder": "Select a user...",
+      "assignButton": "Assign",
+      "assigning": "Assigning..."
+    },
+    "feedback": {
+      "created": "Connector created successfully.",
+      "updated": "Connector updated successfully.",
+      "deleted": "Connector deleted successfully.",
+      "deadLetterRetried": "Callback retry scheduled.",
+      "taskAssigned": "Task assigned successfully."
+    }
+  },
+  "workflowTemplates": {
+    "title": "Workflow Engine Templates",
+    "description": "Export a preconfigured Camunda 8 Element Template or copy n8n nodes JSON directly into your workflow canvas.",
+    "camundaButton": "Download Camunda 8 Element Template",
+    "downloading": "Downloading...",
+    "n8nVariantLabel": "n8n template variant",
+    "variants": {
+      "community-node": "Community Node (n8n-nodes-h2l)",
+      "fallback-wait-node": "Fallback (HTTP Request + Wait + Switch)"
+    },
+    "n8nCopyButton": "Copy n8n JSON (Ctrl+V)",
+    "copying": "Copying...",
+    "camundaDownloaded": "Downloaded Camunda Element Template ({{fileName}}).",
+    "n8nCopiedCommunity": "Copied n8n Community Node JSON to clipboard. Press Ctrl+V in n8n.",
+    "n8nCopiedFallback": "Copied n8n Fallback Wait Node JSON to clipboard. Press Ctrl+V in n8n."
   }
 }

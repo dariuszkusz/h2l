@@ -7,6 +7,7 @@
       "label": "Nawigacja główna",
       "tasks": "Zadania",
       "users": "Użytkownicy i grupy",
+      "connectors": "Konektory",
       "projects": "Projekty i procesy",
       "settings": "Ustawienia",
       "login": "Zaloguj się",
@@ -78,7 +79,11 @@
       "TASK_ALREADY_COMPLETED": "To zadanie zostało już ukończone.",
       "FORM_SCHEMA_INVALID": "Schemat formularza zawiera błędy walidacji.",
       "ATTACHMENT_TOO_LARGE": "Przesłany plik przekracza maksymalny dozwolony rozmiar.",
-      "ATTACHMENT_TYPE_NOT_ALLOWED": "Ten typ pliku nie jest dozwolony w tym polu."
+      "ATTACHMENT_TYPE_NOT_ALLOWED": "Ten typ pliku nie jest dozwolony w tym polu.",
+      "CONNECTOR_SSRF_BLOCKED": "Ten adres URL został zablokowany przez politykę bezpieczeństwa SSRF.",
+      "CONNECTOR_IN_USE": "Ten konektor jest nadal używany przez aktywne procesy.",
+      "DEAD_LETTER_ALREADY_RETRIED": "Ten wpis Dead-Letter został już zlecony do ponownego wysłania.",
+      "TASK_ASSIGNEE_NOT_ALLOWED": "Wybrany użytkownik nie ma uprawnień do tego formularza."
     }
   },
   "onboarding": {
@@ -548,5 +553,130 @@
       "fieldRemoved": "Usunięto pole {{label}} z formularza.",
       "stepAdded": "Dodano krok {{index}}."
     }
+  },
+  "connectors": {
+    "heading": "Konektory workflow i kolejka błędów",
+    "description": "Połącz Camunda 8, n8n lub Universal HTTP, ponawiaj nieudane callbacki i przypisuj zadania bez właściciela.",
+    "loading": "Ładowanie konektorów workflow...",
+    "emptyTitle": "Brak skonfigurowanych konektorów",
+    "emptyDescription": "Dodaj pierwszy konektor Camunda 8, n8n lub Universal HTTP, aby odbierać zadania z procesów.",
+    "tabs": {
+      "ariaLabel": "Sekcje zarządzania konektorami",
+      "connectors": "Konektory",
+      "deadLetters": "Kolejka Dead-Letter",
+      "needsAssignment": "Wymaga przypisania"
+    },
+    "types": {
+      "Camunda8": "Camunda 8",
+      "N8n": "n8n",
+      "UniversalHttp": "Universal HTTP"
+    },
+    "authTypes": {
+      "None": "Bez uwierzytelniania",
+      "Basic": "Basic Auth",
+      "Bearer": "Token Bearer",
+      "ApiKey": "Klucz API",
+      "HmacSha256": "HMAC-SHA256",
+      "OidcClientCredentials": "OIDC Client Credentials (Self-Managed)",
+      "OAuth2ClientCredentials": "OAuth2 Client Credentials (SaaS)"
+    },
+    "status": {
+      "active": "Aktywny",
+      "inactive": "Nieaktywny"
+    },
+    "badges": {
+      "credentialsConfigured": "Zapisane poświadczenia",
+      "noCredentials": "Brak poświadczeń",
+      "customCaConfigured": "Własny certyfikat CA"
+    },
+    "actions": {
+      "create": "Dodaj konektor",
+      "edit": "Edytuj",
+      "delete": "Usuń",
+      "testConnection": "Testuj połączenie",
+      "testing": "Testowanie..."
+    },
+    "testResult": {
+      "reachable": "Połączono z {{engine}} ({{version}}) w {{latencyMs}} ms.",
+      "unreachable": "Połączenie nie powiodło się po {{latencyMs}} ms."
+    },
+    "fields": {
+      "name": "Nazwa konektora",
+      "type": "Typ silnika",
+      "baseUrl": "Bazowy adres URL instancji",
+      "baseUrlPlaceholder": "https://engine.example.com",
+      "callbackUrl": "Adres URL callbacku (opcjonalnie)",
+      "callbackUrlPlaceholder": "https://workflow.example.com/webhook",
+      "authType": "Metoda uwierzytelniania",
+      "isActive": "Konektor aktywny",
+      "username": "Nazwa użytkownika",
+      "password": "Hasło",
+      "bearerToken": "Token Bearer",
+      "apiKeyHeaderName": "Nazwa nagłówka klucza API",
+      "apiKey": "Klucz API",
+      "hmacSecret": "Sekret HMAC-SHA256",
+      "clientId": "Client ID",
+      "clientSecret": "Client Secret",
+      "tokenEndpoint": "Adres endpointu tokenów",
+      "audience": "Audience",
+      "scope": "Scope",
+      "customCaPem": "Własny certyfikat CA (PEM, opcjonalnie)",
+      "customCaPlaceholder": "-----BEGIN CERTIFICATE-----",
+      "clearCustomCa": "Usuń zapisany certyfikat CA"
+    },
+    "dialog": {
+      "createTitle": "Dodaj konektor workflow",
+      "editTitle": "Edytuj konektor workflow",
+      "preserveSecretsHint": "Pozostaw pola poświadczeń puste, aby zachować zapisane zaszyfrowane sekrety.",
+      "createButton": "Utwórz konektor",
+      "saveButton": "Zapisz zmiany"
+    },
+    "deleteDialog": {
+      "title": "Usuń konektor",
+      "message": "Czy na pewno chcesz usunąć „{{name}}”? Zapisane poświadczenia zostaną trwale usunięte.",
+      "confirmButton": "Usuń konektor"
+    },
+    "deadLetters": {
+      "loading": "Ładowanie kolejki Dead-Letter...",
+      "emptyTitle": "Brak nieudanych callbacków",
+      "emptyDescription": "Wszystkie zwrotne wywołania workflow zostały dostarczone pomyślnie.",
+      "taskIdLabel": "ID zadania",
+      "retries": "Próby: {{count}}",
+      "retryButton": "Ponów wysłanie",
+      "retrying": "Ponawianie..."
+    },
+    "needsAssignment": {
+      "loading": "Ładowanie nieprzypisanych zadań...",
+      "emptyTitle": "Brak zadań wymagających przypisania",
+      "emptyDescription": "Każde przychodzące zadanie ma przypisanego uprawnionego użytkownika lub grupę.",
+      "statusBadge": "Wymaga przypisania",
+      "userLabel": "Przypisz do użytkownika",
+      "userPlaceholder": "Wybierz użytkownika...",
+      "assignButton": "Przypisz",
+      "assigning": "Przypisywanie..."
+    },
+    "feedback": {
+      "created": "Konektor został utworzony.",
+      "updated": "Konektor został zaktualizowany.",
+      "deleted": "Konektor został usunięty.",
+      "deadLetterRetried": "Ponowne wysłanie zostało zlecone.",
+      "taskAssigned": "Zadanie zostało przypisane."
+    }
+  },
+  "workflowTemplates": {
+    "title": "Szablony dla silników workflow",
+    "description": "Pobierz gotowy Element Template dla Camunda 8 lub skopiuj JSON węzłów n8n bezpośrednio do edytora.",
+    "camundaButton": "Pobierz Camunda 8 Element Template",
+    "downloading": "Pobieranie...",
+    "n8nVariantLabel": "Wariant szablonu n8n",
+    "variants": {
+      "community-node": "Community Node (n8n-nodes-h2l)",
+      "fallback-wait-node": "Fallback (HTTP Request + Wait + Switch)"
+    },
+    "n8nCopyButton": "Kopiuj JSON n8n (Ctrl+V)",
+    "copying": "Kopiowanie...",
+    "camundaDownloaded": "Pobrano Camunda Element Template ({{fileName}}).",
+    "n8nCopiedCommunity": "Skopiowano JSON węzła n8n Community Node. Wklej go w n8n przez Ctrl+V.",
+    "n8nCopiedFallback": "Skopiowano JSON wariantu n8n Fallback Wait Node. Wklej go w n8n przez Ctrl+V."
   }
 }

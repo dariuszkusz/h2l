@@ -28,6 +28,8 @@ import { AdminProjectsEffects } from './features/admin-projects/store/admin-proj
 import { adminProjectsReducer } from './features/admin-projects/store/admin-projects.reducer';
 import { AdminUsersEffects } from './features/admin-users/store/admin-users.effects';
 import { adminUsersReducer } from './features/admin-users/store/admin-users.reducer';
+import { ConnectorsEffects } from './features/connectors/store/connectors.effects';
+import { connectorsReducer } from './features/connectors/store/connectors.reducer';
 import { FormBuilderEffects } from './features/form-builder/store/form-builder.effects';
 import { formBuilderReducer } from './features/form-builder/store/form-builder.reducer';
 import { TasksEffects } from './features/tasks/store/tasks.effects';
@@ -48,6 +50,7 @@ export const appConfig: ApplicationConfig = {
       licensing: licensingReducer,
       adminUsers: adminUsersReducer,
       adminProjects: adminProjectsReducer,
+      connectors: connectorsReducer,
       formBuilder: formBuilderReducer,
       tasks: tasksReducer,
     }),
@@ -60,6 +63,7 @@ export const appConfig: ApplicationConfig = {
       LicensingEffects,
       AdminUsersEffects,
       AdminProjectsEffects,
+      ConnectorsEffects,
       FormBuilderEffects,
       TasksEffects,
     ]),

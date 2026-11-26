@@ -56,6 +56,16 @@ export class TasksApiService {
     );
   }
 
+  assignTask(
+    taskId: string,
+    payload: components['schemas']['AssignTaskRequest'],
+  ): Observable<components['schemas']['TaskDetailResponse']> {
+    return this.http.post<components['schemas']['TaskDetailResponse']>(
+      `${this.baseUrl}/tasks/${encodeURIComponent(taskId)}/assign`,
+      payload,
+    );
+  }
+
   submitTask(
     taskId: string,
     payload: components['schemas']['SubmitTaskRequest'],

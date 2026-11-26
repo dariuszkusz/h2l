@@ -68,6 +68,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/connectors',
+    canActivate: [setupRequiredGuard, authGuard, roleGuard(['Admin'])],
+    loadComponent: () =>
+      import('./features/connectors/connectors-page/connectors-page.component').then(
+        (m) => m.ConnectorsPageComponent,
+      ),
+  },
+  {
     path: 'admin/projects',
     canActivate: [setupRequiredGuard, authGuard, roleGuard(['Admin', 'ProcessDesigner'])],
     loadComponent: () =>

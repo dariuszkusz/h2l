@@ -393,26 +393,7 @@ export interface paths {
             cookie?: never;
         };
         /** Download preconfigured Camunda Modeler Element Template (JSON) */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    formId: components["parameters"]["FormId"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Element Template JSON */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["getCamundaElementTemplate"];
         put?: never;
         post?: never;
         delete?: never;
@@ -429,28 +410,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get copy-pasteable n8n workflow JSON (Community Node or Fallback Wait Node) */
-        get: {
-            parameters: {
-                query?: {
-                    variant?: "community-node" | "fallback-wait-node";
-                };
-                header?: never;
-                path: {
-                    formId: components["parameters"]["FormId"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description n8n JSON snippet */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["getN8nNodesTemplate"];
         put?: never;
         post?: never;
         delete?: never;
@@ -527,6 +487,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/tasks/{taskId}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Assign or reassign a task to a specific user (Admin only, e.g. for NeedsAssignment) */
+        post: operations["assignTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tasks/{taskId}/submit": {
         parameters: {
             query?: never;
@@ -569,46 +546,29 @@ export interface paths {
             cookie?: never;
         };
         /** List configured workflow connectors (without secrets) */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Connector list */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["listConnectors"];
         put?: never;
-        /** Create workflow connector (Camunda 8, n8n, Universal HTTP; enforces Free plan limit) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Connector created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                402: components["responses"]["ProblemDetailsResponse"];
-            };
-        };
+        /** Create workflow connector (Camunda 8, n8n, Universal HTTP; enforces Free plan 1 active connector limit) */
+        post: operations["createConnector"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connectors/{connectorId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update workflow connector configuration (preserves stored secrets if credentials omitted) */
+        put: operations["updateConnector"];
+        post?: never;
+        /** Delete workflow connector (Admin) */
+        delete: operations["deleteConnector"];
         options?: never;
         head?: never;
         patch?: never;
@@ -624,26 +584,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Detect and test connectivity to external workflow engine (with SSRF validation) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    connectorId: components["parameters"]["ConnectorId"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Connection test result */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        post: operations["testConnectorConnection"];
         delete?: never;
         options?: never;
         head?: never;
@@ -660,27 +601,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Inbound webhook to create a HumanTask (HMAC-SHA256 ±5 min or Bearer/API Key) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    connectorId: components["parameters"]["ConnectorId"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Task accepted (idempotent by ExternalTaskId) */
-                202: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                401: components["responses"]["ProblemDetailsResponse"];
-            };
-        };
+        post: operations["receiveConnectorTaskWebhook"];
         delete?: never;
         options?: never;
         head?: never;
@@ -712,24 +633,7 @@ export interface paths {
             cookie?: never;
         };
         /** List failed workflow callbacks in Dead-Letter queue (Admin) */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Dead-letter list */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        get: operations["listDeadLetters"];
         put?: never;
         post?: never;
         delete?: never;
@@ -748,26 +652,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Manually retry a Dead-Letter callback (Admin) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    outboxId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Retry scheduled in Quartz.NET */
-                202: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        post: operations["retryDeadLetter"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1270,6 +1155,136 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** @enum {string} */
+        ConnectorType: "Camunda8" | "N8n" | "UniversalHttp";
+        /** @enum {string} */
+        ConnectorAuthType: "None" | "Basic" | "Bearer" | "ApiKey" | "HmacSha256" | "OidcClientCredentials" | "OAuth2ClientCredentials";
+        ConnectorCredentialsRequest: {
+            username?: string | null;
+            /** Format: password */
+            password?: string | null;
+            /** Format: password */
+            bearerToken?: string | null;
+            apiKeyHeaderName?: string | null;
+            /** Format: password */
+            apiKey?: string | null;
+            /** Format: password */
+            hmacSecret?: string | null;
+            clientId?: string | null;
+            /** Format: password */
+            clientSecret?: string | null;
+            /** Format: uri */
+            tokenEndpoint?: string | null;
+            audience?: string | null;
+            scope?: string | null;
+        };
+        ConnectorSummaryResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            connectorType: components["schemas"]["ConnectorType"];
+            /** Format: uri */
+            baseUrl: string;
+            authType: components["schemas"]["ConnectorAuthType"];
+            hasCredentials: boolean;
+            hasCustomCaCertificate: boolean;
+            /** Format: uri */
+            callbackUrl?: string | null;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ConnectorListResponse: {
+            items: components["schemas"]["ConnectorSummaryResponse"][];
+        };
+        CreateConnectorRequest: {
+            name: string;
+            connectorType: components["schemas"]["ConnectorType"];
+            /** Format: uri */
+            baseUrl: string;
+            authType: components["schemas"]["ConnectorAuthType"];
+            credentials?: components["schemas"]["ConnectorCredentialsRequest"] | null;
+            customCaCertificatePem?: string | null;
+            /** Format: uri */
+            callbackUrl?: string | null;
+            /** @default true */
+            isActive: boolean;
+        };
+        UpdateConnectorRequest: {
+            name: string;
+            connectorType: components["schemas"]["ConnectorType"];
+            /** Format: uri */
+            baseUrl: string;
+            authType: components["schemas"]["ConnectorAuthType"];
+            credentials?: components["schemas"]["ConnectorCredentialsRequest"] | null;
+            customCaCertificatePem?: string | null;
+            /** @default false */
+            clearCustomCaCertificate: boolean;
+            /** Format: uri */
+            callbackUrl?: string | null;
+            isActive: boolean;
+        };
+        TestConnectorConnectionResponse: {
+            isReachable: boolean;
+            detectedEngine?: string | null;
+            detectedVersion?: string | null;
+            /** Format: int64 */
+            latencyMs: number;
+            errorMessage?: string | null;
+        };
+        InboundWorkflowTaskRequest: {
+            externalTaskId: string;
+            /** Format: uuid */
+            formId: string;
+            formVersion?: number | null;
+            assignee?: string | null;
+            candidateGroups?: string[] | null;
+            prefilledData?: {
+                [key: string]: unknown;
+            } | null;
+            /** Format: uri */
+            resumeUrl?: string | null;
+            timeoutIso8601?: string | null;
+            sensitiveDataMode?: components["schemas"]["SensitiveDataMode"] | null;
+        };
+        InboundWorkflowTaskResponse: {
+            /** Format: uuid */
+            taskId: string;
+            status: components["schemas"]["HumanTaskStatus"];
+            isDuplicate: boolean;
+        };
+        CamundaElementTemplateResponse: {
+            [key: string]: unknown;
+        };
+        /** @enum {string} */
+        N8nTemplateVariant: "community-node" | "fallback-wait-node";
+        N8nNodesTemplateResponse: {
+            variant: components["schemas"]["N8nTemplateVariant"];
+            workflowJson: {
+                [key: string]: unknown;
+            };
+        };
+        DeadLetterItemResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            humanTaskId: string;
+            /** Format: uuid */
+            formSubmissionId?: string | null;
+            connectorName: string;
+            messageType: string;
+            retryCount: number;
+            deadLetterReason: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        DeadLetterListResponse: {
+            items: components["schemas"]["DeadLetterItemResponse"][];
+        };
+        AssignTaskRequest: {
+            /** Format: uuid */
+            userId: string;
+        };
     };
     responses: {
         /** @description RFC 7807 Problem Details error response */
@@ -1290,6 +1305,7 @@ export interface components {
         FormId: string;
         TaskId: string;
         ConnectorId: string;
+        OutboxId: string;
     };
     requestBodies: never;
     headers: never;
@@ -2033,6 +2049,63 @@ export interface operations {
             404: components["responses"]["ProblemDetailsResponse"];
         };
     };
+    getCamundaElementTemplate: {
+        parameters: {
+            query?: {
+                generic?: boolean;
+            };
+            header?: never;
+            path: {
+                formId: components["parameters"]["FormId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Element Template JSON */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CamundaElementTemplateResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    getN8nNodesTemplate: {
+        parameters: {
+            query?: {
+                variant?: components["schemas"]["N8nTemplateVariant"];
+                connectorId?: string;
+            };
+            header?: never;
+            path: {
+                formId: components["parameters"]["FormId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description n8n JSON snippet */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["N8nNodesTemplateResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
     listTasks: {
         parameters: {
             query?: {
@@ -2137,6 +2210,37 @@ export interface operations {
             409: components["responses"]["ProblemDetailsResponse"];
         };
     };
+    assignTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                taskId: components["parameters"]["TaskId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignTaskRequest"];
+            };
+        };
+        responses: {
+            /** @description Task assigned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskDetailResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
     submitTask: {
         parameters: {
             query?: never;
@@ -2206,6 +2310,172 @@ export interface operations {
             413: components["responses"]["ProblemDetailsResponse"];
         };
     };
+    listConnectors: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Connector list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectorListResponse"];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    createConnector: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateConnectorRequest"];
+            };
+        };
+        responses: {
+            /** @description Connector created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectorSummaryResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            402: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    updateConnector: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                connectorId: components["parameters"]["ConnectorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateConnectorRequest"];
+            };
+        };
+        responses: {
+            /** @description Connector updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectorSummaryResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            402: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    deleteConnector: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                connectorId: components["parameters"]["ConnectorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Connector deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    testConnectorConnection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                connectorId: components["parameters"]["ConnectorId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Connection test result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestConnectorConnectionResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    receiveConnectorTaskWebhook: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-H2L-Timestamp"?: string;
+                "X-H2L-Signature"?: string;
+                "X-API-Key"?: string;
+            };
+            path: {
+                connectorId: components["parameters"]["ConnectorId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InboundWorkflowTaskRequest"];
+            };
+        };
+        responses: {
+            /** @description Task accepted (idempotent by ExternalTaskId) */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InboundWorkflowTaskResponse"];
+                };
+            };
+            400: components["responses"]["ProblemDetailsResponse"];
+            401: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
     getSubmissionSensitiveData: {
         parameters: {
             query?: never;
@@ -2229,6 +2499,52 @@ export interface operations {
             401: components["responses"]["ProblemDetailsResponse"];
             403: components["responses"]["ProblemDetailsResponse"];
             404: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    listDeadLetters: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dead-letter list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeadLetterListResponse"];
+                };
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+        };
+    };
+    retryDeadLetter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                outboxId: components["parameters"]["OutboxId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Retry scheduled in Quartz.NET */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["ProblemDetailsResponse"];
+            403: components["responses"]["ProblemDetailsResponse"];
+            404: components["responses"]["ProblemDetailsResponse"];
+            409: components["responses"]["ProblemDetailsResponse"];
         };
     };
     getLicensingStatus: {

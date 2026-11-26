@@ -13,6 +13,7 @@ import { Store } from '@ngrx/store';
 import { components } from '../../../core/api/generated/openapi.types';
 import { selectCurrentUserRole } from '../../../core/auth/store/auth.selectors';
 import { UiStateBannerComponent } from '../../../shared/components/ui-state-banner/ui-state-banner.component';
+import { WorkflowTemplateExportComponent } from '../../../shared/components/workflow-template-export/workflow-template-export.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { HlmBadgeDirective } from '../../../shared/ui/hlm-badge.directive';
 import { HlmButtonDirective } from '../../../shared/ui/hlm-button.directive';
@@ -66,6 +67,7 @@ type DraftAccessRule = {
     HlmInputDirective,
     HlmLabelDirective,
     UiStateBannerComponent,
+    WorkflowTemplateExportComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './admin-projects-page.component.html',

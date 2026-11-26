@@ -1,0 +1,87 @@
+<div
+  class="space-y-3 rounded-xl border border-[var(--h2l-border-subtle)] bg-[var(--h2l-surface)] p-4"
+  data-testid="workflow-template-export"
+>
+  <div class="space-y-1">
+    <h3 class="text-sm font-semibold text-[var(--h2l-fg)]">
+      {{ 'workflowTemplates.title' | translate }}
+    </h3>
+    <p class="text-xs text-[var(--h2l-fg-muted)]">
+      {{ 'workflowTemplates.description' | translate }}
+    </p>
+  </div>
+
+  <div class="flex flex-wrap items-end gap-3">
+    <button
+      type="button"
+      hlmBtn
+      variant="outline"
+      data-testid="export-camunda-template-btn"
+      [disabled]="downloadingCamunda()"
+      (click)="onDownloadCamundaTemplate()"
+    >
+      {{
+        downloadingCamunda()
+          ? ('workflowTemplates.downloading' | translate)
+          : ('workflowTemplates.camundaButton' | translate)
+      }}
+    </button>
+
+    <div class="flex flex-wrap items-end gap-2">
+      <div class="space-y-1">
+        <label hlmLabel [attr.for]="'n8n-variant-select-' + formId()" class="text-xs">
+          {{ 'workflowTemplates.n8nVariantLabel' | translate }}
+        </label>
+        <select
+          [id]="'n8n-variant-select-' + formId()"
+          hlmInput
+          data-testid="export-n8n-variant-select"
+          [value]="n8nVariant()"
+          (change)="onVariantChange($event)"
+        >
+          @for (variant of n8nVariants; track variant) {
+            <option [value]="variant">
+              {{ 'workflowTemplates.variants.' + variant | translate }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <button
+        type="button"
+        hlmBtn
+        variant="outline"
+        data-testid="export-n8n-copy-btn"
+        [disabled]="copyingN8n()"
+        (click)="onCopyN8nTemplate()"
+      >
+        {{
+          copyingN8n()
+            ? ('workflowTemplates.copying' | translate)
+            : ('workflowTemplates.n8nCopyButton' | translate)
+        }}
+      </button>
+    </div>
+  </div>
+
+  <div
+    aria-live="polite"
+    aria-atomic="true"
+    data-testid="template-export-live-region"
+    class="min-h-5 text-xs font-medium text-[var(--h2l-success-fg)]"
+  >
+    @if (feedbackMessage(); as message) {
+      <span data-testid="template-export-confirmation">{{ message }}</span>
+    }
+  </div>
+
+  @if (error(); as apiError) {
+    <app-ui-state-banner
+      kind="error"
+      testId="template-export-error"
+      [title]="'errors.title' | translate"
+      [message]="apiError.messageKey | translate: apiError.messageParams"
+      [detail]="apiError.detail"
+    />
+  }
+</div>

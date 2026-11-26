@@ -107,6 +107,10 @@
       [message]="'formBuilder.loading' | translate"
     />
   } @else if (draftSchema(); as schema) {
+    @if (formDefinition(); as def) {
+      <app-workflow-template-export [formId]="def.id" [stepKey]="def.stepKey" />
+    }
+
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div role="tablist" [attr.aria-label]="'formBuilder.tabs.label' | translate" class="flex flex-wrap gap-2">
         <button

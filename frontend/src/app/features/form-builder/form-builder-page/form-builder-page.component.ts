@@ -15,6 +15,7 @@ import { SupportedLanguage } from '../../../core/i18n/models/supported-language.
 import { TranslationService } from '../../../core/i18n/services/translation.service';
 import { selectCurrentLanguage } from '../../../core/i18n/store/i18n.selectors';
 import { UiStateBannerComponent } from '../../../shared/components/ui-state-banner/ui-state-banner.component';
+import { WorkflowTemplateExportComponent } from '../../../shared/components/workflow-template-export/workflow-template-export.component';
 import { validateExpressionSyntax } from '../../../shared/forms/ast/safe-ast-evaluator';
 import { FormRendererComponent } from '../../../shared/forms/form-renderer/form-renderer.component';
 import { FormControlCategory } from '../../../shared/forms/registry/form-control-category.type';
@@ -68,6 +69,7 @@ type FormLayoutMode = components['schemas']['FormLayoutMode'];
     HlmInputDirective,
     HlmLabelDirective,
     UiStateBannerComponent,
+    WorkflowTemplateExportComponent,
     FormRendererComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

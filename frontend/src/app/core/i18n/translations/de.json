@@ -7,6 +7,7 @@
       "label": "Hauptnavigation",
       "tasks": "Aufgaben",
       "users": "Nutzer & Gruppen",
+      "connectors": "Konnektoren",
       "projects": "Projekte & Prozesse",
       "settings": "Einstellungen",
       "login": "Anmelden",
@@ -78,7 +79,11 @@
       "TASK_ALREADY_COMPLETED": "Diese Aufgabe wurde bereits abgeschlossen.",
       "FORM_SCHEMA_INVALID": "Das Formularschema enthält Validierungsfehler.",
       "ATTACHMENT_TOO_LARGE": "Die hochgeladene Datei überschreitet die maximal zulässige Größe.",
-      "ATTACHMENT_TYPE_NOT_ALLOWED": "Dieser Dateityp ist für dieses Feld nicht erlaubt."
+      "ATTACHMENT_TYPE_NOT_ALLOWED": "Dieser Dateityp ist für dieses Feld nicht erlaubt.",
+      "CONNECTOR_SSRF_BLOCKED": "Diese URL wird durch die SSRF-Sicherheitsrichtlinie blockiert.",
+      "CONNECTOR_IN_USE": "Dieser Konnektor wird noch von aktiven Prozessen verwendet.",
+      "DEAD_LETTER_ALREADY_RETRIED": "Dieser Dead-Letter-Eintrag wurde bereits für einen erneuten Versuch eingeplant.",
+      "TASK_ASSIGNEE_NOT_ALLOWED": "Der gewählte Nutzer hat keinen Zugriff auf dieses Formular."
     }
   },
   "onboarding": {
@@ -548,5 +553,130 @@
       "fieldRemoved": "{{label}} aus dem Formular entfernt.",
       "stepAdded": "Schritt {{index}} hinzugefügt."
     }
+  },
+  "connectors": {
+    "heading": "Workflow-Konnektoren & Betrieb",
+    "description": "Verbinde Camunda 8, n8n oder Universal HTTP, wiederhole fehlgeschlagene Callbacks und weise nicht zugewiesene Aufgaben zu.",
+    "loading": "Workflow-Konnektoren werden geladen...",
+    "emptyTitle": "Noch keine Workflow-Konnektoren",
+    "emptyDescription": "Füge deinen ersten Camunda-8-, n8n- oder Universal-HTTP-Konnektor hinzu, um Aufgaben zu empfangen.",
+    "tabs": {
+      "ariaLabel": "Bereiche der Konnektorverwaltung",
+      "connectors": "Konnektoren",
+      "deadLetters": "Dead-Letter-Warteschlange",
+      "needsAssignment": "Zuweisung erforderlich"
+    },
+    "types": {
+      "Camunda8": "Camunda 8",
+      "N8n": "n8n",
+      "UniversalHttp": "Universal HTTP"
+    },
+    "authTypes": {
+      "None": "Keine Authentifizierung",
+      "Basic": "Basic Auth",
+      "Bearer": "Bearer-Token",
+      "ApiKey": "API-Schlüssel",
+      "HmacSha256": "HMAC-SHA256",
+      "OidcClientCredentials": "OIDC Client Credentials (Self-Managed)",
+      "OAuth2ClientCredentials": "OAuth2 Client Credentials (SaaS)"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "badges": {
+      "credentialsConfigured": "Zugangsdaten gespeichert",
+      "noCredentials": "Keine Zugangsdaten",
+      "customCaConfigured": "Eigenes CA-Zertifikat"
+    },
+    "actions": {
+      "create": "Konnektor hinzufügen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "testConnection": "Verbindung testen",
+      "testing": "Wird getestet..."
+    },
+    "testResult": {
+      "reachable": "Verbunden mit {{engine}} ({{version}}) in {{latencyMs}} ms.",
+      "unreachable": "Verbindung fehlgeschlagen nach {{latencyMs}} ms."
+    },
+    "fields": {
+      "name": "Konnektorname",
+      "type": "Engine-Typ",
+      "baseUrl": "Basis-URL der Instanz",
+      "baseUrlPlaceholder": "https://engine.example.com",
+      "callbackUrl": "Callback-URL (optional)",
+      "callbackUrlPlaceholder": "https://workflow.example.com/webhook",
+      "authType": "Authentifizierungsmethode",
+      "isActive": "Konnektor aktiv",
+      "username": "Benutzername",
+      "password": "Passwort",
+      "bearerToken": "Bearer-Token",
+      "apiKeyHeaderName": "Header-Name für API-Schlüssel",
+      "apiKey": "API-Schlüssel",
+      "hmacSecret": "HMAC-SHA256-Geheimnis",
+      "clientId": "Client-ID",
+      "clientSecret": "Client-Secret",
+      "tokenEndpoint": "Token-Endpoint-URL",
+      "audience": "Audience",
+      "scope": "Scope",
+      "customCaPem": "Eigenes CA-Zertifikat (PEM, optional)",
+      "customCaPlaceholder": "-----BEGIN CERTIFICATE-----",
+      "clearCustomCa": "Gespeichertes CA-Zertifikat entfernen"
+    },
+    "dialog": {
+      "createTitle": "Workflow-Konnektor hinzufügen",
+      "editTitle": "Workflow-Konnektor bearbeiten",
+      "preserveSecretsHint": "Lass die Zugangsdaten leer, um die gespeicherten verschlüsselten Geheimnisse zu behalten.",
+      "createButton": "Konnektor erstellen",
+      "saveButton": "Änderungen speichern"
+    },
+    "deleteDialog": {
+      "title": "Konnektor löschen",
+      "message": "Möchtest du „{{name}}“ wirklich löschen? Gespeicherte Zugangsdaten werden dauerhaft entfernt.",
+      "confirmButton": "Konnektor löschen"
+    },
+    "deadLetters": {
+      "loading": "Dead-Letter-Warteschlange wird geladen...",
+      "emptyTitle": "Keine fehlgeschlagenen Callbacks",
+      "emptyDescription": "Alle Workflow-Callbacks wurden erfolgreich zugestellt.",
+      "taskIdLabel": "Aufgaben-ID",
+      "retries": "Versuche: {{count}}",
+      "retryButton": "Erneut senden",
+      "retrying": "Wird erneut gesendet..."
+    },
+    "needsAssignment": {
+      "loading": "Nicht zugewiesene Aufgaben werden geladen...",
+      "emptyTitle": "Keine Aufgaben ohne Zuweisung",
+      "emptyDescription": "Jede eingehende Workflow-Aufgabe ist einem berechtigten Nutzer oder einer Gruppe zugewiesen.",
+      "statusBadge": "Zuweisung erforderlich",
+      "userLabel": "Nutzer zuweisen",
+      "userPlaceholder": "Nutzer wählen...",
+      "assignButton": "Zuweisen",
+      "assigning": "Wird zugewiesen..."
+    },
+    "feedback": {
+      "created": "Konnektor erfolgreich erstellt.",
+      "updated": "Konnektor erfolgreich aktualisiert.",
+      "deleted": "Konnektor erfolgreich gelöscht.",
+      "deadLetterRetried": "Erneuter Versand wurde eingeplant.",
+      "taskAssigned": "Aufgabe erfolgreich zugewiesen."
+    }
+  },
+  "workflowTemplates": {
+    "title": "Workflow-Engine-Vorlagen",
+    "description": "Lade ein vorkonfiguriertes Camunda-8-Element-Template herunter oder kopiere n8n-Knoten als JSON direkt in deinen Workflow.",
+    "camundaButton": "Camunda 8 Element Template herunterladen",
+    "downloading": "Wird heruntergeladen...",
+    "n8nVariantLabel": "n8n-Vorlagenvariante",
+    "variants": {
+      "community-node": "Community Node (n8n-nodes-h2l)",
+      "fallback-wait-node": "Fallback (HTTP Request + Wait + Switch)"
+    },
+    "n8nCopyButton": "n8n-JSON kopieren (Strg+V)",
+    "copying": "Wird kopiert...",
+    "camundaDownloaded": "Camunda Element Template heruntergeladen ({{fileName}}).",
+    "n8nCopiedCommunity": "n8n Community Node JSON kopiert. Füge es in n8n mit Strg+V ein.",
+    "n8nCopiedFallback": "n8n Fallback-Wait-Node JSON kopiert. Füge es in n8n mit Strg+V ein."
   }
 }

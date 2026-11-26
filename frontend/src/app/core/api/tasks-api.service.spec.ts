@@ -41,5 +41,11 @@ describe('TasksApiService', () => {
     expect(submitReq.request.method).toBe('POST');
     expect(submitReq.request.headers.get('Idempotency-Key')).toBe('idem-123');
     submitReq.flush({});
+
+    service.assignTask('t1', { userId: 'u-2' }).subscribe();
+    const assignReq = httpMock.expectOne('/api/v1/tasks/t1/assign');
+    expect(assignReq.request.method).toBe('POST');
+    expect(assignReq.request.body).toEqual({ userId: 'u-2' });
+    assignReq.flush({});
   });
 });

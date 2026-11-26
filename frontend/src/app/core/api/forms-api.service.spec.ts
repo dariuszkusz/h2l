@@ -50,5 +50,17 @@ describe('FormsApiService', () => {
     const verReq = httpMock.expectOne('/api/v1/forms/f1/versions');
     expect(verReq.request.method).toBe('GET');
     verReq.flush([]);
+
+    service.getCamundaElementTemplate('f1').subscribe();
+    const camundaReq = httpMock.expectOne('/api/v1/forms/f1/templates/camunda-element-template');
+    expect(camundaReq.request.method).toBe('GET');
+    camundaReq.flush({ $schema: 'https://unpkg.com/@camunda/zeebe-element-templates-json-schema' });
+
+    service.getN8nNodesTemplate('f1', { variant: 'fallback-wait-node' }).subscribe();
+    const n8nReq = httpMock.expectOne(
+      '/api/v1/forms/f1/templates/n8n-nodes?variant=fallback-wait-node',
+    );
+    expect(n8nReq.request.method).toBe('GET');
+    n8nReq.flush({ variant: 'fallback-wait-node', workflowJson: { nodes: [] } });
   });
 });
